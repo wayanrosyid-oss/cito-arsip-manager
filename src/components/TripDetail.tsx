@@ -18,6 +18,7 @@ import {
   Sparkles,
   Sliders,
   Layers,
+  Trash2,
 } from 'lucide-react';
 import { Trip } from '../types';
 import { formatDateRange, generateInstagramCaption } from '../utils/formatters';
@@ -28,6 +29,7 @@ import { PamphletStudioModal } from './PamphletStudioModal';
 interface TripDetailProps {
   trip: Trip;
   onEdit: (trip: Trip) => void;
+  onDelete: (trip: Trip) => void;
   onOpenItinerary: (trip: Trip) => void;
   onShowToast: (msg: string) => void;
   onSaveTrip?: (updatedTrip: Trip) => void;
@@ -36,6 +38,7 @@ interface TripDetailProps {
 export const TripDetail: React.FC<TripDetailProps> = ({
   trip,
   onEdit,
+  onDelete,
   onOpenItinerary,
   onShowToast,
   onSaveTrip,
@@ -139,13 +142,21 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             </p>
           </div>
 
-          <div className="flex items-center gap-2 self-start sm:self-center">
+          <div className="flex items-center gap-2 self-start sm:self-center flex-wrap">
             <button
               onClick={() => onEdit(trip)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer shadow-xs"
             >
               <Edit3 className="w-4 h-4 text-white" />
               <span>Edit Trip</span>
+            </button>
+            <button
+              onClick={() => onDelete(trip)}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md border-2 border-rose-600 hover:bg-rose-50 text-rose-700 text-xs sm:text-sm font-bold transition-colors cursor-pointer"
+              title="Hapus trip ini"
+            >
+              <Trash2 className="w-4 h-4 text-rose-600" />
+              <span>Hapus Trip</span>
             </button>
           </div>
         </div>

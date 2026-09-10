@@ -7,7 +7,7 @@ interface TripCardProps {
   trip: Trip;
   onSelect: (trip: Trip) => void;
   onEdit: (trip: Trip) => void;
-  onDelete: (id: string) => void;
+  onDelete: (trip: Trip) => void;
   onOpenItinerary: (trip: Trip) => void;
   isSelected?: boolean;
 }
@@ -103,10 +103,9 @@ export const TripCard: React.FC<TripCardProps> = ({
             <Edit3 className="w-3.5 h-3.5" />
           </button>
           <button
-            onClick={() => {
-              if (confirm(`Yakin ingin menghapus trip ${trip.nama_gunung}?`)) {
-                onDelete(trip.id);
-              }
+            onClick={(e) => {
+              e.stopPropagation();
+              onDelete(trip);
             }}
             className="p-1.5 text-gray-600 hover:text-rose-700 hover:bg-rose-100 rounded transition-colors cursor-pointer"
             title="Hapus trip"

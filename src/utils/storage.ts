@@ -4,6 +4,7 @@ import { idbGet, idbSet, idbDelete } from './indexedDb';
 
 const STORAGE_KEY = 'cito_adventure_trips_v3';
 export const CUSTOM_LOGO_KEY = 'cito_custom_logo_v1';
+const INITIAL_SETUP_DONE_KEY = 'cito_adventure_init_done_v3';
 
 export const INITIAL_TRIPS: Trip[] = [
   {
@@ -194,20 +195,32 @@ if (typeof window !== 'undefined') {
   });
 
   idbGet<Trip[]>(STORAGE_KEY).then((idbTrips) => {
-    if (Array.isArray(idbTrips) && idbTrips.length > 0) {
+    if (Array.isArray(idbTrips)) {
       memoryTrips = idbTrips;
     }
   });
 }
 
 export function getStoredTrips(): Trip[] {
-  if (memoryTrips && memoryTrips.length > 0) {
+  if (memoryTrips !== null) {
     return memoryTrips;
   }
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) {
+    const isInitDone = localStorage.getItem(INITIAL_SETUP_DONE_KEY) === 'true';
+
+    if (raw !== null) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        memoryTrips = parsed;
+        return parsed;
+      }
+    }
+
+    // First-time setup only: prefill sample trips on fresh install
+    if (!isInitDone) {
       try {
+        localStorage.setItem(INITIAL_SETUP_DONE_KEY, 'true');
         localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_TRIPS));
       } catch {
         // ignore quota
@@ -216,18 +229,22 @@ export function getStoredTrips(): Trip[] {
       idbSet(STORAGE_KEY, INITIAL_TRIPS);
       return INITIAL_TRIPS;
     }
-    const parsed = JSON.parse(raw);
-    const result = Array.isArray(parsed) && parsed.length > 0 ? parsed : INITIAL_TRIPS;
-    memoryTrips = result;
-    return result;
+
+    memoryTrips = [];
+    return [];
   } catch {
-    memoryTrips = INITIAL_TRIPS;
-    return INITIAL_TRIPS;
+    memoryTrips = [];
+    return [];
   }
 }
 
 export function saveStoredTrips(trips: Trip[]): void {
   memoryTrips = trips;
+  try {
+    localStorage.setItem(INITIAL_SETUP_DONE_KEY, 'true');
+  } catch {
+    // ignore quota
+  }
   // Always persist to IndexedDB (virtually unlimited quota for rich trip data)
   idbSet(STORAGE_KEY, trips);
 
@@ -237,6 +254,11 @@ export function saveStoredTrips(trips: Trip[]): void {
   } catch (err) {
     console.warn('localStorage quota reached for trips; securely saved in IndexedDB and memory instead.', err);
   }
+}
+
+export function resetToDefaultTrips(): Trip[] {
+  saveStoredTrips(INITIAL_TRIPS);
+  return INITIAL_TRIPS;
 }
 
 export function getCustomLogo(): string | null {

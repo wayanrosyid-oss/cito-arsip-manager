@@ -10,11 +10,12 @@ import { TripDetail } from './components/TripDetail';
 import { TripModal } from './components/TripModal';
 import { ItineraryModal } from './components/ItineraryModal';
 import { GitHubGuideModal } from './components/GitHubGuideModal';
+import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { Toast } from './components/Toast';
 import { Trip, TripStatus } from './types';
-import { getStoredTrips, saveStoredTrips } from './utils/storage';
-import { Search, Plus, Filter, Mountain, ArrowLeft } from 'lucide-react';
+import { getStoredTrips, saveStoredTrips, resetToDefaultTrips } from './utils/storage';
+import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw } from 'lucide-react';
 
 export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -28,6 +29,8 @@ export default function App() {
   const [isItineraryModalOpen, setIsItineraryModalOpen] = useState(false);
   const [itineraryTrip, setItineraryTrip] = useState<Trip | null>(null);
   const [isGithubGuideOpen, setIsGithubGuideOpen] = useState(false);
+  const [tripToDelete, setTripToDelete] = useState<Trip | null>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -77,6 +80,18 @@ export default function App() {
         setMobileTab('list');
       }
     }
+  };
+
+  const handleRequestDelete = (trip: Trip) => {
+    setTripToDelete(trip);
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleRestoreDefaultTrips = () => {
+    const defaults = resetToDefaultTrips();
+    setTrips(defaults);
+    setSelectedTripId(defaults[0]?.id || null);
+    showToast('Contoh trip berhasil dimuat kembali');
   };
 
   const handleOpenAddModal = () => {
@@ -208,21 +223,36 @@ export default function App() {
                       setMobileTab('detail');
                     }}
                     onEdit={handleOpenEditModal}
-                    onDelete={handleDeleteTrip}
+                    onDelete={handleRequestDelete}
                     onOpenItinerary={handleOpenItineraryModal}
                   />
                 ))
               ) : (
                 <div className="bg-white border-2 border-dashed border-[#275d1d]/40 rounded-xl p-8 text-center space-y-3">
                   <Mountain className="w-10 h-10 text-[#275d1d]/60 mx-auto" />
-                  <p className="text-xs text-gray-700 font-medium">Tidak ada trip yang sesuai pencarian.</p>
-                  <button
-                    onClick={handleOpenAddModal}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-[#275d1d] text-white text-xs font-bold hover:bg-[#1f4a17] transition-all cursor-pointer shadow"
-                  >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span>Buat Trip Baru</span>
-                  </button>
+                  <p className="text-xs text-gray-700 font-medium">
+                    {trips.length === 0
+                      ? 'Belum ada arsip trip. Anda bisa membuat trip baru atau memuat contoh.'
+                      : 'Tidak ada trip yang sesuai pencarian.'}
+                  </p>
+                  <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
+                    <button
+                      onClick={handleOpenAddModal}
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-[#275d1d] text-white text-xs font-bold hover:bg-[#1f4a17] transition-all cursor-pointer shadow"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                      <span>Buat Trip Baru</span>
+                    </button>
+                    {trips.length === 0 && (
+                      <button
+                        onClick={handleRestoreDefaultTrips}
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold border border-gray-300 transition-all cursor-pointer"
+                      >
+                        <RotateCcw className="w-3.5 h-3.5 text-[#275d1d]" />
+                        <span>Muat Contoh Trip</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
@@ -249,6 +279,7 @@ export default function App() {
               <TripDetail
                 trip={activeTrip}
                 onEdit={handleOpenEditModal}
+                onDelete={handleRequestDelete}
                 onOpenItinerary={handleOpenItineraryModal}
                 onShowToast={showToast}
                 onSaveTrip={handleSaveTrip}
@@ -257,18 +288,31 @@ export default function App() {
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-12 text-center space-y-4 shadow-md">
                 <Mountain className="w-14 h-14 text-[#275d1d]/50 mx-auto" />
                 <h3 className="text-lg font-bold font-['Space_Grotesk'] text-[#275d1d]">
-                  Pilih atau Tambahkan Trip
+                  {trips.length === 0 ? 'Belum Ada Jadwal Trip' : 'Pilih atau Tambahkan Trip'}
                 </h3>
                 <p className="text-xs text-gray-700 max-w-sm mx-auto leading-relaxed">
-                  Pilih salah satu jadwal open trip di sebelah kiri untuk melihat detail, menyalin caption Instagram, atau mengekspor poster pamflet & itinerary.
+                  {trips.length === 0
+                    ? 'Mulai buat arsip open trip atau private trip Anda untuk menghasilkan pamflet poster, itinerary, dan caption Instagram secara instan.'
+                    : 'Pilih salah satu jadwal open trip di sebelah kiri untuk melihat detail, menyalin caption Instagram, atau mengekspor poster pamflet & itinerary.'}
                 </p>
-                <button
-                  onClick={handleOpenAddModal}
-                  className="inline-flex items-center gap-2 px-4 py-2 rounded bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold transition-all shadow cursor-pointer"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Tambah Open Trip Pertama</span>
-                </button>
+                <div className="flex items-center justify-center gap-2 flex-wrap">
+                  <button
+                    onClick={handleOpenAddModal}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold transition-all shadow cursor-pointer"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Tambah Open Trip Pertama</span>
+                  </button>
+                  {trips.length === 0 && (
+                    <button
+                      onClick={handleRestoreDefaultTrips}
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold border border-gray-300 transition-all cursor-pointer"
+                    >
+                      <RotateCcw className="w-4 h-4 text-[#275d1d]" />
+                      <span>Muat Kembali Contoh Trip</span>
+                    </button>
+                  )}
+                </div>
               </div>
             )}
           </section>
@@ -295,6 +339,16 @@ export default function App() {
         isOpen={isGithubGuideOpen}
         onClose={() => setIsGithubGuideOpen(false)}
         onShowToast={showToast}
+      />
+
+      <DeleteConfirmModal
+        isOpen={isDeleteModalOpen}
+        trip={tripToDelete}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setTripToDelete(null);
+        }}
+        onConfirm={handleDeleteTrip}
       />
 
       {/* Notifications & Offline Status */}

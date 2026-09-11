@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw } from 'lucide-react';
+import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { downloadProjectZip } from '../utils/projectZip';
 import { getCustomLogo, setCustomLogo, clearCustomLogo } from '../utils/storage';
@@ -9,12 +9,16 @@ interface NavbarProps {
   onOpenAddModal: () => void;
   onOpenGithubGuide: () => void;
   tripCount: number;
+  cloudStatus?: 'synced' | 'syncing' | 'offline';
+  onOpenCloudSync?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddModal,
   onOpenGithubGuide,
   tripCount,
+  cloudStatus = 'synced',
+  onOpenCloudSync,
 }) => {
   const [logoSrc, setLogoSrc] = useState<string>('/logo.png');
   const [isCustom, setIsCustom] = useState<boolean>(false);
@@ -120,13 +124,46 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
             <h1 className="text-lg sm:text-xl font-bold font-['Space_Grotesk'] tracking-tight text-white leading-tight">
-              Arsip Trip & Generator Konten
+              Cito Trip Manager
             </h1>
           </div>
         </div>
 
         {/* Right: Actions */}
         <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
+          {/* Cloud Sync Status Indicator */}
+          <button
+            type="button"
+            onClick={onOpenCloudSync}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer shadow-sm hover:scale-102 active:scale-98 ${
+              cloudStatus === 'synced'
+                ? 'bg-white/20 hover:bg-white/30 text-emerald-100 border-white/40'
+                : cloudStatus === 'syncing'
+                ? 'bg-amber-400/25 hover:bg-amber-400/35 text-amber-200 border-amber-300/40'
+                : 'bg-gray-600/40 hover:bg-gray-600/50 text-gray-200 border-gray-400/30'
+            }`}
+            title="Klik untuk Sinkronisasi HP & Laptop / Scan QR Code"
+          >
+            {cloudStatus === 'synced' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Cloud Sinkron</span>
+              </>
+            )}
+            {cloudStatus === 'syncing' && (
+              <>
+                <RefreshCw className="w-3 h-3 text-amber-300 animate-spin" />
+                <span>Menyimpan...</span>
+              </>
+            )}
+            {cloudStatus === 'offline' && (
+              <>
+                <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                <span>Offline Cache</span>
+              </>
+            )}
+          </button>
+
           <PWAInstallButton />
 
           <button

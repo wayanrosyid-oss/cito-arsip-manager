@@ -1,6 +1,7 @@
 import { Trip } from '../types';
 import { generateDefaultItinerary } from './formatters';
 import { idbGet, idbSet, idbDelete } from './indexedDb';
+import { saveLogoToCloud } from '../firebase';
 
 const STORAGE_KEY = 'cito_adventure_trips_v3';
 export const CUSTOM_LOGO_KEY = 'cito_custom_logo_v1';
@@ -292,7 +293,6 @@ export function setCustomLogo(dataUrl: string): void {
     localStorage.setItem(CUSTOM_LOGO_KEY, dataUrl);
   } catch (err) {
     console.warn('localStorage quota reached for custom logo; securely stored in IndexedDB and memory instead.', err);
-    // Remove stale/corrupted key to avoid repeated quota errors
     try {
       localStorage.removeItem(CUSTOM_LOGO_KEY);
     } catch {
@@ -302,6 +302,11 @@ export function setCustomLogo(dataUrl: string): void {
 
   // Notify components and pamphlets immediately
   window.dispatchEvent(new Event('cito_logo_updated'));
+
+  // Sync to Cloud Firestore in background
+  saveLogoToCloud(dataUrl).catch((err) => {
+    console.warn('Could not sync logo to cloud:', err);
+  });
 }
 
 export function clearCustomLogo(): void {
@@ -311,6 +316,32 @@ export function clearCustomLogo(): void {
     localStorage.removeItem(CUSTOM_LOGO_KEY);
   } catch (err) {
     console.warn('Failed to clear custom logo from localStorage', err);
+  }
+  window.dispatchEvent(new Event('cito_logo_updated'));
+
+  // Remove from Cloud Firestore in background
+  saveLogoToCloud(null).catch((err) => {
+    console.warn('Could not remove logo from cloud:', err);
+  });
+}
+
+export function syncCloudLogoToLocal(dataUrl: string | null): void {
+  if (dataUrl) {
+    memoryCustomLogo = dataUrl;
+    idbSet(CUSTOM_LOGO_KEY, dataUrl);
+    try {
+      localStorage.setItem(CUSTOM_LOGO_KEY, dataUrl);
+    } catch {
+      // ignore
+    }
+  } else {
+    memoryCustomLogo = null;
+    idbDelete(CUSTOM_LOGO_KEY);
+    try {
+      localStorage.removeItem(CUSTOM_LOGO_KEY);
+    } catch {
+      // ignore
+    }
   }
   window.dispatchEvent(new Event('cito_logo_updated'));
 }

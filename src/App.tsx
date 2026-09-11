@@ -11,10 +11,18 @@ import { TripModal } from './components/TripModal';
 import { ItineraryModal } from './components/ItineraryModal';
 import { GitHubGuideModal } from './components/GitHubGuideModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
+import { CloudSyncModal } from './components/CloudSyncModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { Toast } from './components/Toast';
 import { Trip, TripStatus } from './types';
-import { getStoredTrips, saveStoredTrips, resetToDefaultTrips } from './utils/storage';
+import { getStoredTrips, saveStoredTrips, resetToDefaultTrips, syncCloudLogoToLocal } from './utils/storage';
+import {
+  subscribeToCloudTrips,
+  saveTripToCloud,
+  deleteTripFromCloud,
+  seedInitialTripsToCloud,
+  subscribeToCloudLogo,
+} from './firebase';
 import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw } from 'lucide-react';
 
 export default function App() {
@@ -22,6 +30,7 @@ export default function App() {
   const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
+  const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
 
   // Modals state
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
@@ -31,6 +40,7 @@ export default function App() {
   const [isGithubGuideOpen, setIsGithubGuideOpen] = useState(false);
   const [tripToDelete, setTripToDelete] = useState<Trip | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isCloudSyncOpen, setIsCloudSyncOpen] = useState(false);
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -39,11 +49,53 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState<'list' | 'detail'>('list');
 
   useEffect(() => {
-    const loaded = getStoredTrips();
-    setTrips(loaded);
-    if (loaded.length > 0) {
-      setSelectedTripId(loaded[0].id);
+    // 1. Instant local read so app renders without delay
+    const localTrips = getStoredTrips();
+    setTrips(localTrips);
+    if (localTrips.length > 0) {
+      setSelectedTripId(localTrips[0].id);
     }
+
+    // 2. Real-time Cloud Firestore subscription (syncs Laptop, HP, and all devices)
+    let isInitialFetch = true;
+    const unsubscribeTrips = subscribeToCloudTrips(
+      (cloudTrips) => {
+        setCloudStatus('synced');
+        if (cloudTrips.length > 0) {
+          setTrips(cloudTrips);
+          saveStoredTrips(cloudTrips);
+          setSelectedTripId((prev) => {
+            if (prev && cloudTrips.some((t) => t.id === prev)) {
+              return prev;
+            }
+            return cloudTrips[0]?.id || null;
+          });
+        } else if (isInitialFetch) {
+          // If Cloud Firestore is totally empty on initial connection, upload existing trips to cloud
+          if (localTrips.length > 0) {
+            setCloudStatus('syncing');
+            seedInitialTripsToCloud(localTrips).finally(() => {
+              setCloudStatus('synced');
+            });
+          }
+        }
+        isInitialFetch = false;
+      },
+      (error) => {
+        console.warn('Cloud sync error or offline:', error);
+        setCloudStatus('offline');
+      }
+    );
+
+    // 3. Real-time Logo synchronization across devices
+    const unsubscribeLogo = subscribeToCloudLogo((cloudLogo) => {
+      syncCloudLogoToLocal(cloudLogo);
+    });
+
+    return () => {
+      unsubscribeTrips();
+      unsubscribeLogo();
+    };
   }, []);
 
   const showToast = (msg: string) => {
@@ -58,15 +110,26 @@ export default function App() {
     let updated: Trip[];
     if (exists) {
       updated = trips.map((t) => (t.id === savedTrip.id ? savedTrip : t));
-      showToast(`Trip ${savedTrip.nama_gunung} berhasil diperbarui`);
+      showToast(`Trip ${savedTrip.nama_gunung} berhasil diperbarui (Tersinkron ke Cloud)`);
     } else {
       updated = [savedTrip, ...trips];
-      showToast(`Trip ${savedTrip.nama_gunung} berhasil ditambahkan`);
+      showToast(`Trip ${savedTrip.nama_gunung} berhasil ditambahkan (Tersinkron ke Cloud)`);
     }
     setTrips(updated);
     saveStoredTrips(updated);
     setSelectedTripId(savedTrip.id);
     setMobileTab('detail');
+
+    // Sync directly to Cloud Firestore in background
+    setCloudStatus('syncing');
+    saveTripToCloud(savedTrip)
+      .then(() => {
+        setCloudStatus('synced');
+      })
+      .catch((err) => {
+        console.error('Failed to sync trip to cloud:', err);
+        setCloudStatus('offline');
+      });
   };
 
   const handleDeleteTrip = (id: string) => {
@@ -80,6 +143,17 @@ export default function App() {
         setMobileTab('list');
       }
     }
+
+    // Delete directly from Cloud Firestore in background
+    setCloudStatus('syncing');
+    deleteTripFromCloud(id)
+      .then(() => {
+        setCloudStatus('synced');
+      })
+      .catch((err) => {
+        console.error('Failed to delete trip from cloud:', err);
+        setCloudStatus('offline');
+      });
   };
 
   const handleRequestDelete = (trip: Trip) => {
@@ -138,6 +212,8 @@ export default function App() {
         onOpenAddModal={handleOpenAddModal}
         onOpenGithubGuide={() => setIsGithubGuideOpen(true)}
         tripCount={trips.length}
+        cloudStatus={cloudStatus}
+        onOpenCloudSync={() => setIsCloudSyncOpen(true)}
       />
 
       {/* Main Content Layout */}
@@ -208,6 +284,22 @@ export default function App() {
                   </button>
                 ))}
               </div>
+
+              {/* Quick Cloud Sync & Phone QR Helper Banner */}
+              <button
+                type="button"
+                onClick={() => setIsCloudSyncOpen(true)}
+                className="w-full flex items-center justify-between p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-300 text-emerald-950 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                title="Buka Sinkronisasi HP & Laptop"
+              >
+                <div className="flex items-center gap-1.5 text-[11px]">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                  <span>📱 Buka di HP / Sinkronkan Data</span>
+                </div>
+                <span className="text-[10px] text-emerald-700 underline group-hover:text-emerald-900">
+                  Scan QR / Sync
+                </span>
+              </button>
             </div>
 
             {/* Trip Cards List */}
@@ -349,6 +441,21 @@ export default function App() {
           setTripToDelete(null);
         }}
         onConfirm={handleDeleteTrip}
+      />
+
+      <CloudSyncModal
+        isOpen={isCloudSyncOpen}
+        onClose={() => setIsCloudSyncOpen(false)}
+        currentTrips={trips}
+        onTripsUpdated={(updated) => {
+          setTrips(updated);
+          saveStoredTrips(updated);
+          if (updated.length > 0) {
+            setSelectedTripId(updated[0].id);
+          }
+          showToast(`Berhasil menyinkronkan ${updated.length} trip dari Cloud!`);
+        }}
+        cloudStatus={cloudStatus}
       />
 
       {/* Notifications & Offline Status */}

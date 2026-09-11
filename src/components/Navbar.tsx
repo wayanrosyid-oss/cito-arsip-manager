@@ -124,7 +124,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             </div>
             <h1 className="text-lg sm:text-xl font-bold font-['Space_Grotesk'] tracking-tight text-white leading-tight">
-              Cito Trip Manager
+              Arsip Trip & Generator Konten
             </h1>
           </div>
         </div>

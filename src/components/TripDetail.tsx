@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Calendar,
   Clock,
@@ -19,12 +19,21 @@ import {
   Sliders,
   Layers,
   Trash2,
+  Share2,
+  Instagram,
+  Zap,
 } from 'lucide-react';
 import { Trip } from '../types';
-import { formatDateRange, generateInstagramCaption } from '../utils/formatters';
+import {
+  formatDateRange,
+  generateInstagramFeedCaption,
+  generateWhatsAppBroadcastCaption,
+  generateStoryQuickCaption,
+} from '../utils/formatters';
 import { exportTripPamphletPNG, exportItineraryPosterPNG, SlideType } from '../utils/canvasExport';
 import { exportTripPDF, exportTripTXT } from '../utils/pdfExport';
 import { PamphletStudioModal } from './PamphletStudioModal';
+import { CaptionStudioModal } from './CaptionStudioModal';
 
 interface TripDetailProps {
   trip: Trip;
@@ -47,20 +56,43 @@ export const TripDetail: React.FC<TripDetailProps> = ({
   const [isExporting, setIsExporting] = useState<string | null>(null);
   const [isStudioOpen, setIsStudioOpen] = useState(false);
   const [studioInitialSlide, setStudioInitialSlide] = useState<SlideType>('cover');
+  const [isCaptionStudioOpen, setIsCaptionStudioOpen] = useState(false);
+  const [activeCaptionTab, setActiveCaptionTab] = useState<'instagram' | 'whatsapp' | 'story'>('instagram');
 
-  const captionText = generateInstagramCaption(trip);
+  const previewCaptionText = useMemo(() => {
+    if (activeCaptionTab === 'instagram') {
+      return generateInstagramFeedCaption(trip);
+    } else if (activeCaptionTab === 'whatsapp') {
+      return generateWhatsAppBroadcastCaption(trip);
+    } else {
+      return generateStoryQuickCaption(trip);
+    }
+  }, [trip, activeCaptionTab]);
+
   const isBuka = trip.status === 'Buka';
   const dateRange = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
 
   const handleCopyCaption = async () => {
     try {
-      await navigator.clipboard.writeText(captionText);
+      await navigator.clipboard.writeText(previewCaptionText);
       setCopiedCaption(true);
-      onShowToast('Caption Instagram berhasil disalin ke clipboard!');
+      onShowToast(
+        activeCaptionTab === 'instagram'
+          ? 'Caption Instagram berhasil disalin!'
+          : activeCaptionTab === 'whatsapp'
+          ? 'Pesan WhatsApp Broadcast berhasil disalin!'
+          : 'Format Story singkat berhasil disalin!'
+      );
       setTimeout(() => setCopiedCaption(false), 2500);
     } catch {
-      onShowToast('Gagal menyalin caption');
+      onShowToast('Gagal menyalin teks');
     }
+  };
+
+  const handleOpenWhatsApp = () => {
+    const waNumber = (trip.kontak_wa || '+6282230444428').replace(/[^0-9]/g, '');
+    const encoded = encodeURIComponent(previewCaptionText);
+    window.open(`https://wa.me/${waNumber}?text=${encoded}`, '_blank');
   };
 
   const handleExportPamphlet = async (ratio: '4:5' | '9:16') => {
@@ -330,29 +362,89 @@ export const TripDetail: React.FC<TripDetailProps> = ({
         </div>
       </div>
 
-      {/* Caption Instagram Generator Box */}
-      <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md">
-        <div className="flex items-center justify-between gap-3 flex-wrap mb-3">
+      {/* Caption & Broadcast Marketing Generator Box */}
+      <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-3">
+        <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
             <h3 className="text-sm font-bold text-[#275d1d] font-['Space_Grotesk'] flex items-center gap-2">
-              <MessageSquare className="w-4 h-4 text-[#275d1d]" />
-              Caption Instagram Otomatis
+              <Share2 className="w-4 h-4 text-[#275d1d]" />
+              Generator Caption & Broadcast Promosi
             </h3>
             <p className="text-xs text-gray-700 mt-0.5">
-              Include, Exclude, Itinerary, S&K, dan Catatan <strong>tidak diikutkan</strong> karena sudah masuk di pamflet postingan.
+              Salin teks promosi instan untuk Feed Instagram, pesan siaran WhatsApp grup, atau Story singkat.
             </p>
           </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => setIsCaptionStudioOpen(true)}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white hover:bg-[#f0f0f0] text-[#275d1d] border-2 border-[#275d1d] text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <span>Buka Generator Lengkap (Custom Hook)</span>
+            </button>
+
+            <button
+              onClick={handleCopyCaption}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+            >
+              {copiedCaption ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4 text-white" />}
+              <span>{copiedCaption ? 'Tersalin!' : 'Salin Teks'}</span>
+            </button>
+
+            <button
+              onClick={handleOpenWhatsApp}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all cursor-pointer shadow-sm active:scale-95"
+              title="Buka WhatsApp langsung dengan teks ini"
+            >
+              <ExternalLink className="w-3.5 h-3.5 text-white" />
+              <span>Kirim ke WA</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Tab switch */}
+        <div className="flex items-center gap-2 border-b border-[#275d1d]/15 pb-2 overflow-x-auto">
           <button
-            onClick={handleCopyCaption}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold transition-all cursor-pointer shadow active:scale-95"
+            onClick={() => setActiveCaptionTab('instagram')}
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeCaptionTab === 'instagram'
+                ? 'bg-[#275d1d] text-white shadow-xs'
+                : 'bg-[#f0f0f0] text-gray-700 hover:bg-[#e4e4e4]'
+            }`}
           >
-            {copiedCaption ? <Check className="w-4 h-4 text-white" /> : <Copy className="w-4 h-4 text-white" />}
-            <span>{copiedCaption ? 'Caption Tersalin!' : 'Salin Caption'}</span>
+            <Instagram className="w-3.5 h-3.5" />
+            <span>Feed & Reels Instagram</span>
+          </button>
+
+          <button
+            onClick={() => setActiveCaptionTab('whatsapp')}
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeCaptionTab === 'whatsapp'
+                ? 'bg-[#275d1d] text-white shadow-xs'
+                : 'bg-[#f0f0f0] text-gray-700 hover:bg-[#e4e4e4]'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-emerald-600" />
+            <span>Broadcast WhatsApp Grup</span>
+          </button>
+
+          <button
+            onClick={() => setActiveCaptionTab('story')}
+            className={`px-3 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+              activeCaptionTab === 'story'
+                ? 'bg-[#275d1d] text-white shadow-xs'
+                : 'bg-[#f0f0f0] text-gray-700 hover:bg-[#e4e4e4]'
+            }`}
+          >
+            <Zap className="w-3.5 h-3.5 text-amber-500" />
+            <span>Story & Status Singkat</span>
           </button>
         </div>
 
-        <div className="bg-[#f4f4f4] border-2 border-[#275d1d]/30 rounded-lg p-4 relative font-mono text-xs sm:text-sm text-[#193a14] font-semibold leading-relaxed whitespace-pre-wrap select-all">
-          {captionText}
+        {/* Text Preview Box */}
+        <div className="bg-[#f4f4f4] border-2 border-[#275d1d]/30 rounded-lg p-4 relative font-mono text-xs text-[#193a14] font-semibold leading-relaxed whitespace-pre-wrap select-all max-h-64 overflow-y-auto">
+          {previewCaptionText}
         </div>
       </div>
 
@@ -464,13 +556,66 @@ export const TripDetail: React.FC<TripDetailProps> = ({
         )}
       </div>
 
-      {/* Contact & Social Footer */}
-      <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs shadow-md">
-        <div className="text-gray-700 font-medium">
-          Booking & Informasi Resmi: <strong className="text-[#275d1d]">WA {trip.kontak_wa || '+6282230444428'}</strong> · <strong className="text-[#275d1d]">IG {trip.kontak_ig || '@citoadventure'}</strong>
+      {/* Contact & Social Settings (Admin Management & Edit) */}
+      <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#275d1d]/20 pb-3">
+          <div>
+            <h4 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
+              <MessageSquare className="w-4 h-4 text-[#275d1d]" />
+              Nomor Kontak Admin (Materi Pamflet & Caption)
+            </h4>
+            <p className="text-xs text-gray-600 mt-0.5">
+              Nomor WhatsApp dan Instagram berikut tercetak otomatis di baris booking pamflet dan caption promosi:
+            </p>
+          </div>
+          <button
+            onClick={() => onEdit(trip)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-[#275d1d] hover:bg-[#1a3814] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer self-start sm:self-auto shrink-0 shadow-xs"
+            title="Ubah nomor kontak WhatsApp atau akun Instagram untuk trip ini"
+          >
+            <Edit3 className="w-3.5 h-3.5" />
+            Edit Nomor Kontak & Info
+          </button>
         </div>
-        <div className="text-[11px] text-gray-500 font-medium">
-          Diperbarui: {new Date(trip.updated_at).toLocaleDateString('id-ID')}
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {/* Admin Jatim & Jateng */}
+          <div className="p-3.5 rounded-lg bg-[#f5f5f5] border border-[#275d1d]/20">
+            <span className="block text-[11px] font-bold text-[#15803D] uppercase tracking-wide">
+              Admin Jatim & Jateng
+            </span>
+            <span className="text-sm sm:text-base font-black text-gray-900 font-['Space_Grotesk'] mt-0.5 block">
+              {trip.kontak_wa_jatim || '+6282230444428'}
+            </span>
+            <span className="text-[10px] text-gray-500 mt-1 block">Tercetak di Pamflet & Caption</span>
+          </div>
+
+          {/* Admin Jakarta & Sekitarnya */}
+          <div className="p-3.5 rounded-lg bg-[#f5f5f5] border border-[#275d1d]/20">
+            <span className="block text-[11px] font-bold text-[#15803D] uppercase tracking-wide">
+              Admin Jakarta & Sekitar
+            </span>
+            <span className="text-sm sm:text-base font-black text-gray-900 font-['Space_Grotesk'] mt-0.5 block">
+              {trip.kontak_wa_jakarta || '+6289503689266'}
+            </span>
+            <span className="text-[10px] text-gray-500 mt-1 block">Tercetak di Pamflet & Caption</span>
+          </div>
+
+          {/* Instagram Official */}
+          <div className="p-3.5 rounded-lg bg-[#f5f5f5] border border-[#275d1d]/20">
+            <span className="block text-[11px] font-bold text-[#275d1d] uppercase tracking-wide">
+              Akun Instagram Resmi
+            </span>
+            <span className="text-sm sm:text-base font-black text-gray-900 font-['Space_Grotesk'] mt-0.5 block">
+              {trip.kontak_ig || '@citoadventuremadiun'}
+            </span>
+            <span className="text-[10px] text-gray-500 mt-1 block">Tercetak di Bar Booking Pamflet</span>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-[11px] text-gray-500">
+          <span>💡 Klik tombol <strong>Edit Nomor Kontak & Info</strong> di atas jika Anda ingin mengganti nomor admin kapan saja.</span>
+          <span>Diperbarui: {new Date(trip.updated_at).toLocaleDateString('id-ID')}</span>
         </div>
       </div>
 
@@ -483,6 +628,17 @@ export const TripDetail: React.FC<TripDetailProps> = ({
         onShowToast={onShowToast}
         initialSlide={studioInitialSlide}
       />
+
+      {/* Caption & Broadcast Marketing Studio Modal */}
+      {isCaptionStudioOpen && (
+        <CaptionStudioModal
+          isOpen={isCaptionStudioOpen}
+          onClose={() => setIsCaptionStudioOpen(false)}
+          trip={trip}
+          onShowToast={onShowToast}
+          initialMode={activeCaptionTab}
+        />
+      )}
     </div>
   );
 };

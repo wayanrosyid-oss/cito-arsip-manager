@@ -5,6 +5,67 @@ import { POPULAR_MOUNTAINS } from '../data/mountains';
 import { calculateDuration, generateDefaultItinerary } from '../utils/formatters';
 import { ItineraryEditor } from './ItineraryEditor';
 
+// Official Default Lists for Cito Adventure Madiun
+export const DEFAULT_CITO_INCLUDE = [
+  'Transportasi PP sesuai mepo',
+  'Simaksi pendakian',
+  'Ojek Basecamp - Pos 1',
+  'Sarapan di basecamp',
+  'Tenda kelompok',
+  'Guide (bersertifikasi)',
+  'Porter Tim',
+  'Sweeper',
+  'Makan selama pendakian',
+  'Alat makan & masak',
+  'P3K standard',
+  'HT tim (alat komunikasi)',
+  'Dokumentasi',
+  'Bonus masuk YT Cito Adventure Madiun',
+];
+
+export const DEFAULT_CITO_EXCLUDE = [
+  'Perlengkapan pribadi',
+  'Surat sehat',
+  'Obat-obatan pribadi khusus',
+  'Logistik (camilan pribadi)',
+  'Perlengkapan pendakian yang tidak ada di daftar',
+  'Tip crew / guide / porter',
+];
+
+export const DEFAULT_CITO_SK = [
+  'Peserta Untuk Umum (Sendiri Bisa Join)',
+  'Minimal Peserta : 15 Orang (apabila kuota tidak terpenuhi, akan ada penyesuaian biaya)',
+  'DP minimal Rp 200.000',
+  'Pelunasan Maksimal H-5',
+  'Pembatalan Oleh Peserta: DP Hangus',
+  'Trip Sesuai Jadwal (Diluar Jadwal Tersedia Private Trip)',
+];
+
+export const DEFAULT_CITO_CATATAN_PENTING =
+  'SEBELUM MENDAKI, SANGAT DISARANKAN UNTUK RUTIN BEROLAHRAGA SEPERTI JOGGING, HIKING RINGAN, ATAU LATIHAN KARDIO MINIMAL 1-2 MINGGU SEBELUMNYA. MULAILAH DARI LATIHAN RINGAN, TINGKATKAN INTENSITASNYA, DAN PASTIKAN KONDISI TUBUH BENAR-BENAR SIAP.';
+
+const DEFAULT_CATATAN_STORAGE_KEY = 'cito_default_catatan_penting_v1';
+
+export function getDefaultCatatanPenting(): string {
+  try {
+    const saved = localStorage.getItem(DEFAULT_CATATAN_STORAGE_KEY);
+    if (saved && saved.trim()) {
+      return saved;
+    }
+  } catch {
+    // fallback to standard
+  }
+  return DEFAULT_CITO_CATATAN_PENTING;
+}
+
+export function saveDefaultCatatanPenting(text: string): void {
+  try {
+    localStorage.setItem(DEFAULT_CATATAN_STORAGE_KEY, text);
+  } catch {
+    // ignore
+  }
+}
+
 interface TripModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -38,9 +99,11 @@ export const TripModal: React.FC<TripModalProps> = ({
   const [extraPorter, setExtraPorter] = useState('');
   const [skText, setSkText] = useState('');
   const [catatanPenting, setCatatanPenting] = useState('');
+  const [defaultCatatanSaved, setDefaultCatatanSaved] = useState(false);
   const [itinerary, setItinerary] = useState('');
-  const [kontakWa, setKontakWa] = useState('+6282230444428');
-  const [kontakIg, setKontakIg] = useState('Cito Adventure Madiun');
+  const [kontakWaJatim, setKontakWaJatim] = useState('+6282230444428');
+  const [kontakWaJakarta, setKontakWaJakarta] = useState('+6289503689266');
+  const [kontakIg, setKontakIg] = useState('@citoadventuremadiun');
 
   // Available trails for currently selected mountain
   const currentMountain = POPULAR_MOUNTAINS[parseInt(selectedMountainIndex, 10)] || null;
@@ -68,8 +131,9 @@ export const TripModal: React.FC<TripModalProps> = ({
       setSkText((tripToEdit.sk_berlaku || []).join('\n'));
       setCatatanPenting(tripToEdit.catatan_penting || '');
       setItinerary(tripToEdit.itinerary || '');
-      setKontakWa(tripToEdit.kontak_wa || '+6282230444428');
-      setKontakIg(tripToEdit.kontak_ig || 'Cito Adventure Madiun');
+      setKontakWaJatim(tripToEdit.kontak_wa_jatim || '+6282230444428');
+      setKontakWaJakarta(tripToEdit.kontak_wa_jakarta || '+6289503689266');
+      setKontakIg(tripToEdit.kontak_ig || '@citoadventuremadiun');
 
       // Check if matches known mountain
       const mIndex = POPULAR_MOUNTAINS.findIndex(
@@ -98,37 +162,15 @@ export const TripModal: React.FC<TripModalProps> = ({
         { lokasi: 'Stasiun Purwokerto', harga: 'IDR 750.000' },
         { lokasi: 'Madiun (Meeting Point)', harga: 'IDR 700.000' }
       ]);
-      setIncludeText([
-        'Transportasi PP AC sesuai meeting point',
-        'Simaksi & Asuransi Pendakian Resmi',
-        'Tenda kapasitas 4 (diisi 3 orang agar nyaman)',
-        'Matras busa per peserta',
-        'Makan selama masa pendakian (menu bergizi)',
-        'Welcome drink hangat (kopi/teh) & air mineral',
-        'Peralatan masak & makan kelompok',
-        'Porter tim (membawa tenda & logistik bersama)',
-        'Tour Leader & Guide Berpengalaman Cito Adventure',
-        'Dokumentasi perjalanan & P3K standar'
-      ].join('\n'));
-      setExcludeText([
-        'Perlengkapan pribadi (carrier, sleeping bag, pakaian hangat)',
-        'Ojek basecamp ke pos 1 (opsional)',
-        'Obat-obatan pribadi khusus',
-        'Logistik camilan pribadi',
-        'Tips sukarela crew / guide / porter'
-      ].join('\n'));
-      setExtraPorter('Tersedia jika diperlukan (Rp 300.000 / hari)');
-      setSkText([
-        'Terbuka untuk umum (solo hiker dipersilakan join)',
-        'DP minimal 50% untuk pengamanan kuota seat',
-        'Pelunasan maksimal H-3 sebelum keberangkatan',
-        'Pembatalan oleh peserta DP hangus namun bisa digantikan orang lain',
-        'Wajib membawa surat keterangan sehat dari dokter'
-      ].join('\n'));
-      setCatatanPenting('Sebelum mendaki, sangat disarankan untuk latihan fisik ringan (jogging) minimal seminggu sebelum keberangkatan. Suhu di puncak bisa mencapai 5-8 derajat celcius, pastikan jaket windproof dan sleeping bag dibawa.');
+      setIncludeText(DEFAULT_CITO_INCLUDE.join('\n'));
+      setExcludeText(DEFAULT_CITO_EXCLUDE.join('\n'));
+      setExtraPorter('Jika di perlukan');
+      setSkText(DEFAULT_CITO_SK.join('\n'));
+      setCatatanPenting(getDefaultCatatanPenting());
       setItinerary(generateDefaultItinerary(defaultMtn.name, defaultMtn.trails[0], '2026-09-10', '2026-09-11'));
-      setKontakWa('+6282230444428');
-      setKontakIg('Cito Adventure Madiun');
+      setKontakWaJatim('+6282230444428');
+      setKontakWaJakarta('+6289503689266');
+      setKontakIg('@citoadventuremadiun');
     }
   }, [tripToEdit, isOpen]);
 
@@ -234,7 +276,9 @@ export const TripModal: React.FC<TripModalProps> = ({
       sk_berlaku: skText.split('\n').map(s => s.trim()).filter(Boolean),
       catatan_penting: catatanPenting.trim(),
       itinerary: itinerary.trim(),
-      kontak_wa: kontakWa.trim(),
+      kontak_wa: `${kontakWaJatim.trim()} / ${kontakWaJakarta.trim()}`,
+      kontak_wa_jatim: kontakWaJatim.trim(),
+      kontak_wa_jakarta: kontakWaJakarta.trim(),
       kontak_ig: kontakIg.trim(),
       background_url: tripToEdit?.background_url,
       background_overlay_dim: tripToEdit?.background_overlay_dim,
@@ -545,11 +589,21 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 5: Include & Exclude */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div className="space-y-1.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-              <label className="block text-xs font-bold text-[#275d1d] uppercase font-['Space_Grotesk']">
-                5. Fasilitas Include (1 per baris):
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-[#275d1d] uppercase font-['Space_Grotesk']">
+                  5. Fasilitas Include:
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setIncludeText(DEFAULT_CITO_INCLUDE.join('\n'))}
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                  title="Terapkan 14 item fasilitas baku Cito Adventure"
+                >
+                  ↺ Pakai Default Cito
+                </button>
+              </div>
               <textarea
-                rows={6}
+                rows={7}
                 value={includeText}
                 onChange={(e) => setIncludeText(e.target.value)}
                 placeholder="Transportasi PP&#10;Simaksi resmi&#10;Tenda & matras&#10;Makan 3x"
@@ -557,11 +611,21 @@ export const TripModal: React.FC<TripModalProps> = ({
               />
             </div>
             <div className="space-y-1.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-              <label className="block text-xs font-bold text-gray-800 uppercase font-['Space_Grotesk']">
-                Fasilitas Exclude (1 per baris):
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold text-gray-800 uppercase font-['Space_Grotesk']">
+                  Fasilitas Exclude:
+                </label>
+                <button
+                  type="button"
+                  onClick={() => setExcludeText(DEFAULT_CITO_EXCLUDE.join('\n'))}
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                  title="Terapkan 6 item exclude baku Cito Adventure"
+                >
+                  ↺ Pakai Default Cito
+                </button>
+              </div>
               <textarea
-                rows={6}
+                rows={7}
                 value={excludeText}
                 onChange={(e) => setExcludeText(e.target.value)}
                 placeholder="Perlengkapan pribadi&#10;Obat pribadi&#10;Camilan pribadi"
@@ -579,61 +643,132 @@ export const TripModal: React.FC<TripModalProps> = ({
               type="text"
               value={extraPorter}
               onChange={(e) => setExtraPorter(e.target.value)}
-              placeholder="Contoh: Jika diperlukan Rp 300.000 / hari"
+              placeholder="Contoh: Jika di perlukan"
               className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
             />
           </div>
 
           {/* Section 6: S&K & Catatan Penting */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-            <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk']">
-              6. Syarat Ketentuan & Catatan Penting
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk']">
+                6. Syarat Ketentuan & Catatan Penting
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSkText(DEFAULT_CITO_SK.join('\n'))}
+                className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                title="Terapkan 6 butir syarat ketentuan baku Cito Adventure"
+              >
+                ↺ Pakai Default S&K
+              </button>
+            </div>
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">S&K Berlaku (1 per baris):</label>
               <textarea
-                rows={4}
+                rows={5}
                 value={skText}
                 onChange={(e) => setSkText(e.target.value)}
-                placeholder="Terbuka untuk umum&#10;DP minimal 50%"
+                placeholder="Terbuka untuk umum&#10;DP minimal Rp 200.000"
                 className="w-full bg-white border border-[#275d1d]/40 rounded-md p-2.5 text-xs text-gray-900 focus:border-[#275d1d] focus:outline-none"
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-800 mb-1">Catatan Penting:</label>
+              <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1.5">
+                <label className="block text-xs font-bold text-gray-800">Catatan Penting Pendakian:</label>
+                <div className="flex items-center gap-1.5">
+                  {defaultCatatanSaved && (
+                    <span className="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded animate-pulse">
+                      ✓ Disimpan sebagai Default!
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      saveDefaultCatatanPenting(catatanPenting);
+                      setDefaultCatatanSaved(true);
+                      setTimeout(() => setDefaultCatatanSaved(false), 3000);
+                    }}
+                    className="text-[11px] font-bold text-[#15803D] hover:text-green-900 bg-green-100 hover:bg-green-200 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    title="Simpan teks catatan penting ini sebagai template default permanen untuk semua trip baru"
+                  >
+                    💾 Simpan Jadi Default Baru
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCatatanPenting(DEFAULT_CITO_CATATAN_PENTING);
+                      saveDefaultCatatanPenting(DEFAULT_CITO_CATATAN_PENTING);
+                      setDefaultCatatanSaved(true);
+                      setTimeout(() => setDefaultCatatanSaved(false), 3000);
+                    }}
+                    className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    title="Kembalikan ke template catatan penting resmi Cito Adventure"
+                  >
+                    ↺ Reset Baku Cito
+                  </button>
+                </div>
+              </div>
               <textarea
                 rows={3}
                 value={catatanPenting}
                 onChange={(e) => setCatatanPenting(e.target.value)}
-                placeholder="Latihan fisik seminggu sebelum pendakian, bawa jaket windproof..."
+                placeholder="SEBELUM MENDAKI, SANGAT DISARANKAN UNTUK RUTIN BEROLAHRAGA..."
                 className="w-full bg-white border border-[#275d1d]/40 rounded-md p-2.5 text-xs text-gray-900 focus:border-[#275d1d] focus:outline-none"
               />
+              <span className="text-[10px] text-gray-500 block mt-1">
+                💡 Teks ini muncul pada Slide 4 (Catatan Penting) dan caption promosi. Klik <strong>Simpan Jadi Default Baru</strong> jika ingin teks ini otomatis muncul di setiap trip baru.
+              </span>
             </div>
           </div>
 
-          {/* Section 7: Kontak Booking */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-            <div>
-              <label className="block text-xs font-bold text-gray-800 mb-1">
-                7. Kontak WhatsApp:
-              </label>
-              <input
-                type="text"
-                value={kontakWa}
-                onChange={(e) => setKontakWa(e.target.value)}
-                placeholder="+6282230444428"
-                className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
-              />
+          {/* Section 7: Kontak Booking (Dual Admin) */}
+          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk']">
+                7. Kontak Resmi Pendaftaran (2 Admin Wilayah & Instagram)
+              </h3>
+              <span className="text-[11px] font-bold text-[#15803D] bg-green-100 px-2 py-0.5 rounded-full border border-green-300">
+                ✓ Otomatis Aktif di Pamflet & Caption
+              </span>
             </div>
-            <div>
-              <label className="block text-xs font-bold text-gray-800 mb-1">Instagram:</label>
-              <input
-                type="text"
-                value={kontakIg}
-                onChange={(e) => setKontakIg(e.target.value)}
-                placeholder="Cito Adventure Madiun"
-                className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
-              />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-gray-800 mb-1">
+                  Admin Jatim & Jateng:
+                </label>
+                <input
+                  type="text"
+                  value={kontakWaJatim}
+                  onChange={(e) => setKontakWaJatim(e.target.value)}
+                  placeholder="+6282230444428"
+                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-800 mb-1">
+                  Admin Jakarta & Sekitarnya:
+                </label>
+                <input
+                  type="text"
+                  value={kontakWaJakarta}
+                  onChange={(e) => setKontakWaJakarta(e.target.value)}
+                  placeholder="+6289503689266"
+                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-800 mb-1">
+                  Instagram Resmi:
+                </label>
+                <input
+                  type="text"
+                  value={kontakIg}
+                  onChange={(e) => setKontakIg(e.target.value)}
+                  placeholder="@citoadventuremadiun"
+                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
+                />
+              </div>
             </div>
           </div>
 

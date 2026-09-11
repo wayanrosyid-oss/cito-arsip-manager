@@ -24,6 +24,8 @@ export interface Trip {
   catatan_penting?: string;
   itinerary: string;
   kontak_wa: string;
+  kontak_wa_jatim?: string;
+  kontak_wa_jakarta?: string;
   kontak_ig: string;
   background_url?: string;
   background_overlay_dim?: number;

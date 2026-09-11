@@ -29,16 +29,49 @@ export const SLIDES_LIST: SlideOption[] = [
   { id: 'contact', title: 'Slide 5: Info Lanjut', subtitle: 'Penutup & ajakan cek caption Instagram' },
 ];
 
-export const PRESET_BACKGROUNDS = [
+export interface PresetBackground {
+  id: string;
+  name: string;
+  url: string;
+  icon: string;
+  description: string;
+}
+
+export const PRESET_BACKGROUNDS: PresetBackground[] = [
   {
     id: 'sindoro',
-    name: 'Sindoro Meadow (Default)',
+    name: 'Sindoro Asli (Default)',
     url: '/default-bg.jpg',
+    icon: '🏔️',
+    description: 'Foto padang sabana Gunung Sindoro resmi Cito Adventure',
   },
   {
-    id: 'nature_green',
-    name: 'Gunung & Awan Biru',
-    url: '/default-bg.jpg',
+    id: 'transparent',
+    name: 'Transparan (PNG Alpha)',
+    url: 'transparent',
+    icon: '✨',
+    description: 'Tanpa background, siap tempel di Canva, Photoshop, atau video',
+  },
+  {
+    id: 'grad_emerald',
+    name: 'Gradasi Emerald Forest',
+    url: 'gradient:emerald',
+    icon: '🌲',
+    description: 'Nuansa hutan pinus hijau tua khas Cito Adventure',
+  },
+  {
+    id: 'grad_midnight',
+    name: 'Gradasi Midnight Alpine',
+    url: 'gradient:midnight',
+    icon: '🌌',
+    description: 'Nuansa malam dingin pendakian di bawah bintang',
+  },
+  {
+    id: 'grad_sunset',
+    name: 'Gradasi Sunset Warm',
+    url: 'gradient:sunset',
+    icon: '🌅',
+    description: 'Nuansa senja hangat keemasan di atas awan',
   },
 ];
 
@@ -152,84 +185,176 @@ function wrapText(
   return currentY + lineHeight;
 }
 
-// Draw Floating Bottom Booking Bar exactly matching the user screenshot
+// Draw Floating Bottom Booking Bar exactly matching user request:
+// Circular orange arrow icon on far left, then bold text "BOOKING NOW",
+// then WhatsApp icon with two-line text (label + phone number),
+// a thin vertical divider line, another WhatsApp icon with two-line text,
+// then Instagram icon with @username text — all elements vertically centered in a single horizontal row, evenly spaced, consistent font size.
 function drawBottomBookingBar(
   ctx: CanvasRenderingContext2D,
   canvasW: number,
   canvasH: number,
   trip: Trip
 ) {
-  const barW = Math.min(canvasW - 120, 920);
-  const barH = 82;
+  const barW = Math.min(canvasW - 70, 1010);
+  const barH = 78;
   const barX = (canvasW - barW) / 2;
-  const barY = canvasH - barH - 52;
+  const barY = canvasH - barH - 38;
   const radius = barH / 2;
+  const centerY = barY + barH / 2;
 
   ctx.save();
-  // Pill shadow
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
-  ctx.shadowBlur = 16;
+  // Soft drop shadow for floating pill
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.40)';
+  ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 6;
 
-  // White pill background
+  // Solid white rounded pill
   ctx.fillStyle = '#FFFFFF';
   roundRect(ctx, barX, barY, barW, barH, radius, true, false);
   ctx.restore();
 
-  // Left Yellow Arrow Circle
-  const circleRadius = 31;
-  const circleX = barX + 41;
-  const circleY = barY + barH / 2;
+  // 1. Circular Orange/Amber Arrow on far left
+  const circleRadius = 28;
+  const circleX = barX + 16 + circleRadius;
 
   ctx.save();
-  ctx.fillStyle = '#F59E0B'; // Vibrant amber yellow
+  ctx.fillStyle = '#F59E0B'; // Vibrant amber-orange
   ctx.beginPath();
-  ctx.arc(circleX, circleY, circleRadius, 0, Math.PI * 2);
+  ctx.arc(circleX, centerY, circleRadius, 0, Math.PI * 2);
   ctx.fill();
 
-  // Draw arrow ➔
+  // Crisp vector arrow pointing right
   ctx.fillStyle = '#000000';
-  ctx.font = '900 32px sans-serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('➔', circleX + 1, circleY);
+  const ax = circleX;
+  const ay = centerY;
+  ctx.beginPath();
+  ctx.moveTo(ax - 13, ay - 3.5);
+  ctx.lineTo(ax + 2, ay - 3.5);
+  ctx.lineTo(ax + 2, ay - 9);
+  ctx.lineTo(ax + 13, ay);
+  ctx.lineTo(ax + 2, ay + 9);
+  ctx.lineTo(ax + 2, ay + 3.5);
+  ctx.lineTo(ax - 13, ay + 3.5);
+  ctx.closePath();
+  ctx.fill();
   ctx.restore();
 
-  // Label "BOOKING NOW"
-  let textX = circleX + circleRadius + 22;
-  ctx.fillStyle = '#0F172A';
-  ctx.font = '900 21px "Montserrat", "Space Grotesk", sans-serif';
-  ctx.textAlign = 'left';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('BOOKING NOW', textX, barY + barH / 2);
-
-  // Divider or WhatsApp Section
-  const waNumber = trip.kontak_wa || '+6282230444428';
-  const igHandle = trip.kontak_ig || 'CITO ADVENTURE MADIUN';
-
-  // WhatsApp Pill/Icon (Matches 1.png) - Bold, sharp, clearly visible
-  const waX = barX + barW * 0.42;
-  drawWhatsAppIcon(ctx, waX, barY + barH / 2, 34, '#0F172A');
-
-  // WA text
+  // 2. Bold text "BOOKING NOW"
+  const bookingTextX = circleX + circleRadius + 14;
   ctx.save();
-  ctx.fillStyle = '#0F172A';
-  ctx.font = '800 18px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillStyle = '#000000';
+  ctx.font = '900 15.5px "Montserrat", "Space Grotesk", sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  ctx.fillText(waNumber, waX + 24, barY + barH / 2);
+  ctx.fillText('BOOKING NOW', bookingTextX, centerY);
+  const bookingW = ctx.measureText('BOOKING NOW').width;
+  ctx.restore();
 
-  // Instagram section (Matches 2.png) - Official squircle and lens
-  const igX = barX + barW * 0.72;
-  drawInstagramIcon(ctx, igX, barY + barH / 2, 32, '#0F172A');
+  // Data strings
+  const waJatim = trip.kontak_wa_jatim || '+6282230444428';
+  const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
+  const rawIg = (trip.kontak_ig || 'CITO ADVENTURE MADIUN').replace(/^@/, '').toUpperCase();
+  const cleanIgDisplay = rawIg.startsWith('@') ? rawIg : `@${rawIg}`;
 
-  // IG text
-  ctx.fillStyle = '#0F172A';
-  ctx.font = '800 16px "Montserrat", "Space Grotesk", sans-serif';
+  // Font definitions for consistent typography
+  const labelFont = '800 10px "Montserrat", sans-serif';
+  const valueFont = '900 13.5px "Montserrat", "Space Grotesk", sans-serif';
+
+  // Measure content widths for perfectly calculated even spacing
+  ctx.save();
+  ctx.font = valueFont;
+  const wa1PhoneW = ctx.measureText(waJatim).width;
+  const wa2PhoneW = ctx.measureText(waJakarta).width;
+  const igTextW = ctx.measureText(cleanIgDisplay).width;
+
+  ctx.font = labelFont;
+  const wa1LabelW = ctx.measureText('JATIM & JATENG').width;
+  const wa2LabelW = ctx.measureText('JAKARTA & SEKITAR').width;
+  ctx.restore();
+
+  const iconSize = 25;
+  const iconTextGap = 8;
+
+  const wa1TextW = Math.max(wa1PhoneW, wa1LabelW);
+  const wa1TotalW = iconSize + iconTextGap + wa1TextW;
+
+  const wa2TextW = Math.max(wa2PhoneW, wa2LabelW);
+  const wa2TotalW = iconSize + iconTextGap + wa2TextW;
+
+  const igTotalW = iconSize + iconTextGap + igTextW;
+
+  // Space allocation for horizontal row:
+  const startX = bookingTextX + bookingW;
+  const endX = barX + barW - 24;
+  const totalAvailableSpan = endX - startX;
+
+  // Total width of all 3 blocks
+  const blocksWidth = wa1TotalW + wa2TotalW + igTotalW;
+  // Symmetrical spacing around divider
+  const divSpace = 28;
+  // Major gaps (after booking now, and before IG)
+  const remainingSpace = Math.max(0, totalAvailableSpan - blocksWidth - (divSpace * 2));
+  const majorGap = remainingSpace / 2;
+
+  // 3. Section 1: WhatsApp Admin Jatim & Jateng (Icon + Two-Line Text)
+  const wa1BlockX = startX + majorGap;
+  const wa1IconCenterX = wa1BlockX + iconSize / 2;
+  const wa1TextX = wa1BlockX + iconSize + iconTextGap;
+
+  drawWhatsAppIcon(ctx, wa1IconCenterX, centerY, iconSize, '#16A34A');
+
+  ctx.save();
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
-  const cleanIg = igHandle.replace(/^@/, '').toUpperCase();
-  ctx.fillText(cleanIg, igX + 22, barY + barH / 2);
+  ctx.fillStyle = '#000000';
+  ctx.font = labelFont;
+  ctx.fillText('JATIM & JATENG', wa1TextX, centerY - 8);
+  ctx.font = valueFont;
+  ctx.fillText(waJatim, wa1TextX, centerY + 8);
+  ctx.restore();
+
+  // 4. Thin Vertical Divider Line
+  const divX = wa1BlockX + wa1TotalW + divSpace;
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(divX, centerY - 18);
+  ctx.lineTo(divX, centerY + 18);
+  ctx.strokeStyle = '#000000';
+  ctx.lineWidth = 1.2;
+  ctx.stroke();
+  ctx.restore();
+
+  // 5. Section 2: WhatsApp Admin Jakarta & Sekitar (Icon + Two-Line Text)
+  const wa2BlockX = divX + divSpace;
+  const wa2IconCenterX = wa2BlockX + iconSize / 2;
+  const wa2TextX = wa2BlockX + iconSize + iconTextGap;
+
+  drawWhatsAppIcon(ctx, wa2IconCenterX, centerY, iconSize, '#16A34A');
+
+  ctx.save();
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#000000';
+  ctx.font = labelFont;
+  ctx.fillText('JAKARTA & SEKITAR', wa2TextX, centerY - 8);
+  ctx.font = valueFont;
+  ctx.fillText(waJakarta, wa2TextX, centerY + 8);
+  ctx.restore();
+
+  // 6. Section 3: Instagram Icon + @username text
+  const igBlockX = wa2BlockX + wa2TotalW + majorGap;
+  const igIconCenterX = igBlockX + iconSize / 2;
+  const igTextX = igBlockX + iconSize + iconTextGap;
+
+  drawInstagramIcon(ctx, igIconCenterX, centerY, iconSize, '#000000');
+
+  ctx.save();
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+  ctx.fillStyle = '#000000';
+  ctx.font = valueFont;
+  ctx.fillText(cleanIgDisplay, igTextX, centerY);
   ctx.restore();
 }
 
@@ -246,19 +371,50 @@ async function prepareBaseCanvas(
   const ctx = canvas.getContext('2d');
   if (!ctx) throw new Error('Could not get canvas context');
 
-  // Load Background Image
-  const targetBg = bgUrl || '/default-bg.jpg';
-  try {
-    const bgImg = await loadImage(targetBg);
-    drawImageCover(ctx, bgImg, 0, 0, width, height);
-  } catch (err) {
-    console.warn('Failed to load custom bg image, rendering fallback gradient', err);
+  // 1. Opsi Background Transparan Penuh (PNG Alpha Channel)
+  if (bgUrl === 'transparent') {
+    ctx.clearRect(0, 0, width, height);
+    return { canvas, ctx };
+  }
+
+  // 2. Opsi Preset Gradasi Vektor
+  if (bgUrl && bgUrl.startsWith('gradient:')) {
+    const gradType = bgUrl.replace('gradient:', '');
     const grad = ctx.createLinearGradient(0, 0, 0, height);
-    grad.addColorStop(0, '#194220');
-    grad.addColorStop(0.5, '#275D1D');
-    grad.addColorStop(1, '#0F260C');
+    if (gradType === 'emerald') {
+      grad.addColorStop(0, '#062013');
+      grad.addColorStop(0.5, '#143823');
+      grad.addColorStop(1, '#08170d');
+    } else if (gradType === 'midnight') {
+      grad.addColorStop(0, '#0B132B');
+      grad.addColorStop(0.5, '#1C2541');
+      grad.addColorStop(1, '#0A0F1D');
+    } else if (gradType === 'sunset') {
+      grad.addColorStop(0, '#2D1515');
+      grad.addColorStop(0.5, '#4A2810');
+      grad.addColorStop(1, '#1A0D0D');
+    } else {
+      grad.addColorStop(0, '#194220');
+      grad.addColorStop(0.5, '#275D1D');
+      grad.addColorStop(1, '#0F260C');
+    }
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, width, height);
+  } else {
+    // 3. Opsi Foto Gambar (Bawaan atau Upload Pengguna)
+    const targetBg = bgUrl || '/default-bg.jpg';
+    try {
+      const bgImg = await loadImage(targetBg);
+      drawImageCover(ctx, bgImg, 0, 0, width, height);
+    } catch (err) {
+      console.warn('Failed to load custom bg image, rendering fallback gradient', err);
+      const grad = ctx.createLinearGradient(0, 0, 0, height);
+      grad.addColorStop(0, '#194220');
+      grad.addColorStop(0.5, '#275D1D');
+      grad.addColorStop(1, '#0F260C');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, width, height);
+    }
   }
 
   // Dark Dimming Overlay for contrast
@@ -481,10 +637,12 @@ async function renderFacilitiesSlide(
   const defaultIncludes = [
     'Transportasi PP sesuai mepo',
     'Simaksi pendakian',
-    'Sarapan di basecamp',
     'Ojek Basecamp - Pos 1',
+    'Sarapan di basecamp',
     'Tenda kelompok',
-    'Tim Guide (pemandu bersertifikasi, porter & sweeper)',
+    'Guide (bersertifikasi)',
+    'Porter Tim',
+    'Sweeper',
     'Makan selama pendakian',
     'Alat makan & masak',
     'P3K standard',
@@ -497,24 +655,24 @@ async function renderFacilitiesSlide(
 
   // Calculate dynamic step to display ALL items without cutting any off
   const incStep = isRatio916
-    ? Math.max(46, Math.floor(740 / Math.max(incList.length, 12)))
-    : Math.max(37, Math.floor(510 / Math.max(incList.length, 12)));
+    ? Math.max(42, Math.floor(700 / Math.max(incList.length, 14)))
+    : Math.max(33, Math.floor(480 / Math.max(incList.length, 14)));
 
   let incY = curY;
   for (const itemText of incList) {
     // Draw crisp white outline vector icon
-    drawFacilityIncludeIcon(ctx, itemText, colLeftX + 13, incY - 4, 23);
+    drawFacilityIncludeIcon(ctx, itemText, colLeftX + 13, incY - 4, 22);
 
     // Text formatting
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
     ctx.font = isRatio916
-      ? '700 17.5px "Montserrat", "Plus Jakarta Sans", sans-serif'
-      : '700 16px "Montserrat", "Plus Jakarta Sans", sans-serif';
+      ? '700 16.5px "Montserrat", "Plus Jakarta Sans", sans-serif'
+      : '700 15px "Montserrat", "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
-    // Wrap multi-line text cleanly (e.g. guide with certifications)
+    // Wrap multi-line text cleanly
     const words = itemText.split(' ');
     let line = '';
     const lines: string[] = [];
@@ -531,10 +689,10 @@ async function renderFacilitiesSlide(
     lines.push(line.trim());
 
     if (lines.length === 1) {
-      ctx.fillText(lines[0], colLeftX + 38, incY - 4);
+      ctx.fillText(lines[0], colLeftX + 36, incY - 4);
     } else {
-      ctx.fillText(lines[0], colLeftX + 38, incY - 12);
-      ctx.fillText(lines[1], colLeftX + 38, incY + 8);
+      ctx.fillText(lines[0], colLeftX + 36, incY - 10);
+      ctx.fillText(lines[1], colLeftX + 36, incY + 8);
     }
     ctx.restore();
 
@@ -543,23 +701,25 @@ async function renderFacilitiesSlide(
 
   // 4. Exclude List (Circle Cross White Outline Icon)
   const defaultExcludes = [
-    'Obat-Obatan pribadi',
-    'Logistik pribadi',
+    'Perlengkapan pribadi',
     'Surat sehat',
+    'Obat-obatan pribadi khusus',
+    'Logistik (camilan pribadi)',
     'Perlengkapan pendakian yang tidak ada di daftar',
+    'Tip crew / guide / porter',
   ];
   const excList = trip.exclude && trip.exclude.length > 0 ? trip.exclude : defaultExcludes;
 
-  const excStep = isRatio916 ? 54 : 44;
+  const excStep = isRatio916 ? 48 : 38;
   let excY = curY;
   for (const itemText of excList) {
-    drawWhiteExcludeCrossCircleIcon(ctx, colRightX + 12, excY - 4, 22);
+    drawWhiteExcludeCrossCircleIcon(ctx, colRightX + 12, excY - 4, 21);
 
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
     ctx.font = isRatio916
-      ? '700 17px "Montserrat", "Plus Jakarta Sans", sans-serif'
-      : '700 16px "Montserrat", "Plus Jakarta Sans", sans-serif';
+      ? '700 16px "Montserrat", "Plus Jakarta Sans", sans-serif'
+      : '700 15px "Montserrat", "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
 
@@ -581,7 +741,7 @@ async function renderFacilitiesSlide(
     if (lines.length === 1) {
       ctx.fillText(lines[0], colRightX + 36, excY - 4);
     } else {
-      ctx.fillText(lines[0], colRightX + 36, excY - 12);
+      ctx.fillText(lines[0], colRightX + 36, excY - 10);
       ctx.fillText(lines[1], colRightX + 36, excY + 8);
     }
     ctx.restore();
@@ -590,34 +750,34 @@ async function renderFacilitiesSlide(
   }
 
   // 5. EXTRA PORTER PRIBADI
-  excY += isRatio916 ? 24 : 16;
+  excY += isRatio916 ? 22 : 16;
   ctx.save();
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 21px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.font = '900 20px "Montserrat", "Space Grotesk", sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
   ctx.fillText('EXTRA PORTER PRIBADI', colRightX, excY);
 
-  excY += isRatio916 ? 28 : 24;
-  ctx.font = '600 16.5px "Plus Jakarta Sans", sans-serif';
+  excY += isRatio916 ? 26 : 22;
+  ctx.font = '600 15.5px "Plus Jakarta Sans", sans-serif';
   ctx.fillStyle = '#FFFFFF';
   ctx.fillText(trip.extra_porter || 'Jika di perlukan', colRightX, excY);
   ctx.restore();
 
   // 6. S&K BERLAKU
-  // Positioned directly underneath the include list with proportional breathing room
-  const skStartY = Math.max(incY, excY + 20) + (isRatio916 ? 32 : 18);
+  // Positioned underneath the include list with clean breathing room
+  const skStartY = incY + (isRatio916 ? 24 : 16);
   let skY = skStartY;
 
   ctx.save();
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 25px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.font = '900 24px "Montserrat", "Space Grotesk", sans-serif';
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
   ctx.fillText('S&K BERLAKU', colLeftX, skY);
   ctx.restore();
 
-  skY += isRatio916 ? 40 : 34;
+  skY += isRatio916 ? 36 : 30;
 
   const defaultSK = [
     'Peserta Untuk Umum (Sendiri Bisa Join)',
@@ -629,16 +789,16 @@ async function renderFacilitiesSlide(
   ];
   const skList = trip.sk_berlaku && trip.sk_berlaku.length > 0 ? trip.sk_berlaku : defaultSK;
 
-  const skStep = isRatio916 ? 44 : 33;
+  const skStep = isRatio916 ? 40 : 31;
   for (const skText of skList) {
     // Circle Checkmark White Outline Icon
-    drawWhiteCheckCircleIcon(ctx, colLeftX + 11, skY - 4, 21);
+    drawWhiteCheckCircleIcon(ctx, colLeftX + 11, skY - 4, 20);
 
     ctx.save();
     ctx.fillStyle = '#FFFFFF';
     ctx.font = isRatio916
-      ? '600 16.5px "Plus Jakarta Sans", sans-serif'
-      : '600 15.5px "Plus Jakarta Sans", sans-serif';
+      ? '600 15.5px "Plus Jakarta Sans", sans-serif'
+      : '600 14.5px "Plus Jakarta Sans", sans-serif';
     ctx.textAlign = 'left';
     ctx.textBaseline = 'middle';
     ctx.fillText(skText, colLeftX + 32, skY - 4);
@@ -882,18 +1042,18 @@ async function renderContactSlide(
   const { canvas, ctx } = await prepareBaseCanvas(width, height, bgUrl, dimRatio);
 
   const isRatio916 = ratio === '9:16';
-  const cardW = width - 180;
-  const cardH = isRatio916 ? 480 : 380;
+  const cardW = width - 160;
+  const cardH = isRatio916 ? 660 : 540;
   const cardX = (width - cardW) / 2;
-  const cardY = isRatio916 ? 680 : 420;
+  const cardY = isRatio916 ? 600 : 340;
 
   // Draw Cito Adventure Logo above card (Supports user uploaded custom logo)
   try {
     const activeLogoUrl = trip.logo_url || getCustomLogo() || '/logo.png';
     const logoImg = await loadImage(activeLogoUrl);
-    const logoSize = isRatio916 ? 160 : 130;
+    const logoSize = isRatio916 ? 150 : 120;
     const logoX = (width - logoSize) / 2;
-    const logoY = cardY - logoSize - (isRatio916 ? 30 : 20);
+    const logoY = cardY - logoSize - (isRatio916 ? 24 : 16);
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
     ctx.shadowBlur = 16;
@@ -905,7 +1065,7 @@ async function renderContactSlide(
 
   // Frosted Translucent Card
   ctx.save();
-  ctx.fillStyle = 'rgba(12, 28, 18, 0.65)';
+  ctx.fillStyle = 'rgba(12, 28, 18, 0.72)';
   ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
   ctx.lineWidth = 2;
   roundRect(ctx, cardX, cardY, cardW, cardH, 28, true, true);
@@ -913,66 +1073,103 @@ async function renderContactSlide(
 
   // Pill Outline: "Informasi Lebih Lanjut"
   const pillW = 460;
-  const pillH = 74;
+  const pillH = 68;
   const pillX = (width - pillW) / 2;
-  const pillY = cardY + 50;
+  const pillY = cardY + 36;
 
   ctx.save();
   ctx.strokeStyle = '#FFFFFF';
   ctx.lineWidth = 3;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
   roundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, true, true);
 
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 32px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.font = '900 30px "Montserrat", "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('Informasi Lebih Lanjut', width / 2, pillY + pillH / 2);
   ctx.restore();
 
-  // Contact items: WhatsApp (1.png) & Instagram (2.png)
-  const contactY = pillY + pillH + 60;
-  const waNumber = trip.kontak_wa || '+6282230444428';
+  // Contact items: Two WhatsApp Admin Boxes Side by Side
+  const waJatim = trip.kontak_wa_jatim || '+6282230444428';
+  const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
   const igHandle = (trip.kontak_ig || 'CITO ADVENTURE MADIUN').replace(/^@/, '').toUpperCase();
 
+  const boxesY = pillY + pillH + 28;
+  const boxGap = 20;
+  const boxW = (cardW - 60 - boxGap) / 2;
+  const boxH = 118;
+
+  // Box 1: Admin Jatim & Jateng
+  const box1X = cardX + 30;
   ctx.save();
-  // WhatsApp
-  const waLeftX = cardX + 55;
-  drawWhatsAppIcon(ctx, waLeftX + 22, contactY + 8, 44, '#FFFFFF');
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, box1X, boxesY, boxW, boxH, 18, true, true);
 
-  ctx.fillStyle = '#E2E8F0';
-  ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
+  drawWhatsAppIcon(ctx, box1X + 36, boxesY + boxH / 2, 42, '#22C55E');
   ctx.textAlign = 'left';
-  ctx.fillText('Chat Whatsapp', waLeftX + 60, contactY - 8);
-
+  ctx.fillStyle = '#86EFAC';
+  ctx.font = '800 13px "Montserrat", sans-serif';
+  ctx.fillText('ADMIN JATIM & JATENG', box1X + 70, boxesY + 40);
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 24px "Montserrat", "Space Grotesk", sans-serif';
-  ctx.fillText(waNumber, waLeftX + 60, contactY + 22);
-
-  // Instagram
-  const igLeftX = cardX + cardW * 0.53;
-  drawInstagramIcon(ctx, igLeftX + 22, contactY + 8, 44, '#FFFFFF');
-
-  ctx.fillStyle = '#E2E8F0';
-  ctx.font = '700 16px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText('DM Instagram', igLeftX + 60, contactY - 8);
-
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 20px "Montserrat", "Space Grotesk", sans-serif';
-  ctx.fillText(igHandle, igLeftX + 60, contactY + 22);
+  ctx.font = '900 22px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(waJatim, box1X + 70, boxesY + 74);
   ctx.restore();
 
-  // "Detail trip cek di caption"
-  const captionMsgY = contactY + 88;
+  // Box 2: Admin Jakarta & Sekitarnya
+  const box2X = box1X + boxW + boxGap;
   ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, box2X, boxesY, boxW, boxH, 18, true, true);
+
+  drawWhatsAppIcon(ctx, box2X + 36, boxesY + boxH / 2, 42, '#22C55E');
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#86EFAC';
+  ctx.font = '800 13px "Montserrat", sans-serif';
+  ctx.fillText('ADMIN JAKARTA & SEKITAR', box2X + 70, boxesY + 40);
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '800 24px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.font = '900 22px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(waJakarta, box2X + 70, boxesY + 74);
+  ctx.restore();
+
+  // Instagram Card (Centered Below the 2 boxes)
+  const igCardY = boxesY + boxH + 18;
+  const igCardH = 68;
+  const igCardW = cardW - 60;
+  const igCardX = cardX + 30;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, igCardX, igCardY, igCardW, igCardH, 16, true, true);
+
+  drawInstagramIcon(ctx, igCardX + 36, igCardY + igCardH / 2, 36, '#FFFFFF');
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#CBD5E1';
+  ctx.font = '700 13px "Montserrat", sans-serif';
+  ctx.fillText('INSTAGRAM RESMI', igCardX + 68, igCardY + 28);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 20px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(`@${igHandle}`, igCardX + 68, igCardY + 50);
+  ctx.restore();
+
+  // "Detail trip & pendaftaran cek di caption"
+  const captionMsgY = igCardY + igCardH + 38;
+  ctx.save();
+  ctx.fillStyle = '#FBBF24';
+  ctx.font = '800 23px "Montserrat", "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
-  ctx.fillText('"Detail trip cek di caption"', width / 2, captionMsgY);
+  ctx.fillText('"Detail trip & pendaftaran lengkap cek di caption"', width / 2, captionMsgY);
 
   // Down Arrow ⬇
-  ctx.font = '900 38px sans-serif';
-  ctx.fillText('⬇', width / 2, captionMsgY + 54);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 36px sans-serif';
+  ctx.fillText('⬇', width / 2, captionMsgY + 44);
   ctx.restore();
 
   // Floating Bottom Booking Bar

@@ -6,9 +6,11 @@ import {
   renderSlideCanvas,
   exportSlidePNG,
   exportAllSlidesZip,
+  PRESET_BACKGROUNDS,
 } from '../utils/canvasExport';
 import { getCustomLogo, setCustomLogo, clearCustomLogo } from '../utils/storage';
 import { optimizeLogoImage, optimizeBackgroundImage } from '../utils/imageOptimizer';
+import { CaptionStudioModal } from './CaptionStudioModal';
 import {
   X,
   Download,
@@ -23,6 +25,7 @@ import {
   CheckCircle2,
   Sliders,
   Camera,
+  Share2,
 } from 'lucide-react';
 
 interface PamphletStudioModalProps {
@@ -52,6 +55,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
   const [hasSavedBg, setHasSavedBg] = useState(false);
   const [activeLogo, setActiveLogo] = useState<string>(trip.logo_url || getCustomLogo() || '/logo.png');
   const [isCustomLogoActive, setIsCustomLogoActive] = useState<boolean>(Boolean(trip.logo_url || getCustomLogo()));
+  const [isCaptionModalOpen, setIsCaptionModalOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoFileInputRef = useRef<HTMLInputElement>(null);
@@ -313,9 +317,19 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
 
             {/* Canvas Preview Box */}
             <div
-              className={`w-full relative flex items-center justify-center overflow-hidden rounded-lg shadow-xl border-2 border-[#275d1d] bg-[#111827] ${
-                ratio === '9:16' ? 'max-w-[290px] aspect-[9/16]' : 'max-w-[340px] aspect-[4/5]'
-              }`}
+              className={`w-full relative flex items-center justify-center overflow-hidden rounded-lg shadow-xl border-2 border-[#275d1d] ${
+                bgUrl === 'transparent' ? 'bg-[#222]' : 'bg-[#111827]'
+              } ${ratio === '9:16' ? 'max-w-[290px] aspect-[9/16]' : 'max-w-[340px] aspect-[4/5]'}`}
+              style={
+                bgUrl === 'transparent'
+                  ? {
+                      backgroundImage:
+                        'linear-gradient(45deg, #2d3748 25%, transparent 25%), linear-gradient(-45deg, #2d3748 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #2d3748 75%), linear-gradient(-45deg, transparent 75%, #2d3748 75%)',
+                      backgroundSize: '16px 16px',
+                      backgroundPosition: '0 0, 0 8px, 8px -8px, -8px 0px',
+                    }
+                  : undefined
+              }
             >
               {previewDataUrl ? (
                 <img
@@ -336,6 +350,12 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                   <span>Memperbarui preview...</span>
                 </div>
               )}
+
+              {bgUrl === 'transparent' && (
+                <div className="absolute top-2 right-2 bg-amber-400 text-black px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider shadow">
+                  ✨ Mode Transparan
+                </div>
+              )}
             </div>
 
             <p className="text-[11px] text-[#275d1d] font-semibold mt-3 text-center">
@@ -351,7 +371,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                 <div className="flex items-center justify-between gap-2 border-b border-[#275d1d]/20 pb-2">
                   <h3 className="text-xs sm:text-sm font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-2">
                     <ImageIcon className="w-4 h-4 text-[#275d1d]" />
-                    Sistem Edit Background
+                    Pilihan Latar Belakang (Background)
                   </h3>
                   {hasSavedBg && (
                     <span className="text-[10px] font-bold text-[#275d1d] bg-[#d1d1d1] px-2 py-0.5 rounded flex items-center gap-1">
@@ -360,8 +380,45 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                   )}
                 </div>
 
+                {/* Preset Background Selector Chips */}
+                <div className="space-y-1.5">
+                  <label className="text-[11px] font-bold text-gray-700 block">
+                    Preset & Mode Background:
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5">
+                    {PRESET_BACKGROUNDS.map((preset) => {
+                      const isSelected = bgUrl === preset.url;
+                      return (
+                        <button
+                          key={preset.id}
+                          type="button"
+                          onClick={() => {
+                            setBgUrl(preset.url);
+                            setHasSavedBg(false);
+                            onShowToast(`Latar diubah ke: ${preset.name}`);
+                          }}
+                          className={`p-2 rounded-lg text-left text-xs font-bold border transition-all flex flex-col gap-1 cursor-pointer ${
+                            isSelected
+                              ? 'bg-[#275d1d] text-white border-[#275d1d] shadow-xs'
+                              : 'bg-[#f7f7f7] text-gray-800 border-gray-200 hover:bg-gray-100'
+                          }`}
+                          title={preset.description}
+                        >
+                          <span className="text-sm">{preset.icon}</span>
+                          <span className="truncate leading-tight">{preset.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {bgUrl === 'transparent' && (
+                    <p className="text-[11px] text-amber-800 bg-amber-50 p-2 rounded border border-amber-200 mt-1">
+                      ✨ <strong>Mode Transparan Aktif:</strong> Hasil export PNG tembus pandang tanpa background. Sangat cocok ditempel (*overlay*) di Canva, Photoshop, atau video reels/TikTok!
+                    </p>
+                  )}
+                </div>
+
                 {/* Upload Button & Reset */}
-                <div className="space-y-2">
+                <div className="space-y-2 pt-2 border-t border-[#275d1d]/15">
                   <div className="flex items-center gap-2">
                     <input
                       type="file"
@@ -376,7 +433,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                       className="flex-1 py-2 px-3 bg-[#275d1d] hover:bg-[#1f4a17] text-white rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-95"
                     >
                       <Upload className="w-3.5 h-3.5 text-white" />
-                      <span>Unggah Foto dari Perangkat</span>
+                      <span>Unggah Foto Sendiri</span>
                     </button>
 
                     <button
@@ -389,39 +446,42 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                       <span>Reset</span>
                     </button>
                   </div>
-                  <p className="text-[11px] text-gray-600">
-                    Bisa unggah foto gunung apa saja (format JPG/PNG). Gambar akan otomatis menyesuaikan rasio 9:16 atau 4:5.
-                  </p>
                 </div>
 
                 {/* Dimming Overlay Slider */}
-                <div className="space-y-1.5 pt-2 border-t border-[#275d1d]/15">
-                  <div className="flex items-center justify-between text-xs font-bold text-[#275d1d]">
-                    <label htmlFor="dim-slider" className="flex items-center gap-1.5">
-                      <Sliders className="w-3.5 h-3.5" />
-                      Kegelapan Background (Kontras Teks)
-                    </label>
-                    <span className="bg-[#275d1d] text-white px-2 py-0.5 rounded text-[11px] font-mono">
-                      {Math.round(dimRatio * 100)}%
-                    </span>
+                {bgUrl !== 'transparent' ? (
+                  <div className="space-y-1.5 pt-2 border-t border-[#275d1d]/15">
+                    <div className="flex items-center justify-between text-xs font-bold text-[#275d1d]">
+                      <label htmlFor="dim-slider" className="flex items-center gap-1.5">
+                        <Sliders className="w-3.5 h-3.5" />
+                        Kegelapan Background (Kontras Teks)
+                      </label>
+                      <span className="bg-[#275d1d] text-white px-2 py-0.5 rounded text-[11px] font-mono">
+                        {Math.round(dimRatio * 100)}%
+                      </span>
+                    </div>
+                    <input
+                      id="dim-slider"
+                      type="range"
+                      min="0"
+                      max="0.75"
+                      step="0.05"
+                      value={dimRatio}
+                      onChange={(e) => {
+                        setDimRatio(parseFloat(e.target.value));
+                        setHasSavedBg(false);
+                      }}
+                      className="w-full accent-[#275d1d] cursor-pointer"
+                    />
+                    <p className="text-[10.5px] text-gray-600">
+                      Geser ke kanan untuk menggelapkan background jika foto Anda terlalu terang, agar teks putih tetap tajam terbaca.
+                    </p>
                   </div>
-                  <input
-                    id="dim-slider"
-                    type="range"
-                    min="0"
-                    max="0.75"
-                    step="0.05"
-                    value={dimRatio}
-                    onChange={(e) => {
-                      setDimRatio(parseFloat(e.target.value));
-                      setHasSavedBg(false);
-                    }}
-                    className="w-full accent-[#275d1d] cursor-pointer"
-                  />
-                  <p className="text-[10.5px] text-gray-600">
-                    Geser ke kanan untuk menggelapkan background jika foto Anda terlalu terang, agar teks putih tetap tajam terbaca.
-                  </p>
-                </div>
+                ) : (
+                  <div className="pt-2 border-t border-[#275d1d]/15 text-[11px] text-gray-500 italic">
+                    💡 Efek kegelapan otomatis nonaktif pada mode transparan.
+                  </div>
+                )}
 
                 {/* Save to trip button */}
                 <div className="pt-2">
@@ -431,7 +491,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                     className="w-full py-1.5 px-3 bg-white hover:bg-[#f3f4f6] text-[#275d1d] border-2 border-[#275d1d] rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
                   >
                     <Save className="w-3.5 h-3.5 text-[#275d1d]" />
-                    <span>Simpan Pengaturan Background ke Trip Ini</span>
+                    <span>Simpan Pilihan Background ke Trip Ini</span>
                   </button>
                 </div>
               </div>
@@ -564,6 +624,21 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                 </button>
               </div>
 
+              {/* Quick Jump to Caption Studio */}
+              <div className="pt-2 border-t border-[#275d1d]/20 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <div className="text-[11px] text-gray-600">
+                  Perlu teks promosi untuk postingan pamflet ini?
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsCaptionModalOpen(true)}
+                  className="py-1.5 px-3 bg-[#e8f3e5] hover:bg-[#d5ecd0] text-[#275d1d] border border-[#275d1d] rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                >
+                  <Share2 className="w-3.5 h-3.5 text-[#275d1d]" />
+                  <span>Buka Generator Caption & WA</span>
+                </button>
+              </div>
+
               <p className="text-[10.5px] text-gray-600 text-center">
                 Pilih <strong>9:16</strong> untuk Story Instagram & Status WhatsApp, atau <strong>4:5</strong> untuk Postingan Feed Carousel.
               </p>
@@ -571,6 +646,16 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Caption Studio Modal */}
+      {isCaptionModalOpen && (
+        <CaptionStudioModal
+          isOpen={isCaptionModalOpen}
+          onClose={() => setIsCaptionModalOpen(false)}
+          trip={trip}
+          onShowToast={onShowToast}
+        />
+      )}
     </div>
   );
 };

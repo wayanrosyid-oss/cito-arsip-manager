@@ -118,48 +118,245 @@ export function generateMountainHashtags(mountainName: string, height: string): 
   return tags;
 }
 
-export function generateInstagramCaption(trip: Trip): string {
+export type HookStyle = 'yuk_gasss' | 'samudra_awan' | 'recharge' | 'kuota_terbatas';
+
+export interface CaptionCustomOptions {
+  hookStyle?: HookStyle;
+  includeMepo?: boolean;
+  includeFacilities?: boolean;
+  includeSK?: boolean;
+  includeItinerary?: boolean;
+}
+
+export const HOOK_OPTIONS: { id: HookStyle; label: string; text: string }[] = [
+  {
+    id: 'yuk_gasss',
+    label: '🔥 Semangat: "Yuk Gasss!"',
+    text: 'YUK GASSS! SAMUDRA DI ATAS AWAN BERSAMA CITO ADVENTURE 🏔️✨',
+  },
+  {
+    id: 'samudra_awan',
+    label: '☁️ Syahdu: "Panggilan Jiwa Petualang"',
+    text: 'PANGGILAN JIWA PETUALANG! SAATNYA MELANGKAH KE PUNCAK TERTINGGI 🏔️🌿',
+  },
+  {
+    id: 'recharge',
+    label: '🔋 Healing: "Recharge Energi Kota"',
+    text: 'BOSAN DENGAN RUTINITAS KOTA? SAATNYA RECHARGE ENERGI BERSAMA KAMI! 🏕️🌅',
+  },
+  {
+    id: 'kuota_terbatas',
+    label: '⚡ Urgency: "Seat Kuota Terbatas"',
+    text: 'OPEN TRIP RESMI DIBUKA! KUOTA TERBATAS, SIAPA CEPAT DIA DAPAT! 🚀⛺',
+  },
+];
+
+export function generateInstagramFeedCaption(
+  trip: Trip,
+  options: CaptionCustomOptions = {}
+): string {
+  const {
+    hookStyle = 'yuk_gasss',
+    includeMepo = true,
+    includeFacilities = true,
+    includeSK = true,
+    includeItinerary = false,
+  } = options;
+
   const mtnUpper = (trip.nama_gunung || 'GUNUNG').toUpperCase();
   const heightUpper = (trip.ketinggian_mdpl || '').toUpperCase();
   const jalurUpper = (trip.jalur || 'VIA BASECAMP').toUpperCase();
-  const statusStr = trip.status || 'Buka';
-
-  const titleLine = heightUpper ? `🏔 ${mtnUpper} ${heightUpper}` : `🏔 ${mtnUpper}`;
-  const jalurLine = `📌 ${jalurUpper}`;
-  const statusLine = `📍 Status: ${statusStr}`;
-
-  const dateRangeStr = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai);
+  const dateRangeStr = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
   const durasiStr = trip.durasi || '2 Hari 1 Malam';
-  const pesertaStr = trip.min_peserta && trip.max_peserta
-    ? `${trip.min_peserta} – ${trip.max_peserta} pax`
-    : (trip.min_peserta ? `Min ${trip.min_peserta} pax` : (trip.max_peserta ? `Maks ${trip.max_peserta} pax` : 'Sesuai kuota'));
+  const selectedHook = HOOK_OPTIONS.find((h) => h.id === hookStyle)?.text || HOOK_OPTIONS[0].text;
 
-  const mepoList = (trip.harga_mepo || [])
-    .filter(m => m.lokasi || m.harga)
-    .map(m => `- ${m.lokasi || 'Meeting Point'}: ${m.harga || 'Hubungi Admin'}`)
-    .join('\n');
+  const pesertaStr =
+    trip.min_peserta && trip.max_peserta
+      ? `${trip.min_peserta} – ${trip.max_peserta} Pax`
+      : trip.min_peserta
+      ? `Min ${trip.min_peserta} Pax`
+      : 'Sendiri bisa join (Peserta Umum)';
 
+  const lines: string[] = [];
+
+  // 1. Hook & Intro
+  lines.push(selectedHook);
+  lines.push('');
+  lines.push(
+    `Bosan rutinitas sehari-hari? Saatnya taklukkan puncak ${mtnUpper} ${heightUpper} via ${jalurUpper}! Sendiri pun gak masalah, langsung join karena di sini kita berangkat sebagai teman, pulang sebagai keluarga. 🙌⛺`
+  );
+  lines.push('');
+
+  // 2. Info Inti
+  lines.push('📌 DETAIL INFORMASI TRIP:');
+  lines.push(`🏔️ Gunung: ${mtnUpper} ${heightUpper}`);
+  lines.push(`📍 Jalur: ${jalurUpper}`);
+  lines.push(`🗓️ Tanggal: ${dateRangeStr}`);
+  lines.push(`⏱️ Durasi: ${durasiStr}`);
+  lines.push(`👥 Kuota: ${pesertaStr}`);
+
+  // 3. Tarif Meeting Point
+  if (includeMepo && trip.harga_mepo && trip.harga_mepo.length > 0) {
+    lines.push('');
+    lines.push('💰 TARIF PER MEETING POINT (MEPO):');
+    trip.harga_mepo.forEach((m) => {
+      lines.push(`  • ${m.lokasi || 'Meeting Point'}: ${m.harga || 'Hubungi Admin'}`);
+    });
+  }
+
+  // 4. Fasilitas Unggulan
+  if (includeFacilities) {
+    lines.push('');
+    lines.push('✨ FASILITAS INCLUDE LENGKAP:');
+    const incList = trip.include && trip.include.length > 0 ? trip.include : [
+      'Transportasi PP sesuai mepo',
+      'Simaksi pendakian resmi',
+      'Sarapan di basecamp',
+      'Ojek Basecamp - Pos 1',
+      'Tenda kelompok',
+      'Tim Guide (pemandu bersertifikasi, porter & sweeper)',
+      'Makan selama pendakian',
+      'Alat makan & masak',
+      'P3K standard & HT tim',
+      'Dokumentasi foto & video',
+      'Bonus tayang YouTube Cito Adventure Madiun',
+    ];
+    incList.forEach((item) => {
+      lines.push(`  ✓ ${item}`);
+    });
+  }
+
+  // 5. Rundown Singkat jika diaktifkan
+  if (includeItinerary && trip.itinerary) {
+    lines.push('');
+    lines.push('🗓️ RUNDOWN ITINERARY:');
+    lines.push(trip.itinerary);
+  }
+
+  // 6. Syarat & Ketentuan Singkat
+  if (includeSK) {
+    lines.push('');
+    lines.push('⚠️ SYARAT & KETENTUAN (S&K):');
+    lines.push('  • DP minimal Rp 200.000 / pax untuk amankan seat kamu');
+    lines.push('  • Pelunasan biaya trip maksimal H-5 keberangkatan');
+    lines.push('  • Peserta umum (sendiri tetap bisa gabung rombongan)');
+  }
+
+  // 7. Call To Action & Kontak
+  const waJatim = trip.kontak_wa_jatim || '+6282230444428';
+  const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
+  const waJatimClean = waJatim.replace(/[^0-9]/g, '');
+  const waJakartaClean = waJakarta.replace(/[^0-9]/g, '');
+
+  lines.push('');
+  lines.push('📲 INFORMASI & PENDAFTARAN RESMI:');
+  lines.push(`• Admin Jatim & Jateng: ${waJatim} (https://wa.me/${waJatimClean})`);
+  lines.push(`• Admin Jakarta & Sekitar: ${waJakarta} (https://wa.me/${waJakartaClean})`);
+  lines.push(`📸 Instagram: ${trip.kontak_ig || '@citoadventuremadiun'}`);
+  lines.push('');
+
+  // 8. Dynamic Hashtags
   const mtnTags = generateMountainHashtags(trip.nama_gunung, trip.ketinggian_mdpl);
   const mtnTagString = mtnTags.length > 0 ? ` ${mtnTags.join(' ')}` : '';
-  const allHashtags = `#opentrip #opentripcito${mtnTagString} #citoadventuremadiun #citoadventuretrip`;
+  lines.push(
+    `#citoadventure #citoadventuremadiun #opentrip #opentripindonesia #pendakiindonesia #exploregunung #madiunhits #indomountain${mtnTagString}`
+  );
 
-  return `${titleLine}
-${jalurLine}
-${statusLine}
+  return lines.join('\n');
+}
 
-📅 Tanggal: ${dateRangeStr}
-🕒 Durasi: ${durasiStr}
-👥 Kuota: ${pesertaStr}
-(Catatan: Jika peserta kurang akan ada penyesuaian harga)
+export function generateWhatsAppBroadcastCaption(
+  trip: Trip,
+  options: CaptionCustomOptions = {}
+): string {
+  const { includeMepo = true, includeFacilities = true, includeSK = true } = options;
 
-💰 HARGA PER MEETING POINT:
-${mepoList || '- Hubungi admin untuk tarif meeting point'}
+  const mtnUpper = (trip.nama_gunung || 'GUNUNG').toUpperCase();
+  const heightUpper = (trip.ketinggian_mdpl || '').toUpperCase();
+  const jalurUpper = (trip.jalur || 'VIA BASECAMP').toUpperCase();
+  const dateRangeStr = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
+  
+  const waJatim = trip.kontak_wa_jatim || '+6282230444428';
+  const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
+  const waJatimClean = waJatim.replace(/[^0-9]/g, '');
+  const waJakartaClean = waJakarta.replace(/[^0-9]/g, '');
 
-📄 Detail Include, Exclude, Itinerary & S&K lengkap silakan cek di pamflet postingan ya!
+  const lines: string[] = [];
 
-📲 Informasi & Booking:
-WhatsApp: ${trip.kontak_wa || '+6282230444428'}
-Instagram: ${trip.kontak_ig || 'Cito Adventure Madiun'}
+  lines.push(`Halo Sobat Petualang Cito Adventure! 🌿👋`);
+  lines.push('');
+  lines.push(`Open Trip *${mtnUpper} ${heightUpper}* via *${jalurUpper}* resmi dibuka kuotanya! Siap-siap nikmati pemandangan sunrise dan lautan awan terbaik.`);
+  lines.push('');
+  lines.push(`📅 *Jadwal:* ${dateRangeStr}`);
+  lines.push(`⏱️ *Durasi:* ${trip.durasi || '2 Hari 1 Malam'}`);
+  lines.push(`👥 *Peserta:* Min ${trip.min_peserta || '15'} Pax (Sendiri bisa langsung join)`);
 
-${allHashtags}`;
+  if (includeMepo && trip.harga_mepo && trip.harga_mepo.length > 0) {
+    lines.push('');
+    lines.push(`💰 *Tarif Meeting Point:*`);
+    trip.harga_mepo.forEach((m) => {
+      lines.push(`• ${m.lokasi || 'Mepo'}: *${m.harga || 'Hubungi Admin'}*`);
+    });
+  }
+
+  if (includeFacilities) {
+    lines.push('');
+    lines.push(`✅ *Fasilitas Include Lengkap:*`);
+    lines.push(`• Transportasi PP & Simaksi Resmi`);
+    lines.push(`• Ojek Basecamp - Pos 1 & Sarapan BC`);
+    lines.push(`• Tenda Kelompok, Alat Masak & Makan di Gunung`);
+    lines.push(`• Guide Bersertifikasi, Porter, Sweeper & HT Tim`);
+    lines.push(`• Dokumentasi Foto/Video & Tayang YouTube Cito Adventure`);
+  }
+
+  if (includeSK) {
+    lines.push('');
+    lines.push(`📌 *Syarat Pendaftaran:*`);
+    lines.push(`- DP cukup Rp 200.000 untuk kunci seat`);
+    lines.push(`- Pelunasan maksimal H-5 sebelum berangkat`);
+  }
+
+  // Generate dynamic WA links for both admins
+  const prefillText = encodeURIComponent(
+    `Halo Admin Cito Adventure, saya mau tanya/daftar Open Trip ${mtnUpper} (${dateRangeStr}). Apakah masih ada slot?`
+  );
+  const waLinkJatim = `https://wa.me/${waJatimClean}?text=${prefillText}`;
+  const waLinkJakarta = `https://wa.me/${waJakartaClean}?text=${prefillText}`;
+
+  lines.push('');
+  lines.push(`Yuk amankan slot kamu sebelum penuh!`);
+  lines.push(`👉 *Pendaftaran & Tanya Info via WhatsApp:*`);
+  lines.push(`• *Admin Jatim & Jateng (${waJatim}):*`);
+  lines.push(`  ${waLinkJatim}`);
+  lines.push(`• *Admin Jakarta & Sekitarnya (${waJakarta}):*`);
+  lines.push(`  ${waLinkJakarta}`);
+  lines.push('');
+  lines.push(`Salam Lestari,`);
+  lines.push(`*Cito Adventure Madiun*`);
+
+  return lines.join('\n');
+}
+
+export function generateStoryQuickCaption(trip: Trip): string {
+  const mtnUpper = (trip.nama_gunung || 'GUNUNG').toUpperCase();
+  const dateRangeStr = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
+  const startPrice = trip.harga_mepo?.[0]?.harga || 'Harga Terjangkau';
+  const waJatim = trip.kontak_wa_jatim || '+6282230444428';
+  const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
+
+  return `🔥 OPEN TRIP ${mtnUpper} 🔥
+🗓️ ${dateRangeStr}
+💰 Start from ${startPrice}
+⛺ Fasilitas Full Include (Tenda, Makan, Guide & Dokumentasi)
+👥 Sendiri bisa langsung join!
+
+📲 Info & Booking WhatsApp:
+• Admin Jatim/Jateng: ${waJatim}
+• Admin Jakarta: ${waJakarta}
+📸 IG: @citoadventuremadiun`;
+}
+
+export function generateInstagramCaption(trip: Trip): string {
+  // Backward compatibility alias to the rich feed generator
+  return generateInstagramFeedCaption(trip);
 }

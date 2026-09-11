@@ -313,3 +313,728 @@ export function drawYukGasssGraphic(
   ctx.restore();
   ctx.restore();
 }
+
+// =========================================================================
+// PURE WHITE VECTOR OUTLINE ICONS FOR FACILITIES POSTER (Matches user specs)
+// =========================================================================
+
+/**
+ * 1. Transportasi / Minibus / Elf Icon (White Outline)
+ */
+export function drawWhiteBusIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Bus Main Body
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(3, 3, 18, 17, [4, 4, 2, 2]) : ctx.rect(3, 3, 18, 17);
+  ctx.stroke();
+
+  // Windshield
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(5, 5, 14, 7, [2, 2, 0, 0]) : ctx.rect(5, 5, 14, 7);
+  ctx.stroke();
+
+  // Center divider in windshield
+  ctx.beginPath();
+  ctx.moveTo(12, 5);
+  ctx.lineTo(12, 12);
+  ctx.stroke();
+
+  // Headlights
+  ctx.fillRect(5.5, 15, 2.5, 2);
+  ctx.fillRect(16, 15, 2.5, 2);
+
+  // Front grille line
+  ctx.beginPath();
+  ctx.moveTo(10, 16);
+  ctx.lineTo(14, 16);
+  ctx.stroke();
+
+  // Tires
+  ctx.fillRect(4, 20, 3.5, 3);
+  ctx.fillRect(16.5, 20, 3.5, 3);
+
+  // Side mirrors
+  ctx.strokeRect(1, 7, 2, 4);
+  ctx.strokeRect(21, 7, 2, 4);
+
+  ctx.restore();
+}
+
+/**
+ * 2. Simaksi / Ticket / Document Icon with Pencil (White Outline)
+ */
+export function drawWhiteSimaksiIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Paper sheet
+  ctx.beginPath();
+  ctx.moveTo(4, 3);
+  ctx.lineTo(15, 3);
+  ctx.lineTo(19, 7);
+  ctx.lineTo(19, 21);
+  ctx.lineTo(4, 21);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Folded corner
+  ctx.beginPath();
+  ctx.moveTo(15, 3);
+  ctx.lineTo(15, 7);
+  ctx.lineTo(19, 7);
+  ctx.stroke();
+
+  // Text lines
+  ctx.beginPath();
+  ctx.moveTo(7, 8);
+  ctx.lineTo(12, 8);
+  ctx.moveTo(7, 12);
+  ctx.lineTo(16, 12);
+  ctx.moveTo(7, 16);
+  ctx.lineTo(14, 16);
+  ctx.stroke();
+
+  // Pencil on bottom-right
+  ctx.save();
+  ctx.translate(16, 16);
+  ctx.rotate(-Math.PI / 4);
+  ctx.strokeRect(-2, -6, 4, 10);
+  ctx.beginPath();
+  ctx.moveTo(-2, 4);
+  ctx.lineTo(0, 7);
+  ctx.lineTo(2, 4);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.restore();
+
+  ctx.restore();
+}
+
+/**
+ * 3. Sarapan / Morning Sun & Meal Icon (White Outline)
+ */
+export function drawWhiteBreakfastIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Sun center
+  ctx.beginPath();
+  ctx.arc(12, 12, 5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // 8 Sun rays
+  const rays = [
+    [12, 2, 12, 4.5],
+    [12, 19.5, 12, 22],
+    [2, 12, 4.5, 12],
+    [19.5, 12, 22, 12],
+    [5, 5, 6.8, 6.8],
+    [17.2, 17.2, 19, 19],
+    [5, 19, 6.8, 17.2],
+    [17.2, 6.8, 19, 5]
+  ];
+  ctx.beginPath();
+  for (const [x1, y1, x2, y2] of rays) {
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+  }
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * 4. Ojek Basecamp - Pos 1 / Motorbike Icon (White Outline)
+ */
+export function drawWhiteOjekIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Front & rear wheels
+  ctx.beginPath();
+  ctx.arc(6, 17, 3.8, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(18, 17, 3.8, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Motorcycle frame & body
+  ctx.beginPath();
+  ctx.moveTo(6, 17);
+  ctx.lineTo(10, 12);
+  ctx.lineTo(15, 12);
+  ctx.lineTo(18, 17);
+  ctx.stroke();
+
+  // Seat & handlebar
+  ctx.beginPath();
+  ctx.moveTo(8, 11);
+  ctx.lineTo(13, 11); // Seat
+  ctx.moveTo(15, 12);
+  ctx.lineTo(16.5, 7); // Fork
+  ctx.lineTo(14.5, 6); // Handlebar
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * 5. Tenda Kelompok / Camping Dome Tent Icon (White Outline)
+ */
+export function drawWhiteTentIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Outer tent triangle
+  ctx.beginPath();
+  ctx.moveTo(12, 4);
+  ctx.lineTo(2, 20);
+  ctx.lineTo(22, 20);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Tent door opening (inner triangle)
+  ctx.beginPath();
+  ctx.moveTo(12, 4);
+  ctx.lineTo(8, 20);
+  ctx.moveTo(12, 4);
+  ctx.lineTo(16, 20);
+  ctx.stroke();
+
+  // Peg anchors at bottom corners
+  ctx.beginPath();
+  ctx.moveTo(1, 22);
+  ctx.lineTo(3, 20);
+  ctx.moveTo(23, 22);
+  ctx.lineTo(21, 20);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * 6. Tim Guide / Team Silhouette Outline (White Outline)
+ */
+export function drawWhiteGuideTeamIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Center figure (front)
+  ctx.beginPath();
+  ctx.arc(12, 8, 3.2, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(12, 19, 5.5, Math.PI * 1.1, Math.PI * 1.9, false);
+  ctx.stroke();
+
+  // Left companion
+  ctx.beginPath();
+  ctx.arc(6, 10, 2.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(6, 20, 4.5, Math.PI * 1.15, Math.PI * 1.6, false);
+  ctx.stroke();
+
+  // Right companion
+  ctx.beginPath();
+  ctx.arc(18, 10, 2.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(18, 20, 4.5, Math.PI * 1.4, Math.PI * 1.85, false);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * 7. Makan Selama Pendakian / Cooking Pot & Food (White Outline)
+ */
+export function drawWhiteCookingPotIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Pot bowl
+  ctx.beginPath();
+  ctx.moveTo(4, 11);
+  ctx.lineTo(4, 16);
+  ctx.quadraticCurveTo(4, 21, 12, 21);
+  ctx.quadraticCurveTo(20, 21, 20, 16);
+  ctx.lineTo(20, 11);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Side handles
+  ctx.beginPath();
+  ctx.moveTo(4, 13);
+  ctx.lineTo(1.5, 13);
+  ctx.lineTo(1.5, 16);
+  ctx.lineTo(4, 16);
+  ctx.moveTo(20, 13);
+  ctx.lineTo(22.5, 13);
+  ctx.lineTo(22.5, 16);
+  ctx.lineTo(20, 16);
+  ctx.stroke();
+
+  // Pot lid
+  ctx.beginPath();
+  ctx.moveTo(3, 11);
+  ctx.lineTo(21, 11);
+  ctx.stroke();
+
+  // Lid handle
+  ctx.beginPath();
+  ctx.arc(12, 10, 2, Math.PI, 0, false);
+  ctx.stroke();
+
+  // Steam waves
+  ctx.beginPath();
+  ctx.moveTo(9, 6);
+  ctx.quadraticCurveTo(8, 4, 9, 2);
+  ctx.moveTo(15, 6);
+  ctx.quadraticCurveTo(14, 4, 15, 2);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * 8. Alat Makan & Masak / Plate, Fork & Spoon (White Outline)
+ */
+export function drawWhiteUtensilsIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.7;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Plate in center
+  ctx.beginPath();
+  ctx.arc(12, 12, 7.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.arc(12, 12, 4.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Fork on left
+  ctx.beginPath();
+  ctx.moveTo(2.5, 5);
+  ctx.lineTo(2.5, 9);
+  ctx.lineTo(3.5, 11);
+  ctx.lineTo(3.5, 19);
+  ctx.moveTo(4.5, 5);
+  ctx.lineTo(4.5, 9);
+  ctx.moveTo(1, 5);
+  ctx.lineTo(1, 9);
+  ctx.lineTo(2.5, 11);
+  ctx.stroke();
+
+  // Spoon on right
+  ctx.beginPath();
+  ctx.ellipse(21, 7.5, 2.2, 3.5, 0, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.beginPath();
+  ctx.moveTo(21, 11);
+  ctx.lineTo(21, 19);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * 9. P3K Standard / First Aid Medical Kit (White Outline)
+ */
+export function drawWhiteP3KIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Bag / Box outline
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(3, 7, 18, 14, 3) : ctx.rect(3, 7, 18, 14);
+  ctx.stroke();
+
+  // Top Handle
+  ctx.beginPath();
+  ctx.moveTo(8, 7);
+  ctx.lineTo(8, 4);
+  ctx.lineTo(16, 4);
+  ctx.lineTo(16, 7);
+  ctx.stroke();
+
+  // Cross '+' in center
+  ctx.fillRect(10.5, 10.5, 3, 7);
+  ctx.fillRect(8.5, 12.5, 7, 3);
+
+  ctx.restore();
+}
+
+/**
+ * 10. HT Tim / Walkie Talkie Radio (White Outline)
+ */
+export function drawWhiteRadioIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Main radio body
+  ctx.beginPath();
+  ctx.roundRect ? ctx.roundRect(6, 8, 12, 14, 3) : ctx.rect(6, 8, 12, 14);
+  ctx.stroke();
+
+  // Left Antenna
+  ctx.beginPath();
+  ctx.moveTo(8.5, 8);
+  ctx.lineTo(8.5, 2);
+  ctx.stroke();
+
+  // Right Knob
+  ctx.beginPath();
+  ctx.moveTo(15, 8);
+  ctx.lineTo(15, 5);
+  ctx.stroke();
+
+  // Screen
+  ctx.strokeRect(8.5, 11, 7, 3.5);
+
+  // Speaker grill slits
+  ctx.beginPath();
+  ctx.moveTo(9, 16.5);
+  ctx.lineTo(15, 16.5);
+  ctx.moveTo(9, 18.5);
+  ctx.lineTo(15, 18.5);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * 11. Dokumentasi / Camera Icon (White Outline)
+ */
+export function drawWhiteCameraIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Camera body
+  ctx.beginPath();
+  ctx.moveTo(4, 7);
+  ctx.lineTo(7.5, 7);
+  ctx.lineTo(9.5, 4.5);
+  ctx.lineTo(14.5, 4.5);
+  ctx.lineTo(16.5, 7);
+  ctx.lineTo(20, 7);
+  ctx.quadraticCurveTo(21.5, 7, 21.5, 8.5);
+  ctx.lineTo(21.5, 18.5);
+  ctx.quadraticCurveTo(21.5, 20, 20, 20);
+  ctx.lineTo(4, 20);
+  ctx.quadraticCurveTo(2.5, 20, 2.5, 18.5);
+  ctx.lineTo(2.5, 8.5);
+  ctx.quadraticCurveTo(2.5, 7, 4, 7);
+  ctx.closePath();
+  ctx.stroke();
+
+  // Lens circle
+  ctx.beginPath();
+  ctx.arc(12, 13.5, 4.2, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Flash dot
+  ctx.fillStyle = '#FFFFFF';
+  ctx.beginPath();
+  ctx.arc(18.5, 9.5, 1.2, 0, Math.PI * 2);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+/**
+ * 12. Bonus YouTube / Video Play Icon (White Solid / Outline)
+ */
+export function drawWhiteYouTubeIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.fillStyle = '#FFFFFF';
+
+  // Outer circle
+  ctx.beginPath();
+  ctx.arc(12, 12, 9.5, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Inner Play triangle (darker / transparent punch)
+  ctx.fillStyle = '#0c1c12'; // Punch out dark
+  ctx.beginPath();
+  ctx.moveTo(10, 7.5);
+  ctx.lineTo(16.5, 12);
+  ctx.lineTo(10, 16.5);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.restore();
+}
+
+/**
+ * 13. Exclude Icon: Circle with X inside (White Outline)
+ */
+export function drawWhiteExcludeCrossCircleIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 22
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 22;
+  ctx.scale(s, s);
+  ctx.translate(-11, -11);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+
+  // Circle outline
+  ctx.beginPath();
+  ctx.arc(11, 11, 8.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Inner Cross 'X'
+  ctx.beginPath();
+  ctx.moveTo(7.5, 7.5);
+  ctx.lineTo(14.5, 14.5);
+  ctx.moveTo(14.5, 7.5);
+  ctx.lineTo(7.5, 14.5);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * 14. S&K Checkmark Icon: Circle with Checkmark inside (White Outline)
+ */
+export function drawWhiteCheckCircleIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number = 22
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+  const s = size / 22;
+  ctx.scale(s, s);
+  ctx.translate(-11, -11);
+
+  ctx.strokeStyle = '#FFFFFF';
+  ctx.lineWidth = 1.8;
+  ctx.lineCap = 'round';
+  ctx.lineJoin = 'round';
+
+  // Circle outline
+  ctx.beginPath();
+  ctx.arc(11, 11, 8.5, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Checkmark inside
+  ctx.beginPath();
+  ctx.moveTo(7.5, 11);
+  ctx.lineTo(10, 13.5);
+  ctx.lineTo(15, 8.5);
+  ctx.stroke();
+
+  ctx.restore();
+}
+
+/**
+ * Intelligent Facility Include Icon Switcher (Resolves to exact white outline icons)
+ */
+export function drawFacilityIncludeIcon(
+  ctx: CanvasRenderingContext2D,
+  text: string,
+  cx: number,
+  cy: number,
+  size: number = 24
+) {
+  const lower = text.toLowerCase();
+  if (lower.includes('transport') || lower.includes('mepo') || lower.includes('bus') || lower.includes('elf') || lower.includes('pp')) {
+    drawWhiteBusIcon(ctx, cx, cy, size);
+  } else if (lower.includes('simaksi') || lower.includes('tiket') || lower.includes('ijin') || lower.includes('izin')) {
+    drawWhiteSimaksiIcon(ctx, cx, cy, size);
+  } else if (lower.includes('sarapan') || (lower.includes('makan') && lower.includes('basecamp'))) {
+    drawWhiteBreakfastIcon(ctx, cx, cy, size);
+  } else if (lower.includes('ojek') || lower.includes('motor') || lower.includes('portal') || lower.includes('pos 1')) {
+    drawWhiteOjekIcon(ctx, cx, cy, size);
+  } else if (lower.includes('tenda') || lower.includes('camp') || lower.includes('dome')) {
+    drawWhiteTentIcon(ctx, cx, cy, size);
+  } else if (lower.includes('guide') || lower.includes('porter') || lower.includes('sweeper') || lower.includes('tim guide') || lower.includes('pemandu')) {
+    drawWhiteGuideTeamIcon(ctx, cx, cy, size);
+  } else if (lower.includes('makan') || lower.includes('konsumsi') || lower.includes('logistik')) {
+    drawWhiteCookingPotIcon(ctx, cx, cy, size);
+  } else if (lower.includes('alat') || lower.includes('masak') || lower.includes('piring') || lower.includes('sendok')) {
+    drawWhiteUtensilsIcon(ctx, cx, cy, size);
+  } else if (lower.includes('p3k') || lower.includes('obat') || lower.includes('medis') || lower.includes('first aid')) {
+    drawWhiteP3KIcon(ctx, cx, cy, size);
+  } else if (lower.includes('ht') || lower.includes('komunikasi') || lower.includes('handie') || lower.includes('radio')) {
+    drawWhiteRadioIcon(ctx, cx, cy, size);
+  } else if (lower.includes('dokumentasi') || lower.includes('foto') || lower.includes('kamera') || lower.includes('video')) {
+    drawWhiteCameraIcon(ctx, cx, cy, size);
+  } else if (lower.includes('yt') || lower.includes('youtube') || lower.includes('bonus')) {
+    drawWhiteYouTubeIcon(ctx, cx, cy, size);
+  } else {
+    drawWhiteCheckCircleIcon(ctx, cx, cy, size);
+  }
+}
+

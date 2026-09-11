@@ -7,6 +7,9 @@ import {
   drawCalendarDurationIcon,
   drawGroupPesertaIcon,
   drawYukGasssGraphic,
+  drawFacilityIncludeIcon,
+  drawWhiteExcludeCrossCircleIcon,
+  drawWhiteCheckCircleIcon,
 } from './canvasIcons';
 import JSZip from 'jszip';
 
@@ -427,7 +430,7 @@ async function renderCoverSlide(
 }
 
 // =======================================================
-// SLIDE 2: FASILITAS INCLUDE, EXCLUDE, S&K (Matches 2.png)
+// SLIDE 2: FASILITAS INCLUDE, EXCLUDE, S&K (Matches user reference exactly)
 // =======================================================
 async function renderFacilitiesSlide(
   trip: Trip,
@@ -439,67 +442,106 @@ async function renderFacilitiesSlide(
   const height = ratio === '4:5' ? 1350 : 1920;
   const { canvas, ctx } = await prepareBaseCanvas(width, height, bgUrl, dimRatio);
 
-  const padX = 70;
-  const cardY = 90;
   const isRatio916 = ratio === '9:16';
-  const cardH = isRatio916 ? 1640 : 1100;
+  const padX = isRatio916 ? 64 : 52;
+  const cardY = isRatio916 ? 68 : 46;
   const cardW = width - padX * 2;
+  // Card extends down cleanly leaving an even 24-28px gap above the bottom booking bar
+  const cardH = isRatio916 ? 1696 : 1152;
 
-  // Frosted Translucent Card
+  // 1. Frosted Translucent Dark Emerald Card Container
   ctx.save();
-  ctx.fillStyle = 'rgba(12, 28, 18, 0.58)';
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.16)';
-  ctx.lineWidth = 2;
-  roundRect(ctx, padX, cardY, cardW, cardH, 28, true, true);
+  ctx.fillStyle = 'rgba(10, 24, 16, 0.65)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.20)';
+  ctx.lineWidth = 1.8;
+  roundRect(ctx, padX, cardY, cardW, cardH, 26, true, true);
   ctx.restore();
 
-  // Left Column (INCLUDE) & Right Column (EXCLUDE)
-  const colLeftX = padX + 46;
-  const colRightX = padX + cardW * 0.55;
-  let curY = cardY + 58;
+  // Column Metrics
+  const colLeftX = padX + 44;
+  const colRightX = padX + Math.round(cardW * 0.54);
+  const leftColTextMaxW = Math.round(cardW * 0.52 - 46);
+  const rightColTextMaxW = Math.round(cardW * 0.44 - 36);
 
-  // Header INCLUDE
+  let curY = cardY + (isRatio916 ? 64 : 52);
+
+  // 2. Section Headers: INCLUDE & EXCLUDE
+  ctx.save();
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 30px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.font = '900 32px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
   ctx.fillText('INCLUDE', colLeftX, curY);
-
-  // Header EXCLUDE
   ctx.fillText('EXCLUDE', colRightX, curY);
-  curY += 46;
+  ctx.restore();
 
-  // Include List (with icons)
+  curY += isRatio916 ? 54 : 44;
+
+  // 3. Complete Include List (White Outline Icons - No Emoji)
   const defaultIncludes = [
-    { icon: '🚌', text: 'Transportasi PP sesuai mepo' },
-    { icon: '📝', text: 'Simaksi pendakian' },
-    { icon: '🔆', text: 'Sarapan di basecamp' },
-    { icon: '🛵', text: 'Ojek Basecamp - Pos 1' },
-    { icon: '⛺', text: 'Tenda kelompok' },
-    { icon: '👥', text: 'Tim Guide (pemandu bersertifikasi, porter & sweeper)' },
-    { icon: '🍲', text: 'Makan selama pendakian' },
-    { icon: '🍽️', text: 'Alat makan & masak' },
-    { icon: '➕', text: 'P3K standard' },
-    { icon: '📻', text: 'HT tim (alat komunikasi)' },
-    { icon: '📷', text: 'Dokumentasi' },
-    { icon: '▶️', text: 'Bonus masuk YT Cito Adventure Madiun' },
+    'Transportasi PP sesuai mepo',
+    'Simaksi pendakian',
+    'Sarapan di basecamp',
+    'Ojek Basecamp - Pos 1',
+    'Tenda kelompok',
+    'Tim Guide (pemandu bersertifikasi, porter & sweeper)',
+    'Makan selama pendakian',
+    'Alat makan & masak',
+    'P3K standard',
+    'HT tim (alat komunikasi)',
+    'Dokumentasi',
+    'Bonus masuk YT Cito Adventure Madiun',
   ];
 
-  const incList = trip.include && trip.include.length > 0
-    ? trip.include.map((t, idx) => ({ icon: defaultIncludes[idx % defaultIncludes.length]?.icon || '✓', text: t }))
-    : defaultIncludes;
+  const incList = trip.include && trip.include.length > 0 ? trip.include : defaultIncludes;
+
+  // Calculate dynamic step to display ALL items without cutting any off
+  const incStep = isRatio916
+    ? Math.max(46, Math.floor(740 / Math.max(incList.length, 12)))
+    : Math.max(37, Math.floor(510 / Math.max(incList.length, 12)));
 
   let incY = curY;
-  const maxInc = isRatio916 ? 12 : 9;
-  for (const item of incList.slice(0, maxInc)) {
-    ctx.font = '700 20px sans-serif';
-    ctx.fillText(item.icon, colLeftX, incY);
+  for (const itemText of incList) {
+    // Draw crisp white outline vector icon
+    drawFacilityIncludeIcon(ctx, itemText, colLeftX + 13, incY - 4, 23);
 
+    // Text formatting
+    ctx.save();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '600 17px "Montserrat", "Plus Jakarta Sans", sans-serif';
-    wrapText(ctx, item.text, colLeftX + 38, incY - 4, cardW * 0.48 - 45, 24);
-    incY += isRatio916 ? 48 : 38;
+    ctx.font = isRatio916
+      ? '700 17.5px "Montserrat", "Plus Jakarta Sans", sans-serif'
+      : '700 16px "Montserrat", "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    // Wrap multi-line text cleanly (e.g. guide with certifications)
+    const words = itemText.split(' ');
+    let line = '';
+    const lines: string[] = [];
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > leftColTextMaxW && n > 0) {
+        lines.push(line.trim());
+        line = words[n] + ' ';
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line.trim());
+
+    if (lines.length === 1) {
+      ctx.fillText(lines[0], colLeftX + 38, incY - 4);
+    } else {
+      ctx.fillText(lines[0], colLeftX + 38, incY - 12);
+      ctx.fillText(lines[1], colLeftX + 38, incY + 8);
+    }
+    ctx.restore();
+
+    incY += incStep;
   }
 
-  // Exclude List (with X circle)
+  // 4. Exclude List (Circle Cross White Outline Icon)
   const defaultExcludes = [
     'Obat-Obatan pribadi',
     'Logistik pribadi',
@@ -508,37 +550,74 @@ async function renderFacilitiesSlide(
   ];
   const excList = trip.exclude && trip.exclude.length > 0 ? trip.exclude : defaultExcludes;
 
+  const excStep = isRatio916 ? 54 : 44;
   let excY = curY;
-  for (const item of excList.slice(0, 5)) {
-    ctx.fillStyle = '#F87171';
-    ctx.font = '700 18px sans-serif';
-    ctx.fillText('🚫', colRightX, excY);
+  for (const itemText of excList) {
+    drawWhiteExcludeCrossCircleIcon(ctx, colRightX + 12, excY - 4, 22);
 
+    ctx.save();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '600 17px "Montserrat", "Plus Jakarta Sans", sans-serif';
-    wrapText(ctx, item, colRightX + 34, excY - 4, cardW * 0.4 - 30, 24);
-    excY += 46;
+    ctx.font = isRatio916
+      ? '700 17px "Montserrat", "Plus Jakarta Sans", sans-serif'
+      : '700 16px "Montserrat", "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+
+    const words = itemText.split(' ');
+    let line = '';
+    const lines: string[] = [];
+    for (let n = 0; n < words.length; n++) {
+      const testLine = line + words[n] + ' ';
+      const metrics = ctx.measureText(testLine);
+      if (metrics.width > rightColTextMaxW && n > 0) {
+        lines.push(line.trim());
+        line = words[n] + ' ';
+      } else {
+        line = testLine;
+      }
+    }
+    lines.push(line.trim());
+
+    if (lines.length === 1) {
+      ctx.fillText(lines[0], colRightX + 36, excY - 4);
+    } else {
+      ctx.fillText(lines[0], colRightX + 36, excY - 12);
+      ctx.fillText(lines[1], colRightX + 36, excY + 8);
+    }
+    ctx.restore();
+
+    excY += excStep;
   }
 
-  // EXTRA PORTER PRIBADI section
-  excY += 20;
+  // 5. EXTRA PORTER PRIBADI
+  excY += isRatio916 ? 24 : 16;
+  ctx.save();
   ctx.fillStyle = '#FFFFFF';
   ctx.font = '900 21px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
   ctx.fillText('EXTRA PORTER PRIBADI', colRightX, excY);
-  excY += 30;
 
-  ctx.fillStyle = '#E2E8F0';
-  ctx.font = '600 17px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(trip.extra_porter || 'Jika di perlukan', colRightX, excY);
-
-  // S&K BERLAKU section
-  const skYStart = Math.max(incY, excY) + (isRatio916 ? 34 : 20);
-  let skY = skYStart;
-
+  excY += isRatio916 ? 28 : 24;
+  ctx.font = '600 16.5px "Plus Jakarta Sans", sans-serif';
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 24px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(trip.extra_porter || 'Jika di perlukan', colRightX, excY);
+  ctx.restore();
+
+  // 6. S&K BERLAKU
+  // Positioned directly underneath the include list with proportional breathing room
+  const skStartY = Math.max(incY, excY + 20) + (isRatio916 ? 32 : 18);
+  let skY = skStartY;
+
+  ctx.save();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 25px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'alphabetic';
   ctx.fillText('S&K BERLAKU', colLeftX, skY);
-  skY += 38;
+  ctx.restore();
+
+  skY += isRatio916 ? 40 : 34;
 
   const defaultSK = [
     'Peserta Untuk Umum (Sendiri Bisa Join)',
@@ -550,18 +629,25 @@ async function renderFacilitiesSlide(
   ];
   const skList = trip.sk_berlaku && trip.sk_berlaku.length > 0 ? trip.sk_berlaku : defaultSK;
 
-  for (const sk of skList.slice(0, 6)) {
-    ctx.fillStyle = '#34D399';
-    ctx.font = '800 19px sans-serif';
-    ctx.fillText('✓', colLeftX, skY);
+  const skStep = isRatio916 ? 44 : 33;
+  for (const skText of skList) {
+    // Circle Checkmark White Outline Icon
+    drawWhiteCheckCircleIcon(ctx, colLeftX + 11, skY - 4, 21);
 
+    ctx.save();
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = '600 16px "Plus Jakarta Sans", sans-serif';
-    wrapText(ctx, sk, colLeftX + 28, skY - 3, cardW - 60, 24);
-    skY += isRatio916 ? 36 : 28;
+    ctx.font = isRatio916
+      ? '600 16.5px "Plus Jakarta Sans", sans-serif'
+      : '600 15.5px "Plus Jakarta Sans", sans-serif';
+    ctx.textAlign = 'left';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(skText, colLeftX + 32, skY - 4);
+    ctx.restore();
+
+    skY += skStep;
   }
 
-  // Floating Bottom Booking Bar
+  // 7. Floating Bottom Booking Bar (Matches 1.png / 2.png / user asset)
   drawBottomBookingBar(ctx, width, height, trip);
 
   return canvas;

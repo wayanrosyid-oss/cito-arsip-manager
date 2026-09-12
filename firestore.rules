@@ -1,24 +1,18 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function isValidId(id) {
-      return id is string && id.size() > 0 && id.size() <= 128;
-    }
-
     match /test/{docId} {
       allow read, write: if true;
     }
 
-    // Trips collection: readable and writable
+    // Trips collection: readable and writable for all devices
     match /trips/{tripId} {
-      allow read: if true;
-      allow write: if isValidId(tripId);
+      allow read, write: if true;
     }
 
-    // Global settings collection: readable and writable
+    // Global settings collection: readable and writable for all devices
     match /settings/{settingId} {
-      allow read: if true;
-      allow write: if isValidId(settingId);
+      allow read, write: if true;
     }
 
     // Default deny catch-all

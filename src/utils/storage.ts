@@ -266,6 +266,44 @@ export function resetToDefaultTrips(): Trip[] {
   return INITIAL_TRIPS;
 }
 
+const DELETED_TRIPS_KEY = 'cito_adventure_deleted_trips_v1';
+
+export function getDeletedTripIds(): Set<string> {
+  try {
+    const raw = localStorage.getItem(DELETED_TRIPS_KEY);
+    if (raw) {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) {
+        return new Set(arr);
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return new Set();
+}
+
+export function recordDeletedTripId(id: string): void {
+  try {
+    const set = getDeletedTripIds();
+    set.add(id);
+    const arr = Array.from(set).slice(-100);
+    localStorage.setItem(DELETED_TRIPS_KEY, JSON.stringify(arr));
+  } catch {
+    // ignore
+  }
+}
+
+export function unrecordDeletedTripId(id: string): void {
+  try {
+    const set = getDeletedTripIds();
+    set.delete(id);
+    localStorage.setItem(DELETED_TRIPS_KEY, JSON.stringify(Array.from(set)));
+  } catch {
+    // ignore
+  }
+}
+
 export function getCustomLogo(): string | null {
   if (memoryCustomLogo) {
     return memoryCustomLogo;

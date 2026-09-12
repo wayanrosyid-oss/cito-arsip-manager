@@ -15,7 +15,8 @@ import {
   ExternalLink,
 } from 'lucide-react';
 import { Trip } from '../types';
-import { uploadAllTripsToCloud, fetchAllCloudTrips } from '../firebase';
+import { uploadAllTripsToCloud, fetchAllCloudTrips, saveTripToCloud } from '../firebase';
+import { getDeletedTripIds, saveStoredTrips } from '../utils/storage';
 
 interface CloudSyncModalProps {
   isOpen: boolean;
@@ -83,10 +84,35 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
       setStatusMessage(null);
       const cloudTrips = await fetchAllCloudTrips();
       if (cloudTrips.length > 0) {
-        onTripsUpdated(cloudTrips);
-        setStatusMessage(`✓ Berhasil mengambil ${cloudTrips.length} data trip dari Cloud Database!`);
+        // Smart Merge: never overwrite local pending trips!
+        const deletedIds = getDeletedTripIds();
+        const validCloudTrips = cloudTrips.filter((t) => !deletedIds.has(t.id));
+        const cloudMap = new Map<string, Trip>(validCloudTrips.map((t) => [t.id, t]));
+
+        const localPendingTrips: Trip[] = [];
+        for (const localTrip of currentTrips) {
+          if (!deletedIds.has(localTrip.id) && !cloudMap.has(localTrip.id)) {
+            localPendingTrips.push(localTrip);
+          }
+        }
+
+        const merged = [...validCloudTrips, ...localPendingTrips];
+        merged.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+
+        onTripsUpdated(merged);
+        saveStoredTrips(merged);
+
+        if (localPendingTrips.length > 0) {
+          // Auto-upload local-only trips to cloud
+          for (const pending of localPendingTrips) {
+            saveTripToCloud(pending).catch(console.warn);
+          }
+          setStatusMessage(`✓ Berhasil mengambil ${validCloudTrips.length} trip dari Cloud! ${localPendingTrips.length} trip lokal Anda tetap aman & otomatis diunggah.`);
+        } else {
+          setStatusMessage(`✓ Berhasil menyinkronkan ${validCloudTrips.length} data trip dari Cloud Database!`);
+        }
       } else {
-        setStatusMessage('ℹ️ Database Cloud masih kosong. Silakan unggah data dari Laptop terlebih dahulu.');
+        setStatusMessage('ℹ️ Database Cloud masih kosong. Silakan gunakan tombol "Unggah Data Ini ke Cloud" untuk mengisinya.');
       }
     } catch (err) {
       console.error('Download failed:', err);

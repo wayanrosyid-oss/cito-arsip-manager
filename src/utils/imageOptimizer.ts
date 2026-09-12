@@ -64,7 +64,7 @@ export async function optimizeBackgroundImage(file: File): Promise<string> {
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
       try {
-        const MAX_DIM = 1920; // Full HD poster canvas scale
+        const MAX_DIM = 1280; // High Definition scale, perfectly safe for Firestore 1MB limits & mobile storage
         let width = img.naturalWidth || img.width;
         let height = img.naturalHeight || img.height;
 
@@ -88,8 +88,8 @@ export async function optimizeBackgroundImage(file: File): Promise<string> {
         }
 
         ctx.drawImage(img, 0, 0, width, height);
-        // JPEG 0.85 provides excellent visual fidelity while staying around 250KB - 400KB
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        // JPEG 0.80 provides crisp visuals while keeping payload ~120KB-250KB
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
         resolve(dataUrl);
       } catch (err) {
         readFileAsDataUrl(file).then(resolve).catch(() => reject(err));

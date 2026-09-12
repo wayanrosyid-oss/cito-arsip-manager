@@ -280,9 +280,9 @@ export const TripModal: React.FC<TripModalProps> = ({
       kontak_wa_jatim: kontakWaJatim.trim(),
       kontak_wa_jakarta: kontakWaJakarta.trim(),
       kontak_ig: kontakIg.trim(),
-      background_url: tripToEdit?.background_url,
-      background_overlay_dim: tripToEdit?.background_overlay_dim,
-      logo_url: tripToEdit?.logo_url,
+      background_url: tripToEdit?.background_url || '/default-bg.jpg',
+      background_overlay_dim: tripToEdit?.background_overlay_dim ?? 0.2,
+      logo_url: tripToEdit?.logo_url || '',
       created_at: tripToEdit?.created_at || Date.now(),
       updated_at: Date.now(),
     };

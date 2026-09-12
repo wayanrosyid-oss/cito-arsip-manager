@@ -163,7 +163,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     if (onSaveTrip) {
       const updated: Trip = {
         ...trip,
-        background_url: bgUrl === '/default-bg.jpg' ? undefined : bgUrl,
+        background_url: bgUrl || '/default-bg.jpg',
         background_overlay_dim: dimRatio,
         updated_at: Date.now(),
       };

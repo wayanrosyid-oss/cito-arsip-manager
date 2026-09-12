@@ -15,7 +15,15 @@ import { CloudSyncModal } from './components/CloudSyncModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { Toast } from './components/Toast';
 import { Trip, TripStatus } from './types';
-import { getStoredTrips, saveStoredTrips, resetToDefaultTrips, syncCloudLogoToLocal } from './utils/storage';
+import {
+  getStoredTrips,
+  saveStoredTrips,
+  resetToDefaultTrips,
+  syncCloudLogoToLocal,
+  getDeletedTripIds,
+  recordDeletedTripId,
+  unrecordDeletedTripId,
+} from './utils/storage';
 import {
   subscribeToCloudTrips,
   saveTripToCloud,
@@ -49,35 +57,63 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState<'list' | 'detail'>('list');
 
   useEffect(() => {
-    // 1. Instant local read so app renders without delay
+    // 1. Instant local read so app renders immediately without empty flash
     const localTrips = getStoredTrips();
     setTrips(localTrips);
     if (localTrips.length > 0) {
       setSelectedTripId(localTrips[0].id);
     }
 
-    // 2. Real-time Cloud Firestore subscription (syncs Laptop, HP, and all devices)
+    // 2. Real-time Cloud Firestore subscription with Offline-First SMART MERGE
     let isInitialFetch = true;
     const unsubscribeTrips = subscribeToCloudTrips(
       (cloudTrips) => {
         setCloudStatus('synced');
-        if (cloudTrips.length > 0) {
-          setTrips(cloudTrips);
-          saveStoredTrips(cloudTrips);
+        const deletedIds = getDeletedTripIds();
+        const currentLocals = getStoredTrips();
+
+        // Filter out any cloud trips that were explicitly deleted on this device
+        const validCloudTrips = cloudTrips.filter((t) => !deletedIds.has(t.id));
+        const cloudTripMap = new Map<string, Trip>(validCloudTrips.map((t) => [t.id, t]));
+
+        // SMART MERGE: Find any trips that exist locally but are NOT yet in Cloud
+        // (e.g. newly created on HP, or pending upload). NEVER delete them!
+        const localPendingTrips: Trip[] = [];
+        for (const localTrip of currentLocals) {
+          if (!deletedIds.has(localTrip.id) && !cloudTripMap.has(localTrip.id)) {
+            localPendingTrips.push(localTrip);
+          }
+        }
+
+        // Combined safe dataset
+        const mergedTrips = [...validCloudTrips, ...localPendingTrips];
+        mergedTrips.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+
+        if (mergedTrips.length > 0) {
+          setTrips(mergedTrips);
+          saveStoredTrips(mergedTrips);
           setSelectedTripId((prev) => {
-            if (prev && cloudTrips.some((t) => t.id === prev)) {
+            if (prev && mergedTrips.some((t) => t.id === prev)) {
               return prev;
             }
-            return cloudTrips[0]?.id || null;
+            return mergedTrips[0]?.id || null;
           });
-        } else if (isInitialFetch) {
-          // If Cloud Firestore is totally empty on initial connection, upload existing trips to cloud
-          if (localTrips.length > 0) {
-            setCloudStatus('syncing');
-            seedInitialTripsToCloud(localTrips).finally(() => {
-              setCloudStatus('synced');
+        }
+
+        // Auto-upload any local trips that are not yet in Cloud
+        if (localPendingTrips.length > 0) {
+          console.info(`[Cloud Sync] Auto-uploading ${localPendingTrips.length} local trip(s) to Cloud Database...`);
+          for (const pending of localPendingTrips) {
+            saveTripToCloud(pending).catch((err) => {
+              console.warn(`[Cloud Sync] Auto upload failed for trip ${pending.id}:`, err);
             });
           }
+        } else if (isInitialFetch && validCloudTrips.length === 0 && currentLocals.length > 0) {
+          // If Cloud Firestore is totally empty on initial connection, upload existing trips
+          setCloudStatus('syncing');
+          seedInitialTripsToCloud(currentLocals).finally(() => {
+            setCloudStatus('synced');
+          });
         }
         isInitialFetch = false;
       },
@@ -106,6 +142,7 @@ export default function App() {
   };
 
   const handleSaveTrip = (savedTrip: Trip) => {
+    unrecordDeletedTripId(savedTrip.id);
     const exists = trips.some((t) => t.id === savedTrip.id);
     let updated: Trip[];
     if (exists) {
@@ -133,6 +170,7 @@ export default function App() {
   };
 
   const handleDeleteTrip = (id: string) => {
+    recordDeletedTripId(id);
     const updated = trips.filter((t) => t.id !== id);
     setTrips(updated);
     saveStoredTrips(updated);

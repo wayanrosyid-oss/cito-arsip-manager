@@ -132,16 +132,29 @@ export function subscribeToCloudTrips(
 }
 
 /**
+ * Sanitize trip object for Cloud Firestore.
+ * Removes undefined/null values that trigger Firestore write exceptions.
+ */
+export function sanitizeTripForFirestore(trip: Trip): Record<string, unknown> {
+  const clean: Record<string, unknown> = {};
+  for (const [key, val] of Object.entries(trip)) {
+    if (val !== undefined && val !== null) {
+      clean[key] = val;
+    }
+  }
+  clean.updatedAt = new Date().toISOString();
+  return clean;
+}
+
+/**
  * Save or update a trip in Cloud Firestore.
  */
 export async function saveTripToCloud(trip: Trip): Promise<void> {
   const path = `${TRIPS_COLLECTION}/${trip.id}`;
   try {
     const tripDocRef = doc(db, TRIPS_COLLECTION, trip.id);
-    await setDoc(tripDocRef, {
-      ...trip,
-      updatedAt: new Date().toISOString(),
-    }, { merge: true });
+    const sanitized = sanitizeTripForFirestore(trip);
+    await setDoc(tripDocRef, sanitized, { merge: true });
   } catch (error) {
     handleFirestoreError(error, OperationType.WRITE, path);
   }
@@ -171,10 +184,8 @@ export async function seedInitialTripsToCloud(initialTrips: Trip[]): Promise<voi
       const batch = writeBatch(db);
       for (const trip of initialTrips) {
         const tripDoc = doc(db, TRIPS_COLLECTION, trip.id);
-        batch.set(tripDoc, {
-          ...trip,
-          updatedAt: new Date().toISOString(),
-        });
+        const sanitized = sanitizeTripForFirestore(trip);
+        batch.set(tripDoc, sanitized);
       }
       await batch.commit();
       console.log('Successfully seeded initial trips to Cloud Firestore');
@@ -249,7 +260,7 @@ export async function fetchAllCloudTrips(): Promise<Trip[]> {
 }
 
 /**
- * Manually upload a list of trips to Cloud Firestore in a batch.
+ * Manually upload a list of trips to Cloud Firestore.
  */
 export async function uploadAllTripsToCloud(trips: Trip[]): Promise<number> {
   if (!trips.length) return 0;
@@ -257,14 +268,8 @@ export async function uploadAllTripsToCloud(trips: Trip[]): Promise<number> {
     const batch = writeBatch(db);
     for (const trip of trips) {
       const tripDoc = doc(db, TRIPS_COLLECTION, trip.id);
-      batch.set(
-        tripDoc,
-        {
-          ...trip,
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true }
-      );
+      const sanitized = sanitizeTripForFirestore(trip);
+      batch.set(tripDoc, sanitized, { merge: true });
     }
     await batch.commit();
     return trips.length;

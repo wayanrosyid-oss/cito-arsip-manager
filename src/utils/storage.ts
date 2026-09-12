@@ -372,14 +372,13 @@ export function syncCloudLogoToLocal(dataUrl: string | null): void {
     } catch {
       // ignore
     }
+    window.dispatchEvent(new Event('cito_logo_updated'));
   } else {
-    memoryCustomLogo = null;
-    idbDelete(CUSTOM_LOGO_KEY);
-    try {
-      localStorage.removeItem(CUSTOM_LOGO_KEY);
-    } catch {
-      // ignore
+    // JANGAN hapus logo lokal jika Cloud masih kosong/null.
+    // Jika ada logo lokal, sinkronkan ke Cloud agar tersimpan permanen.
+    const existingLocal = getCustomLogo();
+    if (existingLocal) {
+      saveLogoToCloud(existingLocal).catch(() => {});
     }
   }
-  window.dispatchEvent(new Event('cito_logo_updated'));
 }

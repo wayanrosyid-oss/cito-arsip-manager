@@ -118,38 +118,96 @@ export function generateMountainHashtags(mountainName: string, height: string): 
   return tags;
 }
 
-export type HookStyle = 'yuk_gasss' | 'samudra_awan' | 'recharge' | 'kuota_terbatas';
+export type HookStyle =
+  | 'yuk_gasss'
+  | 'solidaritas'
+  | 'samudra_awan'
+  | 'recharge'
+  | 'kuota_terbatas'
+  | 'custom';
+
+export interface HookOptionItem {
+  id: HookStyle;
+  label: string;
+  hookTitle: string;
+  introTemplate: string;
+}
 
 export interface CaptionCustomOptions {
   hookStyle?: HookStyle;
+  customHookTitle?: string;
+  customHookIntro?: string;
+  customWaGreeting?: string;
+  customWaIntro?: string;
   includeMepo?: boolean;
   includeFacilities?: boolean;
   includeSK?: boolean;
   includeItinerary?: boolean;
 }
 
-export const HOOK_OPTIONS: { id: HookStyle; label: string; text: string }[] = [
+export const HOOK_OPTIONS: HookOptionItem[] = [
   {
     id: 'yuk_gasss',
     label: '🔥 Semangat: "Yuk Gasss!"',
-    text: 'YUK GASSS! SAMUDRA DI ATAS AWAN BERSAMA CITO ADVENTURE 🏔️✨',
+    hookTitle: 'YUK GASSS! SAMUDRA DI ATAS AWAN BERSAMA CITO ADVENTURE 🏔️✨',
+    introTemplate:
+      'Saatnya agendakan langkah kakimu menuju puncak {gunung} {ketinggian} via {jalur}! Ajak bestie kamu atau solo hiking tetap seru, karena bareng Cito Adventure kita berangkat teman, pulang jadi keluarga! 🙌⛺',
+  },
+  {
+    id: 'solidaritas',
+    label: '🤝 Solidaritas: "Teman Jadi Keluarga"',
+    hookTitle: 'BERANGKAT SEBAGAI TEMAN, PULANG SEBAGAI KELUARGA 🤝🏔️',
+    introTemplate:
+      'Mau nanjak tapi gak ada temen? Tenang, langsung join Open Trip {gunung} {ketinggian} via {jalur} bareng Cito Adventure! Di sini kita saling jaga, berbagi tawa, dan nikmati indahnya puncak bersama. 🙌⛺',
   },
   {
     id: 'samudra_awan',
     label: '☁️ Syahdu: "Panggilan Jiwa Petualang"',
-    text: 'PANGGILAN JIWA PETUALANG! SAATNYA MELANGKAH KE PUNCAK TERTINGGI 🏔️🌿',
+    hookTitle: 'PANGGILAN JIWA PETUALANG! SAATNYA MELANGKAH KE PUNCAK TERTINGGI 🏔️🌿',
+    introTemplate:
+      'Langit biru, hamparan kabut putih, dan hangatnya secangkir kopi di atas awan sudah menunggumu di {gunung} {ketinggian} via {jalur}. Saatnya rehat sejenak dan biarkan alam menyembuhkan lelahmu. ☁️☕',
   },
   {
     id: 'recharge',
     label: '🔋 Healing: "Recharge Energi Kota"',
-    text: 'BOSAN DENGAN RUTINITAS KOTA? SAATNYA RECHARGE ENERGI BERSAMA KAMI! 🏕️🌅',
+    hookTitle: 'BOSAN DENGAN RUTINITAS KOTA? SAATNYA RECHARGE ENERGI BERSAMA KAMI! 🏕️🌅',
+    introTemplate:
+      'Tinggalkan kepenatan kerja dan rutinitas kota sejenak! Hirup udara segar pegunungan di {gunung} {ketinggian} via {jalur}. Bersama tim solid Cito Adventure, liburanmu dijamin aman, nyaman & berkesan. 🌲✨',
   },
   {
     id: 'kuota_terbatas',
     label: '⚡ Urgency: "Seat Kuota Terbatas"',
-    text: 'OPEN TRIP RESMI DIBUKA! KUOTA TERBATAS, SIAPA CEPAT DIA DAPAT! 🚀⛺',
+    hookTitle: 'OPEN TRIP RESMI DIBUKA! KUOTA TERBATAS, SIAPA CEPAT DIA DAPAT! 🚀⛺',
+    introTemplate:
+      'Slot terbatas jangan sampai kehabisan! Open Trip resmi {gunung} {ketinggian} via {jalur} sudah dibuka. Siapkan fisik & ranselmu, amankan kursimu sekarang sebelum kuota full booked! 🚀⛺',
+  },
+  {
+    id: 'custom',
+    label: '✍️ Kustom Gaya Saya Sendiri',
+    hookTitle: 'OPEN TRIP {gunung} BERSAMA CITO ADVENTURE MADIUN 🏔️✨',
+    introTemplate:
+      'Siapkan ranselmu untuk petualangan seru ke puncak {gunung} {ketinggian} via {jalur}! Bersama Cito Adventure, nikmati perjalanan nyaman, seru, dan penuh kenangan tak terlupakan. ⛺🌿',
   },
 ];
+
+/**
+ * Replace placeholders like {gunung}, {jalur}, {ketinggian}, {tanggal}
+ */
+export function replaceCaptionPlaceholders(template: string, trip: Trip): string {
+  if (!template) return '';
+  const mtnUpper = (trip.nama_gunung || 'GUNUNG').toUpperCase();
+  const heightUpper = (trip.ketinggian_mdpl || '').toUpperCase();
+  const jalurUpper = (trip.jalur || 'VIA BASECAMP').toUpperCase();
+  const dateRangeStr = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
+  const durasiStr = trip.durasi || '2 Hari 1 Malam';
+
+  return template
+    .replace(/\{gunung\}/gi, mtnUpper)
+    .replace(/\{ketinggian\}/gi, heightUpper)
+    .replace(/\{jalur\}/gi, jalurUpper)
+    .replace(/\{tanggal\}/gi, dateRangeStr)
+    .replace(/\{durasi\}/gi, durasiStr);
+}
 
 export function generateInstagramFeedCaption(
   trip: Trip,
@@ -157,6 +215,8 @@ export function generateInstagramFeedCaption(
 ): string {
   const {
     hookStyle = 'yuk_gasss',
+    customHookTitle,
+    customHookIntro,
     includeMepo = true,
     includeFacilities = true,
     includeSK = true,
@@ -168,7 +228,18 @@ export function generateInstagramFeedCaption(
   const jalurUpper = (trip.jalur || 'VIA BASECAMP').toUpperCase();
   const dateRangeStr = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
   const durasiStr = trip.durasi || '2 Hari 1 Malam';
-  const selectedHook = HOOK_OPTIONS.find((h) => h.id === hookStyle)?.text || HOOK_OPTIONS[0].text;
+
+  const defaultHookItem = HOOK_OPTIONS.find((h) => h.id === hookStyle) || HOOK_OPTIONS[0];
+
+  // Resolve Hook Title (custom or preset)
+  const resolvedHookTitle = customHookTitle !== undefined && customHookTitle.trim() !== ''
+    ? replaceCaptionPlaceholders(customHookTitle, trip)
+    : replaceCaptionPlaceholders(defaultHookItem.hookTitle, trip);
+
+  // Resolve Hook Intro (custom or preset)
+  const resolvedHookIntro = customHookIntro !== undefined && customHookIntro.trim() !== ''
+    ? replaceCaptionPlaceholders(customHookIntro, trip)
+    : replaceCaptionPlaceholders(defaultHookItem.introTemplate, trip);
 
   const pesertaStr =
     trip.min_peserta && trip.max_peserta
@@ -180,12 +251,14 @@ export function generateInstagramFeedCaption(
   const lines: string[] = [];
 
   // 1. Hook & Intro
-  lines.push(selectedHook);
-  lines.push('');
-  lines.push(
-    `Bosan rutinitas sehari-hari? Saatnya taklukkan puncak ${mtnUpper} ${heightUpper} via ${jalurUpper}! Sendiri pun gak masalah, langsung join karena di sini kita berangkat sebagai teman, pulang sebagai keluarga. 🙌⛺`
-  );
-  lines.push('');
+  if (resolvedHookTitle.trim()) {
+    lines.push(resolvedHookTitle.trim());
+    lines.push('');
+  }
+  if (resolvedHookIntro.trim()) {
+    lines.push(resolvedHookIntro.trim());
+    lines.push('');
+  }
 
   // 2. Info Inti
   lines.push('📌 DETAIL INFORMASI TRIP:');
@@ -269,7 +342,13 @@ export function generateWhatsAppBroadcastCaption(
   trip: Trip,
   options: CaptionCustomOptions = {}
 ): string {
-  const { includeMepo = true, includeFacilities = true, includeSK = true } = options;
+  const {
+    customWaGreeting,
+    customWaIntro,
+    includeMepo = true,
+    includeFacilities = true,
+    includeSK = true,
+  } = options;
 
   const mtnUpper = (trip.nama_gunung || 'GUNUNG').toUpperCase();
   const heightUpper = (trip.ketinggian_mdpl || '').toUpperCase();
@@ -283,10 +362,22 @@ export function generateWhatsAppBroadcastCaption(
 
   const lines: string[] = [];
 
-  lines.push(`Halo Sobat Petualang Cito Adventure! 🌿👋`);
-  lines.push('');
-  lines.push(`Open Trip *${mtnUpper} ${heightUpper}* via *${jalurUpper}* resmi dibuka kuotanya! Siap-siap nikmati pemandangan sunrise dan lautan awan terbaik.`);
-  lines.push('');
+  const greeting = customWaGreeting !== undefined && customWaGreeting.trim() !== ''
+    ? replaceCaptionPlaceholders(customWaGreeting, trip)
+    : `Halo Sobat Petualang Cito Adventure! 🌿👋`;
+
+  const intro = customWaIntro !== undefined && customWaIntro.trim() !== ''
+    ? replaceCaptionPlaceholders(customWaIntro, trip)
+    : `Open Trip *${mtnUpper} ${heightUpper}* via *${jalurUpper}* resmi dibuka kuotanya! Siap-siap nikmati pemandangan sunrise dan lautan awan terbaik.`;
+
+  if (greeting.trim()) {
+    lines.push(greeting.trim());
+    lines.push('');
+  }
+  if (intro.trim()) {
+    lines.push(intro.trim());
+    lines.push('');
+  }
   lines.push(`📅 *Jadwal:* ${dateRangeStr}`);
   lines.push(`⏱️ *Durasi:* ${trip.durasi || '2 Hari 1 Malam'}`);
   lines.push(`👥 *Peserta:* Min ${trip.min_peserta || '15'} Pax (Sendiri bisa langsung join)`);

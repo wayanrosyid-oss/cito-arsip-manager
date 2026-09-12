@@ -25,6 +25,7 @@ import {
   textToStructured,
   generateDefaultStructuredDays,
 } from '../utils/itineraryHelper';
+import { TimeDropdown } from './TimeDropdown';
 
 interface ItineraryEditorProps {
   value: string;
@@ -297,10 +298,11 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
             {days.map((day, dIdx) => (
               <div
                 key={day.id}
-                className="bg-white border-2 border-[#275d1d]/40 rounded-xl overflow-hidden shadow-xs hover:border-[#275d1d] transition-colors"
+                style={{ zIndex: 100 - dIdx }}
+                className="bg-white border-2 border-[#275d1d]/40 rounded-xl shadow-xs hover:border-[#275d1d] transition-colors relative"
               >
                 {/* Header Bar: Kolom Hari | Tanggal */}
-                <div className="bg-[#275d1d]/10 px-3.5 py-2.5 border-b border-[#275d1d]/30 flex flex-wrap items-center justify-between gap-2">
+                <div className="bg-[#275d1d]/10 px-3.5 py-2.5 border-b border-[#275d1d]/30 rounded-t-[10px] flex flex-wrap items-center justify-between gap-2">
                   <div className="flex items-center flex-wrap gap-2 flex-1">
                     {/* Kolom Hari */}
                     <div className="flex items-center gap-1.5">
@@ -360,34 +362,32 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
 
                   {/* Activity Rows */}
                   <div className="space-y-1.5">
-                    {day.items.map((item) => (
+                    {day.items.map((item, iIdx) => (
                       <div
                         key={item.id}
-                        className="grid grid-cols-12 gap-2 items-center bg-[#f7f7f7] p-1.5 rounded-lg border border-[#d1d1d1] hover:border-[#275d1d]/40"
+                        style={{ zIndex: 40 - iIdx }}
+                        className="relative grid grid-cols-12 gap-2 items-center bg-[#f7f7f7] p-1.5 rounded-lg border border-[#d1d1d1] hover:border-[#275d1d]/40"
                       >
-                        {/* Jam Mulai */}
+                        {/* Jam Mulai with Dropdown */}
                         <div className="col-span-3 sm:col-span-2">
-                          <input
-                            type="text"
+                          <TimeDropdown
                             value={item.jamMulai}
-                            onChange={(e) =>
-                              handleItemFieldChange(day.id, item.id, 'jamMulai', e.target.value)
+                            onChange={(val) =>
+                              handleItemFieldChange(day.id, item.id, 'jamMulai', val)
                             }
-                            placeholder="19.00"
-                            className="w-full bg-white border border-[#275d1d]/40 rounded px-2 py-1 text-xs font-mono text-[#275d1d] font-bold focus:border-[#275d1d] focus:outline-none"
+                            placeholder="00.00"
                           />
                         </div>
 
-                        {/* Jam Selesai */}
+                        {/* Jam Selesai with Dropdown */}
                         <div className="col-span-3 sm:col-span-2">
-                          <input
-                            type="text"
+                          <TimeDropdown
                             value={item.jamSelesai}
-                            onChange={(e) =>
-                              handleItemFieldChange(day.id, item.id, 'jamSelesai', e.target.value)
+                            onChange={(val) =>
+                              handleItemFieldChange(day.id, item.id, 'jamSelesai', val)
                             }
-                            placeholder="21.00 / selesai"
-                            className="w-full bg-white border border-[#275d1d]/40 rounded px-2 py-1 text-xs font-mono text-gray-800 focus:border-[#275d1d] focus:outline-none"
+                            placeholder="00.00"
+                            isEndTime={true}
                           />
                         </div>
 

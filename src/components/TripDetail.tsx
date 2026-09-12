@@ -150,16 +150,23 @@ export const TripDetail: React.FC<TripDetailProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2.5 flex-wrap">
-              <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide ${
-                  isBuka
-                    ? 'bg-[#275d1d] text-white'
-                    : 'bg-[#d1d1d1] text-[#275d1d] border border-[#275d1d]/40'
-                }`}
-              >
-                <span className={`w-2 h-2 rounded-full ${isBuka ? 'bg-white' : 'bg-[#275d1d]'}`} />
-                Status: {trip.status}
-              </span>
+              {trip.is_draft ? (
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-amber-500 text-white shadow-xs animate-pulse">
+                  <span className="w-2 h-2 rounded-full bg-white" />
+                  ⏳ Draf Masuk dari Tim
+                </span>
+              ) : (
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide ${
+                    isBuka
+                      ? 'bg-[#275d1d] text-white'
+                      : 'bg-[#d1d1d1] text-[#275d1d] border border-[#275d1d]/40'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${isBuka ? 'bg-white' : 'bg-[#275d1d]'}`} />
+                  Status: {trip.status}
+                </span>
+              )}
               <span className="inline-flex items-center gap-1 text-xs font-bold text-[#275d1d] bg-[#d1d1d1] px-2.5 py-1 rounded border border-[#275d1d]/30">
                 <MapPin className="w-3.5 h-3.5 text-[#275d1d]" />
                 {trip.jalur}
@@ -175,6 +182,19 @@ export const TripDetail: React.FC<TripDetailProps> = ({
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-center flex-wrap">
+            {trip.is_draft && (
+              <button
+                onClick={() => {
+                  const approved = { ...trip, is_draft: false, updated_at: Date.now() };
+                  onSaveTrip(approved);
+                  onShowToast(`Trip ${trip.nama_gunung} resmi disetujui & dipublikasikan!`);
+                }}
+                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-md active:scale-95"
+              >
+                <CheckCircle className="w-4 h-4 text-white" />
+                <span>Setujui & Terbitkan</span>
+              </button>
+            )}
             <button
               onClick={() => onEdit(trip)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer shadow-xs"
@@ -193,25 +213,64 @@ export const TripDetail: React.FC<TripDetailProps> = ({
           </div>
         </div>
 
+        {/* Draft Notice Banner */}
+        {trip.is_draft && (
+          <div className="mt-4 p-3.5 bg-amber-50 border border-amber-300 rounded-xl flex items-center justify-between gap-3 flex-wrap">
+            <div className="text-xs text-amber-900">
+              <strong>Catatan Tim:</strong> Jadwal ini diinput oleh <strong>{trip.draf_oleh || 'Tim CITO'}</strong>.
+              {trip.draf_catatan && <span className="block text-amber-800 mt-0.5 italic">"{trip.draf_catatan}"</span>}
+            </div>
+            <button
+              onClick={() => {
+                const approved = { ...trip, is_draft: false, updated_at: Date.now() };
+                onSaveTrip(approved);
+                onShowToast(`Trip ${trip.nama_gunung} resmi disetujui & dipublikasikan!`);
+              }}
+              className="px-3 py-1.5 bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold rounded-lg transition-colors cursor-pointer"
+            >
+              ✓ Setujui Sekarang
+            </button>
+          </div>
+        )}
+
         {/* Quick Meta Grid */}
         <div className="mt-5 grid grid-cols-1 sm:grid-cols-3 gap-3 pt-4 border-t border-[#275d1d]/20">
-          <div className="bg-[#f4f4f4] p-3 rounded-lg border border-[#275d1d]/30">
+          <div className={`bg-[#f4f4f4] p-3 rounded-lg border border-[#275d1d]/30 ${trip.jadwal_tambahan && trip.jadwal_tambahan.length > 0 ? 'sm:col-span-2' : ''}`}>
             <span className="text-[11px] font-bold text-[#275d1d] flex items-center gap-1.5">
-              <Calendar className="w-3.5 h-3.5 text-[#275d1d]" /> Tanggal Pelaksanaan
+              <Calendar className="w-3.5 h-3.5 text-[#275d1d]" />
+              Jadwal Trip
             </span>
-            <p className="text-sm sm:text-base font-extrabold text-gray-900 font-['Space_Grotesk'] mt-1">
-              {dateRange}
-            </p>
+
+            {trip.jadwal_tambahan && trip.jadwal_tambahan.length > 0 ? (
+              <div className="mt-2 space-y-1.5">
+                <div className="flex items-center gap-2 text-xs font-bold text-gray-900 bg-white px-2.5 py-1.5 rounded border border-[#275d1d]/20">
+                  <span className="text-[#275d1d] text-sm leading-none">•</span>
+                  <span>{dateRange}</span>
+                </div>
+                {trip.jadwal_tambahan.map((sch, i) => (
+                  <div key={sch.id || i} className="flex items-center gap-2 text-xs font-bold text-gray-900 bg-white px-2.5 py-1.5 rounded border border-[#275d1d]/20">
+                    <span className="text-[#275d1d] text-sm leading-none">•</span>
+                    <span>{formatDateRange(sch.tanggal_mulai, sch.tanggal_selesai)}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm sm:text-base font-extrabold text-gray-900 font-['Space_Grotesk'] mt-1">
+                {dateRange}
+              </p>
+            )}
           </div>
 
-          <div className="bg-[#f4f4f4] p-3 rounded-lg border border-[#275d1d]/30">
-            <span className="text-[11px] font-bold text-[#275d1d] flex items-center gap-1.5">
-              <Clock className="w-3.5 h-3.5 text-[#275d1d]" /> Durasi Pendakian
-            </span>
-            <p className="text-sm sm:text-base font-extrabold text-[#275d1d] font-['Space_Grotesk'] mt-1">
-              {trip.durasi}
-            </p>
-          </div>
+          {(!trip.jadwal_tambahan || trip.jadwal_tambahan.length === 0) && (
+            <div className="bg-[#f4f4f4] p-3 rounded-lg border border-[#275d1d]/30">
+              <span className="text-[11px] font-bold text-[#275d1d] flex items-center gap-1.5">
+                <Clock className="w-3.5 h-3.5 text-[#275d1d]" /> Durasi Pendakian
+              </span>
+              <p className="text-sm sm:text-base font-extrabold text-[#275d1d] font-['Space_Grotesk'] mt-1">
+                {trip.durasi}
+              </p>
+            </div>
+          )}
 
           <div className="bg-[#f4f4f4] p-3 rounded-lg border border-[#275d1d]/30">
             <span className="text-[11px] font-bold text-[#275d1d] flex items-center gap-1.5">

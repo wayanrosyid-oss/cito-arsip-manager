@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Calendar, Clock, MapPin, Sparkles, AlertCircle } from 'lucide-react';
-import { Trip, TripStatus, MeetingPoint } from '../types';
+import { Trip, TripStatus, MeetingPoint, TripSchedule } from '../types';
 import { POPULAR_MOUNTAINS } from '../data/mountains';
 import { calculateDuration, generateDefaultItinerary } from '../utils/formatters';
 import { ItineraryEditor } from './ItineraryEditor';
@@ -9,7 +9,7 @@ import { ItineraryEditor } from './ItineraryEditor';
 export const DEFAULT_CITO_INCLUDE = [
   'Transportasi PP sesuai mepo',
   'Simaksi pendakian',
-  'Ojek Basecamp - Pos 1',
+  'Ojek Basecamp - Portal',
   'Sarapan di basecamp',
   'Tenda kelompok',
   'Guide (bersertifikasi)',
@@ -88,11 +88,13 @@ export const TripModal: React.FC<TripModalProps> = ({
   const [tanggalMulai, setTanggalMulai] = useState('');
   const [tanggalSelesai, setTanggalSelesai] = useState('');
   const [durasi, setDurasi] = useState('2 Hari 1 Malam');
+  const [jadwalTambahan, setJadwalTambahan] = useState<TripSchedule[]>([]);
   const [minPeserta, setMinPeserta] = useState('15');
   const [maxPeserta, setMaxPeserta] = useState('30');
   const [mepoList, setMepoList] = useState<MeetingPoint[]>([
     { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-    { lokasi: 'Stasiun Terdekat', harga: 'IDR 750.000' },
+    { lokasi: 'Madiun', harga: 'IDR 700.000' },
+    { lokasi: 'Surabaya', harga: 'IDR 850.000' },
   ]);
   const [includeText, setIncludeText] = useState('');
   const [excludeText, setExcludeText] = useState('');
@@ -118,6 +120,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       setTanggalMulai(tripToEdit.tanggal_mulai);
       setTanggalSelesai(tripToEdit.tanggal_selesai);
       setDurasi(tripToEdit.durasi);
+      setJadwalTambahan(tripToEdit.jadwal_tambahan || []);
       setMinPeserta(tripToEdit.min_peserta);
       setMaxPeserta(tripToEdit.max_peserta);
       setMepoList(
@@ -155,12 +158,13 @@ export const TripModal: React.FC<TripModalProps> = ({
       setTanggalMulai('2026-09-10');
       setTanggalSelesai('2026-09-11');
       setDurasi('2 Hari 1 Malam');
+      setJadwalTambahan([]);
       setMinPeserta('15');
       setMaxPeserta('30');
       setMepoList([
-        { lokasi: 'Basecamp Kledung', harga: 'IDR 600.000' },
-        { lokasi: 'Stasiun Purwokerto', harga: 'IDR 750.000' },
-        { lokasi: 'Madiun (Meeting Point)', harga: 'IDR 700.000' }
+        { lokasi: 'Basecamp', harga: 'IDR 600.000' },
+        { lokasi: 'Madiun', harga: 'IDR 700.000' },
+        { lokasi: 'Surabaya', harga: 'IDR 850.000' }
       ]);
       setIncludeText(DEFAULT_CITO_INCLUDE.join('\n'));
       setExcludeText(DEFAULT_CITO_EXCLUDE.join('\n'));
@@ -230,6 +234,66 @@ export const TripModal: React.FC<TripModalProps> = ({
     setItinerary(generateDefaultItinerary(namaGunung, jalur, tanggalMulai, tanggalSelesai));
   };
 
+  // Schedule dynamic helpers (multiple dates per trip)
+  const handleAddJadwal = () => {
+    const lastStart = jadwalTambahan.length > 0
+      ? jadwalTambahan[jadwalTambahan.length - 1].tanggal_mulai
+      : tanggalMulai;
+    const lastEnd = jadwalTambahan.length > 0
+      ? jadwalTambahan[jadwalTambahan.length - 1].tanggal_selesai
+      : tanggalSelesai;
+
+    let nextStart = '';
+    let nextEnd = '';
+    let nextDurasi = durasi || '2 Hari 1 Malam';
+
+    if (lastStart && lastEnd) {
+      const s = new Date(lastStart);
+      const e = new Date(lastEnd);
+      if (!isNaN(s.getTime()) && !isNaN(e.getTime())) {
+        s.setDate(s.getDate() + 7);
+        e.setDate(e.getDate() + 7);
+        nextStart = s.toISOString().split('T')[0];
+        nextEnd = e.toISOString().split('T')[0];
+        nextDurasi = calculateDuration(nextStart, nextEnd);
+      }
+    }
+
+    const nextBatchNumber = jadwalTambahan.length + 2;
+    setJadwalTambahan([
+      ...jadwalTambahan,
+      {
+        id: `sch-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+        label: `Jadwal ${nextBatchNumber}`,
+        tanggal_mulai: nextStart,
+        tanggal_selesai: nextEnd,
+        durasi: nextDurasi,
+      },
+    ]);
+  };
+
+  const handleRemoveJadwal = (index: number) => {
+    setJadwalTambahan(jadwalTambahan.filter((_, i) => i !== index));
+  };
+
+  const handleJadwalChange = (index: number, field: keyof TripSchedule, val: string) => {
+    const updated = [...jadwalTambahan];
+    const item = { ...updated[index], [field]: val };
+
+    if (field === 'tanggal_mulai') {
+      if (val && item.tanggal_selesai) {
+        item.durasi = calculateDuration(val, item.tanggal_selesai);
+      }
+    } else if (field === 'tanggal_selesai') {
+      if (item.tanggal_mulai && val) {
+        item.durasi = calculateDuration(item.tanggal_mulai, val);
+      }
+    }
+
+    updated[index] = item;
+    setJadwalTambahan(updated);
+  };
+
   // Meeting point dynamic helpers
   const handleAddMepo = () => {
     setMepoList([...mepoList, { lokasi: '', harga: '' }]);
@@ -267,6 +331,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       tanggal_mulai: tanggalMulai,
       tanggal_selesai: tanggalSelesai,
       durasi: durasi.trim(),
+      jadwal_tambahan: jadwalTambahan.filter(j => j.tanggal_mulai && j.tanggal_selesai),
       min_peserta: minPeserta.trim(),
       max_peserta: maxPeserta.trim(),
       harga_mepo: mepoList.filter(m => m.lokasi.trim() || m.harga.trim()),
@@ -448,59 +513,143 @@ export const TripModal: React.FC<TripModalProps> = ({
             </div>
           </div>
 
-          {/* Section 2: Tanggal & Durasi */}
-          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-            <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk'] flex items-center gap-2">
-              <Calendar className="w-3.5 h-3.5" />
-              2. Tanggal Pelaksanaan & Durasi Otomatis
-            </h3>
+          {/* Section 2: Tanggal & Durasi (Mendukung Multi Tanggal) */}
+          <div className="space-y-3.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk'] flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5" />
+                2. Tanggal Pelaksanaan & Durasi Otomatis
+              </h3>
+              <button
+                type="button"
+                onClick={handleAddJadwal}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#275d1d] hover:bg-[#1f4a17] text-white rounded-md transition-all cursor-pointer shadow-xs active:scale-95"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>+ Tambah Tanggal</span>
+              </button>
+            </div>
 
-            {/* Date Range: Mulai & Selesai */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-              <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">
-                  Tanggal Mulai Pendakian:
-                </label>
-                <input
-                  type="date"
-                  value={tanggalMulai}
-                  onChange={(e) => handleStartDateChange(e.target.value)}
-                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
-                  required
-                />
+            {/* Jadwal 1 */}
+            <div className="bg-white p-3.5 rounded-lg border border-[#275d1d]/30 space-y-3 shadow-2xs">
+              <div className="flex items-center justify-between">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-[#275d1d] text-white">
+                  📅 Jadwal 1
+                </span>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">
-                  Tanggal Selesai:
+
+              {/* Date Range: Mulai & Selesai */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                <div>
+                  <label className="block text-xs font-bold text-gray-800 mb-1">
+                    Tanggal Mulai Pendakian:
+                  </label>
+                  <input
+                    type="date"
+                    value={tanggalMulai}
+                    onChange={(e) => handleStartDateChange(e.target.value)}
+                    className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-800 mb-1">
+                    Tanggal Selesai:
+                  </label>
+                  <input
+                    type="date"
+                    value={tanggalSelesai}
+                    onChange={(e) => handleEndDateChange(e.target.value)}
+                    className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              {/* Kolom Durasi Tepat di Bawah Tanggal */}
+              <div className="pt-1">
+                <label className="block text-xs font-bold text-gray-800 mb-1 flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-[#275d1d]" />
+                  <span>Durasi Pendakian (Otomatis Menghitung Hari/Malam):</span>
                 </label>
                 <input
-                  type="date"
-                  value={tanggalSelesai}
-                  onChange={(e) => handleEndDateChange(e.target.value)}
-                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                  type="text"
+                  value={durasi}
+                  onChange={(e) => setDurasi(e.target.value)}
+                  placeholder="Contoh: 3 Hari 2 Malam"
+                  className="w-full bg-white border-2 border-[#275d1d] rounded-md px-3 py-2 text-xs sm:text-sm text-[#275d1d] font-extrabold focus:border-[#275d1d] focus:outline-none"
                   required
                 />
               </div>
             </div>
 
-            {/* Kolom Durasi Tepat di Bawah Tanggal */}
-            <div className="pt-1">
-              <label className="block text-xs font-bold text-gray-800 mb-1 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5 text-[#275d1d]" />
-                <span>Durasi Pendakian (Otomatis Menghitung Hari/Malam):</span>
-              </label>
-              <input
-                type="text"
-                value={durasi}
-                onChange={(e) => setDurasi(e.target.value)}
-                placeholder="Contoh: 2 Hari 1 Malam"
-                className="w-full bg-white border-2 border-[#275d1d] rounded-md px-3 py-2 text-xs sm:text-sm text-[#275d1d] font-extrabold focus:border-[#275d1d] focus:outline-none"
-                required
-              />
-              <p className="text-[11px] text-gray-600 mt-1">
-                *Otomatis mengisi (mis. 10–11 otomatis 2H1M, 10–12 otomatis 3H2M) namun tetap bisa diedit manual bila ada keterangan khusus.
-              </p>
-            </div>
+            {/* Jadwal Tambahan (Jadwal 2, 3, dst.) */}
+            {jadwalTambahan.map((jadwal, idx) => (
+              <div
+                key={jadwal.id || idx}
+                className="bg-white p-3.5 rounded-lg border-2 border-dashed border-[#275d1d]/50 space-y-3 shadow-2xs relative transition-all"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-[#e8efe6] text-[#275d1d] border border-[#275d1d]/40">
+                    📅 Jadwal {idx + 2}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveJadwal(idx)}
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:text-white hover:bg-red-600 border border-red-200 rounded transition-colors cursor-pointer"
+                    title="Hapus tanggal ini"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Hapus</span>
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 mb-1">
+                      Tanggal Mulai Pendakian:
+                    </label>
+                    <input
+                      type="date"
+                      value={jadwal.tanggal_mulai}
+                      onChange={(e) => handleJadwalChange(idx, 'tanggal_mulai', e.target.value)}
+                      className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-gray-800 mb-1">
+                      Tanggal Selesai:
+                    </label>
+                    <input
+                      type="date"
+                      value={jadwal.tanggal_selesai}
+                      onChange={(e) => handleJadwalChange(idx, 'tanggal_selesai', e.target.value)}
+                      className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-bold text-gray-800 mb-1 flex items-center gap-1.5">
+                    <Clock className="w-3.5 h-3.5 text-[#275d1d]" />
+                    <span>Durasi Pendakian (Otomatis Terhitung):</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={jadwal.durasi || ''}
+                    onChange={(e) => handleJadwalChange(idx, 'durasi', e.target.value)}
+                    placeholder="Contoh: 3 Hari 2 Malam"
+                    className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-1.5 text-xs sm:text-sm text-[#275d1d] font-bold focus:border-[#275d1d] focus:outline-none"
+                  />
+                </div>
+              </div>
+            ))}
+
+            <p className="text-[11px] text-gray-600 mt-1">
+              *Otomatis menghitung hari & malam. Klik <strong>"+ Tambah Tanggal"</strong> di atas jika 1 trip ini memiliki beberapa opsi tanggal keberangkatan.
+            </p>
           </div>
 
           {/* Section 3: Kuota Peserta & Notifikasi */}

@@ -1,9 +1,51 @@
-import { Trip } from '../types';
+import { Trip, TripSchedule } from '../types';
 
 const MONTH_NAMES_ID = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
   'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
 ];
+
+export function getAllTripSchedules(trip: Trip): TripSchedule[] {
+  const list: TripSchedule[] = [];
+  if (trip.tanggal_mulai) {
+    list.push({
+      id: 'primary',
+      tanggal_mulai: trip.tanggal_mulai,
+      tanggal_selesai: trip.tanggal_selesai,
+      durasi: trip.durasi,
+      label: trip.jadwal_tambahan && trip.jadwal_tambahan.length > 0 ? 'Jadwal 1' : '',
+    });
+  }
+  if (Array.isArray(trip.jadwal_tambahan)) {
+    trip.jadwal_tambahan.forEach((j, idx) => {
+      if (j && j.tanggal_mulai) {
+        let label = j.label || `Jadwal ${idx + 2}`;
+        if (label.startsWith('Gelombang') || label.startsWith('Batch')) {
+          label = label.replace(/Gelombang|Batch/gi, 'Jadwal').trim();
+        }
+        list.push({
+          id: j.id || `extra-${idx}`,
+          tanggal_mulai: j.tanggal_mulai,
+          tanggal_selesai: j.tanggal_selesai,
+          durasi: j.durasi || calculateDuration(j.tanggal_mulai, j.tanggal_selesai),
+          label: label,
+        });
+      }
+    });
+  }
+  return list;
+}
+
+export function formatTripAllDates(trip: Trip): string {
+  const schedules = getAllTripSchedules(trip);
+  if (schedules.length === 0) return 'Jadwal Terbuka';
+  if (schedules.length === 1) {
+    return formatDateRange(schedules[0].tanggal_mulai, schedules[0].tanggal_selesai);
+  }
+  return schedules
+    .map((s, idx) => `${s.label || `Batch ${idx + 1}`}: ${formatDateRange(s.tanggal_mulai, s.tanggal_selesai)}`)
+    .join('  |  ');
+}
 
 export function formatDateID(dateStr: string): string {
   if (!dateStr) return '';
@@ -264,8 +306,17 @@ export function generateInstagramFeedCaption(
   lines.push('📌 DETAIL INFORMASI TRIP:');
   lines.push(`🏔️ Gunung: ${mtnUpper} ${heightUpper}`);
   lines.push(`📍 Jalur: ${jalurUpper}`);
-  lines.push(`🗓️ Tanggal: ${dateRangeStr}`);
-  lines.push(`⏱️ Durasi: ${durasiStr}`);
+
+  const allSchedules = getAllTripSchedules(trip);
+  if (allSchedules.length > 1) {
+    lines.push('🗓️ Jadwal trip');
+    allSchedules.forEach((sch) => {
+      const schRange = formatDateRange(sch.tanggal_mulai, sch.tanggal_selesai);
+      lines.push(`  • ${schRange}`);
+    });
+  } else {
+    lines.push(`🗓️ Jadwal trip: ${dateRangeStr}`);
+  }
   lines.push(`👥 Kuota: ${pesertaStr}`);
 
   // 3. Tarif Meeting Point
@@ -353,6 +404,7 @@ export function generateWhatsAppBroadcastCaption(
   const mtnUpper = (trip.nama_gunung || 'GUNUNG').toUpperCase();
   const heightUpper = (trip.ketinggian_mdpl || '').toUpperCase();
   const jalurUpper = (trip.jalur || 'VIA BASECAMP').toUpperCase();
+  const allSchedules = getAllTripSchedules(trip);
   const dateRangeStr = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
   
   const waJatim = trip.kontak_wa_jatim || '+6282230444428';
@@ -378,8 +430,15 @@ export function generateWhatsAppBroadcastCaption(
     lines.push(intro.trim());
     lines.push('');
   }
-  lines.push(`📅 *Jadwal:* ${dateRangeStr}`);
-  lines.push(`⏱️ *Durasi:* ${trip.durasi || '2 Hari 1 Malam'}`);
+  if (allSchedules.length > 1) {
+    lines.push(`📅 *Jadwal trip:*`);
+    allSchedules.forEach((sch) => {
+      const schRange = formatDateRange(sch.tanggal_mulai, sch.tanggal_selesai);
+      lines.push(`• ${schRange}`);
+    });
+  } else {
+    lines.push(`📅 *Jadwal:* ${dateRangeStr}`);
+  }
   lines.push(`👥 *Peserta:* Min ${trip.min_peserta || '15'} Pax (Sendiri bisa langsung join)`);
 
   if (includeMepo && trip.harga_mepo && trip.harga_mepo.length > 0) {

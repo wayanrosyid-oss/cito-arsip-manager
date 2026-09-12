@@ -14,6 +14,7 @@ import { DeleteConfirmModal } from './components/DeleteConfirmModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { Toast } from './components/Toast';
+import { TeamInputView } from './components/TeamInputView';
 import { Trip, TripStatus } from './types';
 import {
   getStoredTrips,
@@ -31,7 +32,7 @@ import {
   seedInitialTripsToCloud,
   subscribeToCloudLogo,
 } from './firebase';
-import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw } from 'lucide-react';
+import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCircle, Link2 } from 'lucide-react';
 
 export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -39,6 +40,8 @@ export default function App() {
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
+  const [viewMode, setViewMode] = useState<'admin' | 'tim'>('admin');
+  const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
 
   // Modals state
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
@@ -241,7 +244,52 @@ export default function App() {
     return matchesFilter && matchesSearch;
   });
 
+  const draftTrips = trips.filter((t) => t.is_draft);
   const activeTrip = trips.find((t) => t.id === selectedTripId) || filteredTrips[0] || null;
+
+  const handleCopyTeamLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?mode=tim`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('Link Formulir Tim berhasil disalin! Kirimkan ke tim Anda lewat WhatsApp.');
+      }).catch(() => {
+        prompt('Salin link lembar input jadwal tim ini:', url);
+      });
+    } else {
+      prompt('Salin link lembar input jadwal tim ini:', url);
+    }
+  };
+
+  // URL mode listener for team input
+  useEffect(() => {
+    const checkMode = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'tim' || params.get('tim') === '1' || window.location.hash === '#input-tim') {
+        setViewMode('tim');
+      }
+    };
+    checkMode();
+    window.addEventListener('popstate', checkMode);
+    return () => window.removeEventListener('popstate', checkMode);
+  }, []);
+
+  if (viewMode === 'tim') {
+    return (
+      <TeamInputView
+        onBackToDashboard={() => {
+          window.history.pushState({}, '', window.location.pathname);
+          setViewMode('admin');
+        }}
+        onTripSubmitted={(newTrip) => {
+          window.history.pushState({}, '', window.location.pathname);
+          setViewMode('admin');
+          setSelectedTripId(newTrip.id);
+          setIsDraftBannerDismissed(false);
+          showToast(`Draf jadwal ${newTrip.nama_gunung} berhasil diterima di dashboard!`);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#d1d1d1] text-[#1a2e16] flex flex-col font-['Plus_Jakarta_Sans'] selection:bg-[#275d1d] selection:text-white">
@@ -252,10 +300,64 @@ export default function App() {
         tripCount={trips.length}
         cloudStatus={cloudStatus}
         onOpenCloudSync={() => setIsCloudSyncOpen(true)}
+        onCopyTeamLink={handleCopyTeamLink}
+        onOpenTeamMode={() => setViewMode('tim')}
       />
 
       {/* Main Content Layout */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 md:p-6 flex flex-col">
+        {/* Titik 2: Banner Notifikasi Cepat di Bagian Paling Atas Layar (Header Dashboard) */}
+        {draftTrips.length > 0 && !isDraftBannerDismissed && (
+          <div className="mb-4 bg-amber-50 border-2 border-amber-400 rounded-2xl p-3 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-300">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Bell className="w-5 h-5 animate-bounce" />
+              </div>
+              <div>
+                <div className="text-xs sm:text-sm font-extrabold text-amber-950 flex items-center gap-2 flex-wrap">
+                  <span>📥 Ada {draftTrips.length} Jadwal Baru Masuk dari Tim!</span>
+                  <span className="text-[11px] font-bold text-amber-900 bg-amber-200 px-2.5 py-0.5 rounded-full">
+                    {draftTrips[0].nama_gunung} ({draftTrips[0].jalur})
+                  </span>
+                </div>
+                <p className="text-[11px] text-amber-800 mt-0.5">
+                  Disusun oleh <strong>{draftTrips[0].draf_oleh || 'Tim CITO'}</strong>. Periksa rincian data lalu klik Setujui untuk membuat pamflet & caption.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  setSelectedTripId(draftTrips[0].id);
+                  setMobileTab('detail');
+                }}
+                className="px-3.5 py-2 bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer"
+              >
+                Lihat & Review
+              </button>
+              <button
+                onClick={() => {
+                  const approved = { ...draftTrips[0], is_draft: false, updated_at: Date.now() };
+                  handleSaveTrip(approved);
+                  showToast(`Trip ${draftTrips[0].nama_gunung} resmi disetujui & dipublikasikan!`);
+                }}
+                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+              >
+                <CheckCircle className="w-3.5 h-3.5" />
+                <span>Setujui</span>
+              </button>
+              <button
+                onClick={() => setIsDraftBannerDismissed(true)}
+                className="p-1.5 text-amber-700 hover:text-amber-950 hover:bg-amber-200/50 rounded-lg cursor-pointer transition-colors"
+                title="Sembunyikan banner"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
+
         {/* Mobile Navigation Pills */}
         <div className="flex md:hidden items-center justify-between gap-2 mb-4 bg-white p-1 rounded-lg border-2 border-[#275d1d]/30 shadow-xs">
           <button
@@ -289,8 +391,19 @@ export default function App() {
               mobileTab === 'list' ? 'block' : 'hidden md:block'
             }`}
           >
-            {/* Search & Status Filters Card */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-xl p-3.5 space-y-3 shadow-md">
+            {/* Search & Header Card matching Image 2 */}
+            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 shadow-sm space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-base font-bold font-['Space_Grotesk'] text-[#275d1d]">
+                  Daftar Trip
+                </h2>
+                {draftTrips.length > 0 && (
+                  <span className="text-[10px] font-extrabold bg-amber-500 text-white px-2.5 py-0.5 rounded-full animate-pulse">
+                    {draftTrips.length} Draf
+                  </span>
+                )}
+              </div>
+
               {/* Search Bar */}
               <div className="relative">
                 <Search className="w-4 h-4 text-[#275d1d] absolute left-3 top-1/2 -translate-y-1/2" />
@@ -299,45 +412,9 @@ export default function App() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari gunung / jalur..."
-                  className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg pl-9 pr-3 py-2 text-xs sm:text-sm text-[#1a2e16] placeholder-gray-500 focus:outline-none focus:border-[#275d1d]"
+                  className="w-full bg-[#f4f4f4] border border-[#275d1d]/30 rounded-lg pl-9 pr-3 py-2 text-xs sm:text-sm text-[#1a2e16] placeholder-gray-500 focus:outline-none focus:border-[#275d1d]"
                 />
               </div>
-
-              {/* Status Tabs */}
-              <div className="flex items-center gap-1.5 pt-0.5">
-                <span className="text-[11px] font-bold text-[#275d1d] mr-1 flex items-center gap-1">
-                  <Filter className="w-3.5 h-3.5 text-[#275d1d]" /> Status:
-                </span>
-                {(['Semua', 'Buka', 'Tutup'] as const).map((st) => (
-                  <button
-                    key={st}
-                    onClick={() => setFilterStatus(st)}
-                    className={`px-2.5 py-1 rounded text-xs font-bold transition-all cursor-pointer ${
-                      filterStatus === st
-                        ? 'bg-[#275d1d] text-white shadow-xs'
-                        : 'bg-[#d1d1d1] text-[#275d1d] hover:bg-[#bfbfbf]'
-                    }`}
-                  >
-                    {st}
-                  </button>
-                ))}
-              </div>
-
-              {/* Quick Cloud Sync & Phone QR Helper Banner */}
-              <button
-                type="button"
-                onClick={() => setIsCloudSyncOpen(true)}
-                className="w-full flex items-center justify-between p-2 rounded-lg bg-emerald-50 hover:bg-emerald-100/90 border border-emerald-300 text-emerald-950 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
-                title="Buka Sinkronisasi HP & Laptop"
-              >
-                <div className="flex items-center gap-1.5 text-[11px]">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                  <span>📱 Buka di HP / Sinkronkan Data</span>
-                </div>
-                <span className="text-[10px] text-emerald-700 underline group-hover:text-emerald-900">
-                  Scan QR / Sync
-                </span>
-              </button>
             </div>
 
             {/* Trip Cards List */}
@@ -352,9 +429,6 @@ export default function App() {
                       setSelectedTripId(t.id);
                       setMobileTab('detail');
                     }}
-                    onEdit={handleOpenEditModal}
-                    onDelete={handleRequestDelete}
-                    onOpenItinerary={handleOpenItineraryModal}
                   />
                 ))
               ) : (

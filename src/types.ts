@@ -5,6 +5,14 @@ export interface MeetingPoint {
   harga: string;
 }
 
+export interface TripSchedule {
+  id?: string;
+  tanggal_mulai: string;
+  tanggal_selesai: string;
+  durasi?: string;
+  label?: string;
+}
+
 export interface Trip {
   id: string;
   nama_gunung: string;
@@ -14,6 +22,7 @@ export interface Trip {
   tanggal_mulai: string;
   tanggal_selesai: string;
   durasi: string;
+  jadwal_tambahan?: TripSchedule[];
   min_peserta: string;
   max_peserta: string;
   harga_mepo: MeetingPoint[];
@@ -30,6 +39,9 @@ export interface Trip {
   background_url?: string;
   background_overlay_dim?: number;
   logo_url?: string;
+  is_draft?: boolean;
+  draf_oleh?: string;
+  draf_catatan?: string;
   created_at: number;
   updated_at: number;
 }

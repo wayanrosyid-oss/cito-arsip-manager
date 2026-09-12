@@ -1,5 +1,5 @@
 import { Trip } from '../types';
-import { formatDateRange } from './formatters';
+import { formatDateRange, getAllTripSchedules } from './formatters';
 import { getCustomLogo } from './storage';
 import {
   drawWhatsAppIcon,
@@ -857,10 +857,19 @@ async function renderItinerarySlide(
   ctx.fillText(`🏔️ ${mtnName} · 📌 ${jalurText}`, width / 2, curY);
 
   curY += 34;
-  const dateRange = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai);
+  const allSchedules = getAllTripSchedules(trip);
   ctx.fillStyle = '#E2E8F0';
-  ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
-  ctx.fillText(`📅 ${dateRange}   |   ⏱️ ${trip.durasi || '2 Hari 1 Malam'}`, width / 2, curY);
+  if (allSchedules.length > 1) {
+    ctx.font = '600 16px "Plus Jakarta Sans", sans-serif';
+    const schedulesSummary = allSchedules
+      .map((s, i) => `${s.label || `Batch ${i + 1}`}: ${formatDateRange(s.tanggal_mulai, s.tanggal_selesai)}`)
+      .join('   •   ');
+    ctx.fillText(`📅 ${schedulesSummary}`, width / 2, curY);
+  } else {
+    const dateRange = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai);
+    ctx.font = '600 18px "Plus Jakarta Sans", sans-serif';
+    ctx.fillText(`📅 ${dateRange}   |   ⏱️ ${trip.durasi || '2 Hari 1 Malam'}`, width / 2, curY);
+  }
   ctx.restore();
 
   curY += 28;

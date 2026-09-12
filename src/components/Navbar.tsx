@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw } from 'lucide-react';
+import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { downloadProjectZip } from '../utils/projectZip';
 import { getCustomLogo, setCustomLogo, clearCustomLogo } from '../utils/storage';
@@ -11,6 +11,8 @@ interface NavbarProps {
   tripCount: number;
   cloudStatus?: 'synced' | 'syncing' | 'offline';
   onOpenCloudSync?: () => void;
+  onCopyTeamLink?: () => void;
+  onOpenTeamMode?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -19,6 +21,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   tripCount,
   cloudStatus = 'synced',
   onOpenCloudSync,
+  onCopyTeamLink,
+  onOpenTeamMode,
 }) => {
   const [logoSrc, setLogoSrc] = useState<string>('/logo.png');
   const [isCustom, setIsCustom] = useState<boolean>(false);
@@ -165,6 +169,18 @@ export const Navbar: React.FC<NavbarProps> = ({
           </button>
 
           <PWAInstallButton />
+
+          {onCopyTeamLink && (
+            <button
+              type="button"
+              onClick={onCopyTeamLink}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-amber-400/25 hover:bg-amber-400/35 text-amber-100 border border-amber-300/40 transition-colors cursor-pointer"
+              title="Salin Link Khusus untuk Tim Penginput Jadwal"
+            >
+              <Link2 className="w-3.5 h-3.5 text-amber-300" />
+              <span>Link Form Tim</span>
+            </button>
+          )}
 
           <button
             id="download-zip-btn"

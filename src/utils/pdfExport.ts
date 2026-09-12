@@ -1,6 +1,6 @@
 import jsPDF from 'jspdf';
 import { Trip } from '../types';
-import { formatDateRange } from './formatters';
+import { formatDateRange, getAllTripSchedules } from './formatters';
 
 export function exportTripPDF(trip: Trip): void {
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
@@ -65,13 +65,27 @@ export function exportTripPDF(trip: Trip): void {
 
   // 1. Detail Trip
   sectionHeader('INFORMASI UMUM');
-  const dateRange = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
+  const allSchedules = getAllTripSchedules(trip);
   const kuotaStr = trip.min_peserta && trip.max_peserta
     ? `${trip.min_peserta} – ${trip.max_peserta} Pax`
     : (trip.min_peserta ? `Min ${trip.min_peserta} Pax` : (trip.max_peserta ? `Maks ${trip.max_peserta} Pax` : '-'));
 
-  addParagraph(`• Tanggal Pelaksanaan : ${dateRange}`);
-  addParagraph(`• Durasi Pendakian    : ${trip.durasi || '2 Hari 1 Malam'}`);
+  if (allSchedules.length > 1) {
+    addParagraph(`• Pilihan Tanggal Pelaksanaan (${allSchedules.length} Pilihan Tanggal):`);
+    allSchedules.forEach((sch, i) => {
+      let label = sch.label || `Jadwal ${i + 1}`;
+      if (label.startsWith('Gelombang')) {
+        label = label.replace('Gelombang', 'Jadwal');
+      }
+      const schDate = formatDateRange(sch.tanggal_mulai, sch.tanggal_selesai);
+      const schDurasi = sch.durasi || trip.durasi || '2 Hari 1 Malam';
+      addParagraph(`  - ${label}: ${schDate} (${schDurasi})`, 10);
+    });
+  } else {
+    const dateRange = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
+    addParagraph(`• Tanggal Pelaksanaan : ${dateRange}`);
+    addParagraph(`• Durasi Pendakian    : ${trip.durasi || '2 Hari 1 Malam'}`);
+  }
   addParagraph(`• Target Peserta      : ${kuotaStr}`);
   addParagraph(`  (Catatan: Jika kuota peserta kurang, akan ada penyesuaian harga / sharing cost)`);
   y += 6;
@@ -150,6 +164,11 @@ export function exportTripPDF(trip: Trip): void {
 }
 
 export function exportTripTXT(trip: Trip): void {
+  const allSchedules = getAllTripSchedules(trip);
+  const jadwalTxt = allSchedules.length > 1
+    ? `PILIHAN TANGGAL PELAKSANAAN:\n${allSchedules.map((s, i) => `- ${s.label || `Batch ${i + 1}`}: ${formatDateRange(s.tanggal_mulai, s.tanggal_selesai)} (${s.durasi || trip.durasi})`).join('\n')}`
+    : `TANGGAL  : ${formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai)}\nDURASI   : ${trip.durasi}`;
+
   const content = `=====================================================
 CITO ADVENTURE MADIUN · ARSIP RESMI OPEN TRIP
 =====================================================
@@ -157,8 +176,7 @@ GUNUNG   : ${trip.nama_gunung.toUpperCase()} ${trip.ketinggian_mdpl || ''}
 JALUR    : ${trip.jalur.toUpperCase()}
 STATUS   : ${trip.status}
 
-TANGGAL  : ${formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai)}
-DURASI   : ${trip.durasi}
+${jadwalTxt}
 KUOTA    : ${trip.min_peserta || '-'} - ${trip.max_peserta || '-'} pax
 CATATAN  : Jika peserta kurang, akan ada penyesuaian harga
 

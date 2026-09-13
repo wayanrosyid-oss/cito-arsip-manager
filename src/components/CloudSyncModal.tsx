@@ -39,11 +39,13 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const adminSyncUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}?admin=yuno`
+    : '';
 
   useEffect(() => {
-    if (isOpen && currentUrl) {
-      QRCode.toDataURL(currentUrl, {
+    if (isOpen && adminSyncUrl) {
+      QRCode.toDataURL(adminSyncUrl, {
         width: 220,
         margin: 1.5,
         color: {
@@ -54,12 +56,12 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
         .then((url) => setQrCodeDataUrl(url))
         .catch((err) => console.error('QR code generation error:', err));
     }
-  }, [isOpen, currentUrl]);
+  }, [isOpen, adminSyncUrl]);
 
   if (!isOpen) return null;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(currentUrl);
+    navigator.clipboard.writeText(adminSyncUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -269,7 +271,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
               <input
                 type="text"
                 readOnly
-                value={currentUrl}
+                value={adminSyncUrl}
                 className="flex-1 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-[10px] text-gray-600 font-mono select-all truncate"
               />
               <button

@@ -1,4 +1,5 @@
 import JSZip from 'jszip';
+import { getCustomLogo } from './storage';
 
 // Import all project source files dynamically as raw text strings
 const rawSourceFiles = import.meta.glob(
@@ -212,6 +213,19 @@ jobs:
       }
     })
   );
+
+  // 4b. Ensure active brand logo is bundled into public/logo.png inside ZIP
+  try {
+    const activeLogoDataUrl = getCustomLogo();
+    if (activeLogoDataUrl && activeLogoDataUrl.startsWith('data:image')) {
+      const base64Content = activeLogoDataUrl.split(',')[1];
+      if (base64Content) {
+        zip.file('public/logo.png', base64Content, { base64: true });
+      }
+    }
+  } catch (err) {
+    console.warn('Could not inject custom logo into ZIP:', err);
+  }
 
   // 5. Generate the zip and trigger download
   const blob = await zip.generateAsync({ type: 'blob' });

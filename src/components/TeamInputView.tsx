@@ -21,6 +21,7 @@ import {
   PackageCheck,
   PackageX,
   UserCheck,
+  AlertCircle,
 } from 'lucide-react';
 import { Trip, MeetingPoint, TripSchedule } from '../types';
 import { POPULAR_MOUNTAINS } from '../data/mountains';
@@ -32,7 +33,8 @@ import {
 } from './TripModal';
 import { calculateDuration, generateDefaultItinerary } from '../utils/formatters';
 import { saveTripToCloud } from '../firebase';
-import { saveStoredTrips, getStoredTrips } from '../utils/storage';
+import { saveStoredTrips, getStoredTrips, isOwnerAuthorized } from '../utils/storage';
+import { playIncomingDraftChime } from '../utils/audioNotify';
 import { ItineraryEditor } from './ItineraryEditor';
 
 interface TeamInputViewProps {
@@ -71,6 +73,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
   // Submission State
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedTrip, setSubmittedTrip] = useState<Trip | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const currentMountain = POPULAR_MOUNTAINS[parseInt(selectedMountainIndex, 10)] || null;
 
@@ -217,6 +220,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
     }
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
     const tripId = `trip-draft-${Date.now()}`;
     const finalItinerary = itinerary.trim() || generateDefaultItinerary(namaGunung, jalur, tanggalMulai, tanggalSelesai);
@@ -252,23 +256,30 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
     };
 
     try {
-      // 1. Save directly to Cloud Firestore
+      // 1. Save directly to Cloud Firestore (instant push across all devices)
       await saveTripToCloud(newTrip);
 
-      // 2. Also save to local storage if running in same browser
-      const existing = getStoredTrips();
-      saveStoredTrips([newTrip, ...existing]);
+      // 2. Only save to local storage if this device is the authorized owner/admin
+      if (isOwnerAuthorized()) {
+        const existing = getStoredTrips();
+        saveStoredTrips([newTrip, ...existing]);
+      }
+
+      // 3. Play pleasant success audio chime
+      playIncomingDraftChime();
 
       setSubmittedTrip(newTrip);
       if (onTripSubmitted) {
         onTripSubmitted(newTrip);
       }
     } catch (err) {
-      console.error('Failed to submit team trip:', err);
-      // Fallback local save
-      const existing = getStoredTrips();
-      saveStoredTrips([newTrip, ...existing]);
+      console.error('Failed to submit team trip to Cloud:', err);
+      if (isOwnerAuthorized()) {
+        const existing = getStoredTrips();
+        saveStoredTrips([newTrip, ...existing]);
+      }
       setSubmittedTrip(newTrip);
+      setSubmitError('Tersimpan di memori perangkat ini. Jika Mas Yuno menggunakan perangkat lain, silakan klik tombol WhatsApp di bawah.');
     } finally {
       setIsSubmitting(false);
     }
@@ -277,9 +288,10 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
   const handleNotifyWhatsApp = () => {
     if (!submittedTrip) return;
     const phone = '6282230444428';
-    const text = `HOEEE MAS YUNO...! Saya (${submittedTrip.draf_oleh || 'Tim'}) sudah menginput draf jadwal trip:\n\n🏔️ *${submittedTrip.nama_gunung}* (${submittedTrip.ketinggian_mdpl || ''})\n📍 Jalur: ${submittedTrip.jalur}\n🗓️ Jadwal: ${submittedTrip.tanggal_mulai} s/d ${submittedTrip.tanggal_selesai}\n\nData sudah otomatis masuk ke sistem cloud CITO Adventure. Silakan dicek di dashboard ya!`;
+    const text = `HOEEE MAS YUNO...! Saya (${submittedTrip.draf_oleh || 'Tim'}) sudah menginput draf jadwal trip baru:\n\n🏔️ *${submittedTrip.nama_gunung}* ${submittedTrip.ketinggian_mdpl ? `(${submittedTrip.ketinggian_mdpl})` : ''}\n📍 *Jalur:* ${submittedTrip.jalur}\n🗓️ *Jadwal:* ${submittedTrip.tanggal_mulai} s/d ${submittedTrip.tanggal_selesai} (${submittedTrip.durasi})\n👥 *Kuota:* ${submittedTrip.min_peserta}–${submittedTrip.max_peserta} Orang\n\nData sudah otomatis masuk ke sistem Cloud CITO Adventure & siap di-review untuk diterbitkan!`;
     const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/${phone}?text=${encoded}`, '_blank');
+    const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encoded}`;
+    window.open(waUrl, '_blank');
   };
 
   return (
@@ -288,28 +300,24 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
       <header className="bg-[#275d1d] text-white border-b-4 border-[#1f4a17] shadow-md sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 shrink-0">
               <Mountain className="w-6 h-6 text-white" />
             </div>
             <div>
               <div className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-emerald-200 font-['Space_Grotesk']">
                 Lembar Kerja Lapangan
               </div>
-              <h1 className="text-base sm:text-lg font-extrabold font-['Space_Grotesk'] leading-tight">
+              <h1 className="text-sm sm:text-lg font-extrabold font-['Space_Grotesk'] leading-tight">
                 Input Jadwal Trip – Tim CITO Adventure
               </h1>
             </div>
           </div>
 
-          {onBackToDashboard && (
-            <button
-              onClick={onBackToDashboard}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Buka Dashboard</span>
-            </button>
-          )}
+          <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-white/10 text-emerald-100 text-[11px] sm:text-xs font-bold border border-white/20 shrink-0 shadow-inner">
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
+            <span className="hidden sm:inline">Khusus Tim Lapangan</span>
+            <span className="sm:hidden">Tim Cito</span>
+          </div>
         </div>
       </header>
 
@@ -351,6 +359,13 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
               </div>
             </div>
 
+            {submitError && (
+              <div className="max-w-md mx-auto p-3 rounded-lg bg-amber-50 border border-amber-300 text-amber-900 text-xs flex items-center gap-2 text-left">
+                <AlertCircle className="w-4 h-4 text-amber-700 shrink-0" />
+                <span>{submitError}</span>
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <button
@@ -359,7 +374,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" />
-                <span>Kabari Mas Yuno via WhatsApp</span>
+                <span>Kirim Notifikasi WhatsApp ke Mas Yuno</span>
               </button>
 
               <button

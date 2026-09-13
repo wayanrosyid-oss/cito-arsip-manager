@@ -24,6 +24,7 @@ export interface Trip {
   durasi: string;
   jadwal_tambahan?: TripSchedule[];
   min_peserta: string;
+  min_peserta_jakarta?: string;
   max_peserta: string;
   harga_mepo: MeetingPoint[];
   include: string[];

@@ -251,6 +251,73 @@ export function replaceCaptionPlaceholders(template: string, trip: Trip): string
     .replace(/\{durasi\}/gi, durasiStr);
 }
 
+/**
+ * Format individual mepo price cleanly (handles numeric e.g. 700000 or custom text e.g. Menyesuaikan jumlah peserta)
+ */
+export function formatMepoPriceItem(lokasi: string, harga: string): string {
+  const raw = (harga || '').trim();
+  if (!raw) return 'IDR Hubungi Admin /pax';
+
+  // Already has /pax or /pak
+  if (/\/(pax|pak|orang)/i.test(raw)) {
+    return raw.toUpperCase().startsWith('IDR') ? raw : `IDR ${raw}`;
+  }
+
+  // Pure text like "Menyesuaikan jumlah peserta" or "(Menyesuaikan jumlah peserta)"
+  const isLettersOnly = /[a-zA-Z]/.test(raw) && !/^\s*(\d{1,3}[.,]?)+$/.test(raw) && !raw.toUpperCase().startsWith('IDR');
+  if (isLettersOnly) {
+    const cleanText = raw.replace(/^[(\s]+|[)\s]+$/g, '');
+    return `IDR (${cleanText}) /pax`;
+  }
+
+  // Starts with IDR and contains text
+  if (raw.toUpperCase().startsWith('IDR')) {
+    return `${raw} /pax`;
+  }
+
+  // Pure digits or formatted digits
+  const digits = raw.replace(/[^0-9]/g, '');
+  if (digits) {
+    return `IDR ${Number(digits).toLocaleString('id-ID')} /pax`;
+  }
+
+  return `IDR ${raw} /pax`;
+}
+
+/**
+ * Groups MEPO into Jakarta vs Regional (Basecamp, Madiun, Solo, etc.)
+ * with explicit *(Min X Pax) indicators
+ */
+export function formatMepoCaptionSection(trip: Trip, indent: string = '  '): string[] {
+  if (!trip.harga_mepo || trip.harga_mepo.length === 0) return [];
+
+  const minMadiun = trip.min_peserta || '6';
+  const minJakarta = trip.min_peserta_jakarta || '15';
+
+  const jakartaMepos = trip.harga_mepo.filter(m => m.lokasi.toLowerCase().includes('jakarta'));
+  const otherMepos = trip.harga_mepo.filter(m => !m.lokasi.toLowerCase().includes('jakarta'));
+
+  const lines: string[] = [];
+
+  // 1. Jakarta MEPO (if any)
+  if (jakartaMepos.length > 0) {
+    jakartaMepos.forEach(m => {
+      lines.push(`${indent}• ${m.lokasi || 'Jakarta'} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
+    });
+    lines.push(`${indent}  *(Min ${minJakarta} Pax)`);
+  }
+
+  // 2. Basecamp, Solo, Madiun, etc. (Jateng & Jatim)
+  if (otherMepos.length > 0) {
+    otherMepos.forEach(m => {
+      lines.push(`${indent}• ${m.lokasi || 'Meeting Point'} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
+    });
+    lines.push(`${indent}  *(Min ${minMadiun} Pax)`);
+  }
+
+  return lines;
+}
+
 export function generateInstagramFeedCaption(
   trip: Trip,
   options: CaptionCustomOptions = {}
@@ -283,12 +350,10 @@ export function generateInstagramFeedCaption(
     ? replaceCaptionPlaceholders(customHookIntro, trip)
     : replaceCaptionPlaceholders(defaultHookItem.introTemplate, trip);
 
-  const pesertaStr =
-    trip.min_peserta && trip.max_peserta
-      ? `${trip.min_peserta} – ${trip.max_peserta} Pax`
-      : trip.min_peserta
-      ? `Min ${trip.min_peserta} Pax`
-      : 'Sendiri bisa join (Peserta Umum)';
+  const minMadiun = trip.min_peserta || '6';
+  const minJakarta = trip.min_peserta_jakarta || '15';
+  const maxTotal = trip.max_peserta || '30';
+  const pesertaStr = `${minMadiun} - ${minJakarta} / ${maxTotal} Pax`;
 
   const lines: string[] = [];
 
@@ -309,7 +374,7 @@ export function generateInstagramFeedCaption(
 
   const allSchedules = getAllTripSchedules(trip);
   if (allSchedules.length > 1) {
-    lines.push('🗓️ Jadwal trip');
+    lines.push('🗓️ Jadwal trip:');
     allSchedules.forEach((sch) => {
       const schRange = formatDateRange(sch.tanggal_mulai, sch.tanggal_selesai);
       lines.push(`  • ${schRange}`);
@@ -323,9 +388,8 @@ export function generateInstagramFeedCaption(
   if (includeMepo && trip.harga_mepo && trip.harga_mepo.length > 0) {
     lines.push('');
     lines.push('💰 TARIF PER MEETING POINT (MEPO):');
-    trip.harga_mepo.forEach((m) => {
-      lines.push(`  • ${m.lokasi || 'Meeting Point'}: ${m.harga || 'Hubungi Admin'}`);
-    });
+    const mepoLines = formatMepoCaptionSection(trip, '');
+    lines.push(...mepoLines);
   }
 
   // 4. Fasilitas Unggulan
@@ -439,14 +503,17 @@ export function generateWhatsAppBroadcastCaption(
   } else {
     lines.push(`📅 *Jadwal:* ${dateRangeStr}`);
   }
-  lines.push(`👥 *Peserta:* Min ${trip.min_peserta || '15'} Pax (Sendiri bisa langsung join)`);
+  const minMadiun = trip.min_peserta || '6';
+  const minJakarta = trip.min_peserta_jakarta || '15';
+  const maxTotal = trip.max_peserta || '30';
+  const kuotaStr = `${minMadiun} - ${minJakarta} / ${maxTotal} Pax`;
+  lines.push(`👥 *Kuota Peserta:* ${kuotaStr} (Sendiri bisa langsung join)`);
 
   if (includeMepo && trip.harga_mepo && trip.harga_mepo.length > 0) {
     lines.push('');
-    lines.push(`💰 *Tarif Meeting Point:*`);
-    trip.harga_mepo.forEach((m) => {
-      lines.push(`• ${m.lokasi || 'Mepo'}: *${m.harga || 'Hubungi Admin'}*`);
-    });
+    lines.push(`💰 *TARIF PER MEETING POINT (MEPO):*`);
+    const mepoLines = formatMepoCaptionSection(trip, '');
+    lines.push(...mepoLines);
   }
 
   if (includeFacilities) {

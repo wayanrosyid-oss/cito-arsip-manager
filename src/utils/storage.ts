@@ -413,3 +413,87 @@ export function syncCloudLogoToLocal(dataUrl: string | null): void {
     }
   }
 }
+
+export const ADMIN_AUTH_KEY = 'cito_is_owner_yuno';
+export const TEAM_LOCK_KEY = 'cito_team_locked';
+
+export function isOwnerAuthorized(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(ADMIN_AUTH_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setOwnerAuthorized(val: boolean): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (val) {
+      localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+      localStorage.removeItem(TEAM_LOCK_KEY);
+    } else {
+      localStorage.removeItem(ADMIN_AUTH_KEY);
+    }
+  } catch {
+    // ignore
+  }
+}
+
+export function lockDeviceToTeam(): void {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.removeItem(ADMIN_AUTH_KEY);
+    localStorage.setItem(TEAM_LOCK_KEY, 'true');
+    // Purge cached trips from this device so team phone does not hold admin trip archive
+    localStorage.removeItem(STORAGE_KEY);
+    memoryTrips = [];
+    idbDelete(STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+export function determineInitialRole(): { role: 'admin' | 'tim'; isSecretKey: boolean } {
+  if (typeof window === 'undefined') return { role: 'tim', isSecretKey: false };
+
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const hash = window.location.hash;
+
+    // 1. Secret owner/admin key parameter (khusus Mas Yuno)
+    // Supports: ?admin=yuno, ?kunci=yuno, ?admin=citoyuno, ?kunci=citoyuno, ?masyuno, ?admin=citomadiun
+    const adminParam = (params.get('admin') || params.get('kunci') || '').toLowerCase().trim();
+    const hasMasyuno = params.has('masyuno') || params.has('yuno');
+    const validKeys = ['yuno', 'citoyuno', 'citomadiun', 'owner', 'masyuno', 'cito'];
+
+    if (hasMasyuno || validKeys.includes(adminParam)) {
+      setOwnerAuthorized(true);
+      try {
+        // Clean URL so the secret key parameter is not left in the address bar
+        window.history.replaceState({}, '', window.location.pathname);
+      } catch {
+        // ignore
+      }
+      return { role: 'admin', isSecretKey: true };
+    }
+
+    // 2. Explicit team parameter (e.g. ?mode=tim, ?tim=1, #input-tim)
+    if (params.get('mode') === 'tim' || params.get('tim') === '1' || hash === '#input-tim') {
+      lockDeviceToTeam();
+      return { role: 'tim', isSecretKey: false };
+    }
+
+    // 3. Persistent check: has this device been authorized by Mas Yuno?
+    if (isOwnerAuthorized()) {
+      return { role: 'admin', isSecretKey: false };
+    }
+
+    // 4. Default for ANY other visitor/team phone: ALWAYS lock to 'tim' mode
+    lockDeviceToTeam();
+    return { role: 'tim', isSecretKey: false };
+  } catch {
+    return { role: 'tim', isSecretKey: false };
+  }
+}
+

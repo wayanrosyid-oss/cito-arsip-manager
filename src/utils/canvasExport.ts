@@ -555,7 +555,8 @@ async function renderCoverSlide(
   // 5. Metadata line: Clock + Duration, User + Min Pax
   const metaY = mepoPillY + mepoPillH + 42;
   const durasiText = trip.durasi || '2 Hari 1 Malam';
-  const kuotaText = `Min ${trip.min_peserta || 15} Pax Peserta`;
+  const minPaxMadiun = trip.min_peserta || '6';
+  const kuotaText = `Min ${minPaxMadiun} Pax Peserta*`;
 
   ctx.save();
   ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2 } from 'lucide-react';
+import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2, Bell, Key, ShieldCheck } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { downloadProjectZip } from '../utils/projectZip';
 import { getCustomLogo, setCustomLogo, clearCustomLogo, OFFICIAL_LOGO_URL } from '../utils/storage';
@@ -9,9 +9,12 @@ interface NavbarProps {
   onOpenAddModal: () => void;
   onOpenGithubGuide: () => void;
   tripCount: number;
+  draftCount?: number;
+  onScrollToDrafts?: () => void;
   cloudStatus?: 'synced' | 'syncing' | 'offline';
   onOpenCloudSync?: () => void;
   onCopyTeamLink?: () => void;
+  onCopyAdminLink?: () => void;
   onOpenTeamMode?: () => void;
 }
 
@@ -19,9 +22,12 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenAddModal,
   onOpenGithubGuide,
   tripCount,
+  draftCount = 0,
+  onScrollToDrafts,
   cloudStatus = 'synced',
   onOpenCloudSync,
   onCopyTeamLink,
+  onCopyAdminLink,
   onOpenTeamMode,
 }) => {
   const [logoSrc, setLogoSrc] = useState<string>(getCustomLogo() || OFFICIAL_LOGO_URL);
@@ -180,15 +186,42 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <PWAInstallButton />
 
+          {/* Draft Notification Badge in Navbar */}
+          {draftCount > 0 && (
+            <button
+              type="button"
+              onClick={onScrollToDrafts}
+              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold bg-amber-400 hover:bg-amber-300 text-amber-950 shadow-md animate-bounce cursor-pointer transition-transform active:scale-95"
+              title={`${draftCount} Draf jadwal baru dari tim menunggu review`}
+            >
+              <Bell className="w-3.5 h-3.5 fill-amber-950" />
+              <span>{draftCount} Draf Tim Baru</span>
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-ping absolute -top-0.5 -right-0.5" />
+            </button>
+          )}
+
           {onCopyTeamLink && (
             <button
               type="button"
               onClick={onCopyTeamLink}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-amber-400/25 hover:bg-amber-400/35 text-amber-100 border border-amber-300/40 transition-colors cursor-pointer"
-              title="Salin Link Khusus untuk Tim Penginput Jadwal"
+              title="Salin Link Khusus Tim Lapangan (Hanya bisa input jadwal, mode admin dikunci)"
             >
               <Link2 className="w-3.5 h-3.5 text-amber-300" />
               <span>Link Form Tim</span>
+            </button>
+          )}
+
+          {onCopyAdminLink && (
+            <button
+              type="button"
+              onClick={onCopyAdminLink}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-100 border border-emerald-400/40 transition-colors cursor-pointer"
+              title="Salin Link Kunci Mas Yuno (?admin=yuno) untuk disimpan atau dibuka di HP/Laptop lain"
+            >
+              <Key className="w-3.5 h-3.5 text-emerald-300" />
+              <span className="hidden xl:inline">Kunci Akses Mas Yuno</span>
+              <span className="xl:hidden">Kunci Admin</span>
             </button>
           )}
 

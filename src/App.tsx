@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { TripCard } from './components/TripCard';
 import { TripDetail } from './components/TripDetail';
@@ -24,6 +24,10 @@ import {
   getDeletedTripIds,
   recordDeletedTripId,
   unrecordDeletedTripId,
+  determineInitialRole,
+  isOwnerAuthorized,
+  setOwnerAuthorized,
+  lockDeviceToTeam,
 } from './utils/storage';
 import {
   subscribeToCloudTrips,
@@ -32,7 +36,8 @@ import {
   seedInitialTripsToCloud,
   subscribeToCloudLogo,
 } from './firebase';
-import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCircle, Link2 } from 'lucide-react';
+import { playIncomingDraftChime } from './utils/audioNotify';
+import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCircle, Link2, Key, ShieldCheck } from 'lucide-react';
 
 export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -40,8 +45,11 @@ export default function App() {
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
-  const [viewMode, setViewMode] = useState<'admin' | 'tim'>('admin');
+  const [viewMode, setViewMode] = useState<'admin' | 'tim'>(() => {
+    return determineInitialRole().role;
+  });
   const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
+  const knownDraftIdsRef = useRef<Set<string>>(new Set());
 
   // Modals state
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
@@ -60,12 +68,27 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState<'list' | 'detail'>('list');
 
   useEffect(() => {
+    const roleInfo = determineInitialRole();
+    setViewMode(roleInfo.role);
+
+    if (roleInfo.isSecretKey) {
+      showToast('🔑 Akses Pemilik Mas Yuno Terverifikasi! Selamat datang kembali.');
+    }
+
+    // If device is in team mode, do NOT subscribe to the full trips database
+    if (roleInfo.role === 'tim') {
+      return;
+    }
+
     // 1. Instant local read so app renders immediately without empty flash
     const localTrips = getStoredTrips();
     setTrips(localTrips);
     if (localTrips.length > 0) {
       setSelectedTripId(localTrips[0].id);
     }
+    // Seed initial draft IDs so existing drafts don't trigger sound on first page open
+    const initialDrafts = localTrips.filter((t) => t.is_draft);
+    initialDrafts.forEach((t) => knownDraftIdsRef.current.add(t.id));
 
     // 2. Real-time Cloud Firestore subscription with Offline-First SMART MERGE
     let isInitialFetch = true;
@@ -91,6 +114,21 @@ export default function App() {
         // Combined safe dataset
         const mergedTrips = [...validCloudTrips, ...localPendingTrips];
         mergedTrips.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+
+        // Detect newly incoming drafts from team (real-time alert)
+        const incomingDrafts = mergedTrips.filter((t) => t.is_draft && !knownDraftIdsRef.current.has(t.id));
+        if (incomingDrafts.length > 0) {
+          // Add to known drafts
+          incomingDrafts.forEach((t) => knownDraftIdsRef.current.add(t.id));
+
+          // If not initial fetch, trigger sound and un-dismiss banner
+          if (!isInitialFetch) {
+            playIncomingDraftChime();
+            setIsDraftBannerDismissed(false);
+            const latest = incomingDrafts[0];
+            showToast(`🔔 Draf baru masuk dari tim: ${latest.nama_gunung} (${latest.jalur})!`);
+          }
+        }
 
         if (mergedTrips.length > 0) {
           setTrips(mergedTrips);
@@ -131,11 +169,18 @@ export default function App() {
       syncCloudLogoToLocal(cloudLogo);
     });
 
+    const handlePopState = () => {
+      const updated = determineInitialRole();
+      setViewMode(updated.role);
+    };
+    window.addEventListener('popstate', handlePopState);
+
     return () => {
       unsubscribeTrips();
       unsubscribeLogo();
+      window.removeEventListener('popstate', handlePopState);
     };
-  }, []);
+  }, [viewMode]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -251,41 +296,35 @@ export default function App() {
     const url = `${window.location.origin}${window.location.pathname}?mode=tim`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(() => {
-        showToast('Link Formulir Tim berhasil disalin! Kirimkan ke tim Anda lewat WhatsApp.');
+        showToast('📋 Link Formulir Tim disalin! Kirimkan ke tim lapangan lewat WhatsApp.');
       }).catch(() => {
-        prompt('Salin link lembar input jadwal tim ini:', url);
+        prompt('Salin link formulir tim lapangan:', url);
       });
     } else {
-      prompt('Salin link lembar input jadwal tim ini:', url);
+      prompt('Salin link formulir tim lapangan:', url);
     }
   };
 
-  // URL mode listener for team input
-  useEffect(() => {
-    const checkMode = () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('mode') === 'tim' || params.get('tim') === '1' || window.location.hash === '#input-tim') {
-        setViewMode('tim');
-      }
-    };
-    checkMode();
-    window.addEventListener('popstate', checkMode);
-    return () => window.removeEventListener('popstate', checkMode);
-  }, []);
+  const handleCopyAdminLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?admin=yuno`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('🔑 Link Kunci Mas Yuno disalin! Simpan di WhatsApp / Catatan pribadi Anda.');
+      }).catch(() => {
+        prompt('Salin link rahasia Mas Yuno:', url);
+      });
+    } else {
+      prompt('Salin link rahasia Mas Yuno:', url);
+    }
+  };
 
   if (viewMode === 'tim') {
     return (
       <TeamInputView
-        onBackToDashboard={() => {
-          window.history.pushState({}, '', window.location.pathname);
-          setViewMode('admin');
-        }}
         onTripSubmitted={(newTrip) => {
-          window.history.pushState({}, '', window.location.pathname);
-          setViewMode('admin');
-          setSelectedTripId(newTrip.id);
-          setIsDraftBannerDismissed(false);
-          showToast(`Draf jadwal ${newTrip.nama_gunung} berhasil diterima di dashboard!`);
+          if (isOwnerAuthorized()) {
+            handleSaveTrip(newTrip);
+          }
         }}
       />
     );
@@ -298,10 +337,18 @@ export default function App() {
         onOpenAddModal={handleOpenAddModal}
         onOpenGithubGuide={() => setIsGithubGuideOpen(true)}
         tripCount={trips.length}
+        draftCount={draftTrips.length}
+        onScrollToDrafts={() => {
+          setIsDraftBannerDismissed(false);
+          if (draftTrips.length > 0) {
+            setSelectedTripId(draftTrips[0].id);
+            setMobileTab('detail');
+          }
+        }}
         cloudStatus={cloudStatus}
         onOpenCloudSync={() => setIsCloudSyncOpen(true)}
         onCopyTeamLink={handleCopyTeamLink}
-        onOpenTeamMode={() => setViewMode('tim')}
+        onCopyAdminLink={handleCopyAdminLink}
       />
 
       {/* Main Content Layout */}

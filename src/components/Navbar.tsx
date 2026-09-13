@@ -24,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onCopyTeamLink,
   onOpenTeamMode,
 }) => {
-  const [logoSrc, setLogoSrc] = useState<string>('/logo.png');
+  const [logoSrc, setLogoSrc] = useState<string>(getCustomLogo() || '/logo.png?v=20260913');
   const [isCustom, setIsCustom] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         setLogoSrc(custom);
         setIsCustom(true);
       } else {
-        setLogoSrc('/logo.png');
+        setLogoSrc('/logo.png?v=20260913');
         setIsCustom(false);
       }
     };
@@ -56,7 +56,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     try {
       const optimized = await optimizeLogoImage(file);
+      // 1. Update memory, IndexedDB, and Cloud Firestore
       setCustomLogo(optimized);
+
+      // 2. Persist directly to server disk (public/logo.png, etc.) so it never reverts on restart
+      await fetch('/api/save-permanent-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ dataUrl: optimized }),
+      }).catch((err) => {
+        console.warn('Could not write permanent logo to server disk:', err);
+      });
     } catch (err) {
       console.error('Failed to process logo', err);
       alert('Gagal memproses gambar logo');

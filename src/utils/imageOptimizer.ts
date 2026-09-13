@@ -11,7 +11,7 @@ export async function optimizeLogoImage(file: File): Promise<string> {
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
       try {
-        const MAX_DIM = 600; // Optimal sharp resolution for canvas pamphlets (drawn at ~110px-160px)
+        const MAX_DIM = 1200; // Retain crisp ultra-sharp detail for 1080p pamphlets and high-DPI screens
         let width = img.naturalWidth || img.width;
         let height = img.naturalHeight || img.height;
 

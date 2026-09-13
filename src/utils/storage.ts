@@ -4,8 +4,20 @@ import { idbGet, idbSet, idbDelete } from './indexedDb';
 import { saveLogoToCloud } from '../firebase';
 
 const STORAGE_KEY = 'cito_adventure_trips_v3';
-export const CUSTOM_LOGO_KEY = 'cito_custom_logo_v1';
+export const CUSTOM_LOGO_KEY = 'cito_custom_logo_v2';
 const INITIAL_SETUP_DONE_KEY = 'cito_adventure_init_done_v3';
+
+// Automatically purge legacy custom logos so the official new default logo (/logo.png) takes effect
+if (typeof window !== 'undefined') {
+  try {
+    localStorage.removeItem('cito_custom_logo_v1');
+    localStorage.removeItem('cito_custom_brand_logo');
+  } catch {
+    // ignore
+  }
+  idbDelete('cito_custom_logo_v1');
+  idbDelete('cito_custom_brand_logo');
+}
 
 export const INITIAL_TRIPS: Trip[] = [
   {
@@ -341,6 +353,17 @@ export function setCustomLogo(dataUrl: string): void {
   // Notify components and pamphlets immediately
   window.dispatchEvent(new Event('cito_logo_updated'));
 
+  // Also persist directly to server disk (/public/logo.png, etc.) so it never reverts on restart
+  if (typeof window !== 'undefined') {
+    fetch('/api/save-permanent-logo', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ dataUrl }),
+    }).catch((err) => {
+      console.warn('Could not write permanent logo to server disk:', err);
+    });
+  }
+
   // Sync to Cloud Firestore in background
   saveLogoToCloud(dataUrl).catch((err) => {
     console.warn('Could not sync logo to cloud:', err);
@@ -374,11 +397,16 @@ export function syncCloudLogoToLocal(dataUrl: string | null): void {
     }
     window.dispatchEvent(new Event('cito_logo_updated'));
   } else {
-    // JANGAN hapus logo lokal jika Cloud masih kosong/null.
-    // Jika ada logo lokal, sinkronkan ke Cloud agar tersimpan permanen.
-    const existingLocal = getCustomLogo();
-    if (existingLocal) {
-      saveLogoToCloud(existingLocal).catch(() => {});
+    // Cloud has no custom logo overrides; reset to official default logo (/logo.png)
+    if (memoryCustomLogo) {
+      memoryCustomLogo = null;
+      idbDelete(CUSTOM_LOGO_KEY);
+      try {
+        localStorage.removeItem(CUSTOM_LOGO_KEY);
+      } catch {
+        // ignore
+      }
+      window.dispatchEvent(new Event('cito_logo_updated'));
     }
   }
 }

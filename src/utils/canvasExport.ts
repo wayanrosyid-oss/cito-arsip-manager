@@ -434,7 +434,8 @@ async function renderCoverSlide(
   trip: Trip,
   ratio: '4:5' | '9:16',
   bgUrl?: string,
-  dimRatio: number = 0.15
+  dimRatio: number = 0.15,
+  customLogoUrl?: string
 ): Promise<HTMLCanvasElement> {
   const width = 1080;
   const height = ratio === '4:5' ? 1350 : 1920;
@@ -445,23 +446,21 @@ async function renderCoverSlide(
 
   // 2. Top Right: Cito Adventure Logo + Text (Supports user uploaded custom logo)
   try {
-    const activeLogoUrl = trip.logo_url || getCustomLogo() || '/logo.png';
+    const activeLogoUrl = customLogoUrl || trip.logo_url || getCustomLogo() || '/logo.png?v=20260913';
     const logoImg = await loadImage(activeLogoUrl);
-    const logoW = 110;
-    const logoH = 102;
+    const naturalW = logoImg.naturalWidth || logoImg.width || 1;
+    const naturalH = logoImg.naturalHeight || logoImg.height || 1;
+    const aspect = naturalW / naturalH;
+    const maxDimension = 118;
+    const logoW = aspect >= 1 ? maxDimension : maxDimension * aspect;
+    const logoH = aspect <= 1 ? maxDimension : maxDimension / aspect;
     const logoX = width - logoW - 70;
-    const logoY = 50;
+    const logoY = 48;
 
     ctx.save();
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
-    ctx.shadowBlur = 12;
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.55)';
+    ctx.shadowBlur = 14;
     ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
-
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = '800 13px "Montserrat", "Space Grotesk", sans-serif';
-    ctx.letterSpacing = '1.5px';
-    ctx.textAlign = 'center';
-    ctx.fillText('CITO ADVENTURE TRIP', logoX + logoW / 2, logoY + logoH + 18);
     ctx.restore();
   } catch (e) {
     console.warn('Could not load logo for cover slide', e);
@@ -1044,7 +1043,8 @@ async function renderContactSlide(
   trip: Trip,
   ratio: '4:5' | '9:16',
   bgUrl?: string,
-  dimRatio: number = 0.2
+  dimRatio: number = 0.2,
+  customLogoUrl?: string
 ): Promise<HTMLCanvasElement> {
   const width = 1080;
   const height = ratio === '4:5' ? 1350 : 1920;
@@ -1058,15 +1058,20 @@ async function renderContactSlide(
 
   // Draw Cito Adventure Logo above card (Supports user uploaded custom logo)
   try {
-    const activeLogoUrl = trip.logo_url || getCustomLogo() || '/logo.png';
+    const activeLogoUrl = customLogoUrl || trip.logo_url || getCustomLogo() || '/logo.png?v=20260913';
     const logoImg = await loadImage(activeLogoUrl);
-    const logoSize = isRatio916 ? 150 : 120;
-    const logoX = (width - logoSize) / 2;
-    const logoY = cardY - logoSize - (isRatio916 ? 24 : 16);
+    const naturalW = logoImg.naturalWidth || logoImg.width || 1;
+    const naturalH = logoImg.naturalHeight || logoImg.height || 1;
+    const aspect = naturalW / naturalH;
+    const maxDimension = isRatio916 ? 150 : 120;
+    const logoW = aspect >= 1 ? maxDimension : maxDimension * aspect;
+    const logoH = aspect <= 1 ? maxDimension : maxDimension / aspect;
+    const logoX = (width - logoW) / 2;
+    const logoY = cardY - logoH - (isRatio916 ? 24 : 16);
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
     ctx.shadowBlur = 16;
-    ctx.drawImage(logoImg, logoX, logoY, logoSize, logoSize);
+    ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
     ctx.restore();
   } catch (e) {
     console.warn('Could not load logo for contact slide', e);
@@ -1193,11 +1198,12 @@ export async function renderSlideCanvas(
   trip: Trip,
   ratio: '4:5' | '9:16',
   bgUrl?: string,
-  dimRatio: number = 0.2
+  dimRatio: number = 0.2,
+  customLogoUrl?: string
 ): Promise<HTMLCanvasElement> {
   switch (slideType) {
     case 'cover':
-      return renderCoverSlide(trip, ratio, bgUrl, dimRatio);
+      return renderCoverSlide(trip, ratio, bgUrl, dimRatio, customLogoUrl);
     case 'facilities':
       return renderFacilitiesSlide(trip, ratio, bgUrl, dimRatio);
     case 'itinerary':
@@ -1205,9 +1211,9 @@ export async function renderSlideCanvas(
     case 'notes':
       return renderNotesSlide(trip, ratio, bgUrl, dimRatio);
     case 'contact':
-      return renderContactSlide(trip, ratio, bgUrl, dimRatio);
+      return renderContactSlide(trip, ratio, bgUrl, dimRatio, customLogoUrl);
     default:
-      return renderCoverSlide(trip, ratio, bgUrl, dimRatio);
+      return renderCoverSlide(trip, ratio, bgUrl, dimRatio, customLogoUrl);
   }
 }
 
@@ -1217,9 +1223,10 @@ export async function exportSlidePNG(
   trip: Trip,
   ratio: '4:5' | '9:16',
   bgUrl?: string,
-  dimRatio: number = 0.2
+  dimRatio: number = 0.2,
+  customLogoUrl?: string
 ): Promise<void> {
-  const canvas = await renderSlideCanvas(slideType, trip, ratio, bgUrl, dimRatio);
+  const canvas = await renderSlideCanvas(slideType, trip, ratio, bgUrl, dimRatio, customLogoUrl);
   const cleanMtn = trip.nama_gunung.toLowerCase().replace(/[^a-z0-9]/g, '-');
   const cleanRatio = ratio.replace(':', 'x');
   const filename = `${slideType}-${cleanMtn}-${cleanRatio}.png`;
@@ -1245,7 +1252,8 @@ export async function exportAllSlidesZip(
   trip: Trip,
   ratio: '4:5' | '9:16',
   bgUrl?: string,
-  dimRatio: number = 0.2
+  dimRatio: number = 0.2,
+  customLogoUrl?: string
 ): Promise<void> {
   const zip = new JSZip();
   const cleanMtn = trip.nama_gunung.toLowerCase().replace(/[^a-z0-9]/g, '-');
@@ -1253,7 +1261,7 @@ export async function exportAllSlidesZip(
 
   for (let idx = 0; idx < SLIDES_LIST.length; idx++) {
     const slide = SLIDES_LIST[idx];
-    const canvas = await renderSlideCanvas(slide.id, trip, ratio, bgUrl, dimRatio);
+    const canvas = await renderSlideCanvas(slide.id, trip, ratio, bgUrl, dimRatio, customLogoUrl);
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
     if (blob) {
       zip.file(`slide-${idx + 1}-${slide.id}-${cleanMtn}-${cleanRatio}.png`, blob);

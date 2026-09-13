@@ -10,6 +10,46 @@ function aistudioMediaPlugin(): Plugin {
   return {
     name: 'vite-plugin-aistudio-media',
     configureServer(server) {
+      // API endpoint to permanently persist user-uploaded logo to server disk files
+      server.middlewares.use((req, res, next) => {
+        if (req.url === '/api/save-permanent-logo' && req.method === 'POST') {
+          let body = '';
+          req.on('data', (chunk) => {
+            body += chunk;
+          });
+          req.on('end', () => {
+            try {
+              const { dataUrl } = JSON.parse(body);
+              if (dataUrl && typeof dataUrl === 'string' && dataUrl.startsWith('data:image/')) {
+                const base64Data = dataUrl.replace(/^data:image\/\w+;base64,/, '');
+                const buffer = Buffer.from(base64Data, 'base64');
+                const targetFiles = [
+                  'public/logo.png',
+                  'public/pwa-512x512.png',
+                  'public/pwa-maskable-512x512.png',
+                  'public/pwa-192x192.png',
+                  'public/apple-touch-icon.png',
+                  'public/favicon.png',
+                ];
+                for (const target of targetFiles) {
+                  const fullPath = path.resolve(__dirname, target);
+                  fs.writeFileSync(fullPath, buffer);
+                }
+                res.setHeader('Content-Type', 'application/json');
+                res.end(JSON.stringify({ success: true }));
+                return;
+              }
+            } catch (err) {
+              console.error('Error saving permanent logo to disk:', err);
+            }
+            res.statusCode = 400;
+            res.end(JSON.stringify({ error: 'Failed to write logo' }));
+          });
+          return;
+        }
+        next();
+      });
+
       server.middlewares.use((req, res, next) => {
         if (req.url && req.url.startsWith('/assets/aistudio/')) {
           const rawPath = req.url.split('?')[0].split('#')[0];
@@ -79,7 +119,7 @@ export default defineConfig(() => {
         },
         includeAssets: ['favicon.png', 'apple-touch-icon.png', 'logo.png'],
         manifest: {
-          id: '/',
+          id: '/?v=20260913',
           name: 'Cito Trip Manager',
           short_name: 'Cito Trip Manager',
           description: 'Aplikasi manajemen arsip trip dan pembuat poster serta caption open trip gunung Cito Adventure Madiun.',

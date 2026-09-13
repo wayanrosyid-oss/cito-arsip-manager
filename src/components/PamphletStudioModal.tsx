@@ -53,7 +53,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
   const [isExporting, setIsExporting] = useState<string | null>(null);
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
   const [hasSavedBg, setHasSavedBg] = useState(false);
-  const [activeLogo, setActiveLogo] = useState<string>(trip.logo_url || getCustomLogo() || '/logo.png');
+  const [activeLogo, setActiveLogo] = useState<string>(trip.logo_url || getCustomLogo() || '/logo.png?v=20260913');
   const [isCustomLogoActive, setIsCustomLogoActive] = useState<boolean>(Boolean(trip.logo_url || getCustomLogo()));
   const [isCaptionModalOpen, setIsCaptionModalOpen] = useState(false);
 
@@ -66,17 +66,28 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
       setActiveSlide(initialSlide);
       setBgUrl(trip.background_url || '/default-bg.jpg');
       setDimRatio(trip.background_overlay_dim ?? 0.2);
-      setActiveLogo(trip.logo_url || getCustomLogo() || '/logo.png');
+      setActiveLogo(trip.logo_url || getCustomLogo() || '/logo.png?v=20260913');
       setIsCustomLogoActive(Boolean(trip.logo_url || getCustomLogo()));
       setHasSavedBg(false);
     }
   }, [isOpen, trip, initialSlide]);
 
-  // Render canvas preview whenever activeSlide, ratio, bgUrl, or dimRatio changes
+  // Listen for global logo updates
+  useEffect(() => {
+    const handleGlobalLogoUpdate = () => {
+      const current = trip.logo_url || getCustomLogo() || '/logo.png?v=20260913';
+      setActiveLogo(current);
+      setIsCustomLogoActive(Boolean(trip.logo_url || getCustomLogo()));
+    };
+    window.addEventListener('cito_logo_updated', handleGlobalLogoUpdate);
+    return () => window.removeEventListener('cito_logo_updated', handleGlobalLogoUpdate);
+  }, [trip.logo_url]);
+
+  // Render canvas preview whenever activeSlide, ratio, bgUrl, dimRatio, or activeLogo changes
   const updatePreview = useCallback(async () => {
     setIsRendering(true);
     try {
-      const canvas = await renderSlideCanvas(activeSlide, trip, ratio, bgUrl, dimRatio);
+      const canvas = await renderSlideCanvas(activeSlide, trip, ratio, bgUrl, dimRatio, activeLogo);
       const dataUrl = canvas.toDataURL('image/png');
       setPreviewDataUrl(dataUrl);
     } catch (err) {
@@ -84,7 +95,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     } finally {
       setIsRendering(false);
     }
-  }, [activeSlide, trip, ratio, bgUrl, dimRatio]);
+  }, [activeSlide, trip, ratio, bgUrl, dimRatio, activeLogo]);
 
   useEffect(() => {
     if (isOpen) {
@@ -178,7 +189,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     setIsExporting('single');
     onShowToast(`Menyiapkan slide ${activeSlide} (${ratio})...`);
     try {
-      await exportSlidePNG(activeSlide, trip, ratio, bgUrl, dimRatio);
+      await exportSlidePNG(activeSlide, trip, ratio, bgUrl, dimRatio, activeLogo);
       onShowToast(`Slide ${activeSlide} (${ratio}) berhasil diunduh!`);
     } catch (err) {
       console.error(err);
@@ -193,7 +204,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     setIsExporting('zip');
     onShowToast(`Memproses 5 slide carousel (${ratio}) ke ZIP...`);
     try {
-      await exportAllSlidesZip(trip, ratio, bgUrl, dimRatio);
+      await exportAllSlidesZip(trip, ratio, bgUrl, dimRatio, activeLogo);
       onShowToast(`Semua slide (${ratio}) berhasil diunduh dalam ZIP!`);
     } catch (err) {
       console.error(err);

@@ -89,11 +89,12 @@ export const TripModal: React.FC<TripModalProps> = ({
   const [tanggalSelesai, setTanggalSelesai] = useState('');
   const [durasi, setDurasi] = useState('2 Hari 1 Malam');
   const [jadwalTambahan, setJadwalTambahan] = useState<TripSchedule[]>([]);
-  const [minPeserta, setMinPeserta] = useState('15');
+  const [minPeserta, setMinPeserta] = useState('6');
+  const [minPesertaJakarta, setMinPesertaJakarta] = useState('15');
   const [maxPeserta, setMaxPeserta] = useState('30');
   const [mepoList, setMepoList] = useState<MeetingPoint[]>([
     { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-    { lokasi: 'Madiun', harga: 'IDR 700.000' },
+    { lokasi: 'Madiun', harga: '(Menyesuaikan jumlah peserta)' },
     { lokasi: 'Surabaya', harga: 'IDR 850.000' },
   ]);
   const [includeText, setIncludeText] = useState('');
@@ -121,8 +122,9 @@ export const TripModal: React.FC<TripModalProps> = ({
       setTanggalSelesai(tripToEdit.tanggal_selesai);
       setDurasi(tripToEdit.durasi);
       setJadwalTambahan(tripToEdit.jadwal_tambahan || []);
-      setMinPeserta(tripToEdit.min_peserta);
-      setMaxPeserta(tripToEdit.max_peserta);
+      setMinPeserta(tripToEdit.min_peserta || '6');
+      setMinPesertaJakarta(tripToEdit.min_peserta_jakarta || '15');
+      setMaxPeserta(tripToEdit.max_peserta || '30');
       setMepoList(
         tripToEdit.harga_mepo && tripToEdit.harga_mepo.length > 0
           ? tripToEdit.harga_mepo
@@ -306,9 +308,16 @@ export const TripModal: React.FC<TripModalProps> = ({
   const handleMepoChange = (index: number, field: 'lokasi' | 'harga', val: string) => {
     const updated = [...mepoList];
     if (field === 'harga') {
-      const digits = val.replace(/[^0-9]/g, '');
-      const formatted = digits ? `IDR ${Number(digits).toLocaleString('id-ID')}` : val;
-      updated[index].harga = formatted;
+      const isMadiun = (updated[index].lokasi || '').toLowerCase().includes('madiun');
+      const hasLetters = /[a-zA-Z]/.test(val);
+      if (hasLetters || isMadiun) {
+        // Allow text freely (e.g. (Menyesuaikan jumlah peserta))
+        updated[index].harga = val;
+      } else {
+        const digits = val.replace(/[^0-9]/g, '');
+        const formatted = digits ? `IDR ${Number(digits).toLocaleString('id-ID')}` : val;
+        updated[index].harga = formatted;
+      }
     } else {
       updated[index].lokasi = val;
     }
@@ -332,8 +341,9 @@ export const TripModal: React.FC<TripModalProps> = ({
       tanggal_selesai: tanggalSelesai,
       durasi: durasi.trim(),
       jadwal_tambahan: jadwalTambahan.filter(j => j.tanggal_mulai && j.tanggal_selesai),
-      min_peserta: minPeserta.trim(),
-      max_peserta: maxPeserta.trim(),
+      min_peserta: minPeserta.trim() || '6',
+      min_peserta_jakarta: minPesertaJakarta.trim() || '15',
+      max_peserta: maxPeserta.trim() || '30',
       harga_mepo: mepoList.filter(m => m.lokasi.trim() || m.harga.trim()),
       include: includeText.split('\n').map(s => s.trim()).filter(Boolean),
       exclude: excludeText.split('\n').map(s => s.trim()).filter(Boolean),
@@ -654,23 +664,46 @@ export const TripModal: React.FC<TripModalProps> = ({
 
           {/* Section 3: Kuota Peserta & Notifikasi */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-            <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk']">
-              3. Kuota Peserta
-            </h3>
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk']">
+                3. Kuota Peserta (Skema Baru)
+              </h3>
+              <span className="text-[11px] font-bold bg-[#275d1d]/10 text-[#275d1d] px-2 py-0.5 rounded">
+                Tampilan: {minPeserta || '6'} - {minPesertaJakarta || '15'} / {maxPeserta || '30'} Pax
+              </span>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">Minimal Peserta (pax):</label>
+                <label className="block text-xs font-bold text-gray-800 mb-1">
+                  Min. Madiun / Jawa (pax):
+                </label>
                 <input
                   type="number"
                   value={minPeserta}
                   onChange={(e) => setMinPeserta(e.target.value)}
+                  placeholder="6"
+                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                />
+                <span className="text-[10px] text-gray-500 mt-0.5 block">Patokan pamflet flyer</span>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-gray-800 mb-1">
+                  Min. Khusus Jakarta (pax):
+                </label>
+                <input
+                  type="number"
+                  value={minPesertaJakarta}
+                  onChange={(e) => setMinPesertaJakarta(e.target.value)}
                   placeholder="15"
                   className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
                 />
+                <span className="text-[10px] text-gray-500 mt-0.5 block">Khusus mepo Jakarta</span>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">Maksimal Peserta (pax):</label>
+                <label className="block text-xs font-bold text-gray-800 mb-1">
+                  Maksimal Total (pax):
+                </label>
                 <input
                   type="number"
                   value={maxPeserta}
@@ -678,6 +711,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                   placeholder="30"
                   className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
                 />
+                <span className="text-[10px] text-gray-500 mt-0.5 block">Batas maksimal kuota</span>
               </div>
             </div>
 
@@ -691,13 +725,18 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 4: Tarif Meeting Point (MEPO) */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
             <div className="flex items-center justify-between">
-              <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk']">
-                4. Tarif per Meeting Point (MEPO)
-              </h3>
+              <div>
+                <h3 className="text-xs font-bold text-[#275d1d] tracking-wider uppercase font-['Space_Grotesk']">
+                  4. Tarif per Meeting Point (MEPO)
+                </h3>
+                <p className="text-[11px] text-gray-600 mt-0.5">
+                  Khusus Madiun bisa diisi huruf (misal: <em>(Menyesuaikan jumlah peserta)</em>) atau angka.
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={handleAddMepo}
-                className="text-xs font-bold text-[#275d1d] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-xs font-bold text-[#275d1d] hover:underline flex items-center gap-1 cursor-pointer shrink-0"
               >
                 <Plus className="w-3.5 h-3.5" />
                 Tambah Titik Kumpul
@@ -705,33 +744,50 @@ export const TripModal: React.FC<TripModalProps> = ({
             </div>
 
             <div className="space-y-2">
-              {mepoList.map((m, idx) => (
-                <div key={idx} className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={m.lokasi}
-                    onChange={(e) => handleMepoChange(idx, 'lokasi', e.target.value)}
-                    placeholder="Lokasi (mis. Basecamp / Stasiun Purwokerto)"
-                    className="flex-1 bg-white border border-[#275d1d]/40 rounded-md px-3 py-1.5 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
-                  />
-                  <input
-                    type="text"
-                    value={m.harga}
-                    onChange={(e) => handleMepoChange(idx, 'harga', e.target.value)}
-                    placeholder="Harga (mis. 600000 -> IDR 600.000)"
-                    className="w-36 sm:w-44 bg-white border border-[#275d1d]/40 rounded-md px-3 py-1.5 text-xs sm:text-sm text-[#275d1d] font-bold focus:border-[#275d1d] focus:outline-none"
-                  />
-                  {mepoList.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveMepo(idx)}
-                      className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-100 rounded cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  )}
-                </div>
-              ))}
+              {mepoList.map((m, idx) => {
+                const isMadiun = (m.lokasi || '').toLowerCase().includes('madiun');
+                return (
+                  <div key={idx} className="space-y-1 bg-white/70 p-2 rounded-md border border-[#275d1d]/20">
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={m.lokasi}
+                        onChange={(e) => handleMepoChange(idx, 'lokasi', e.target.value)}
+                        placeholder="Lokasi (mis. Jakarta / Solo / Madiun / Basecamp)"
+                        className="flex-1 bg-white border border-[#275d1d]/40 rounded-md px-3 py-1.5 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                      />
+                      <input
+                        type="text"
+                        value={m.harga}
+                        onChange={(e) => handleMepoChange(idx, 'harga', e.target.value)}
+                        placeholder="Harga / Keterangan (Angka/Huruf)"
+                        className="w-44 sm:w-56 bg-white border border-[#275d1d]/40 rounded-md px-3 py-1.5 text-xs sm:text-sm text-[#275d1d] font-bold focus:border-[#275d1d] focus:outline-none"
+                      />
+                      {mepoList.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMepo(idx)}
+                          className="p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-100 rounded cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      )}
+                    </div>
+                    {isMadiun && (
+                      <div className="flex items-center gap-2 pl-1">
+                        <span className="text-[10px] text-gray-500">Shortcut Madiun:</span>
+                        <button
+                          type="button"
+                          onClick={() => handleMepoChange(idx, 'harga', '(Menyesuaikan jumlah peserta)')}
+                          className="text-[10px] font-bold text-[#275d1d] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                        >
+                          ⚡ (Menyesuaikan jumlah peserta)
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           </div>
 

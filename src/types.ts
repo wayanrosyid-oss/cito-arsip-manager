@@ -38,6 +38,7 @@ export interface Trip {
   kontak_wa_jakarta?: string;
   kontak_ig: string;
   background_url?: string;
+  slide6_photo_url?: string;
   background_overlay_dim?: number;
   logo_url?: string;
   is_draft?: boolean;

@@ -256,14 +256,19 @@ export function replaceCaptionPlaceholders(template: string, trip: Trip): string
  */
 export function formatMepoPriceItem(lokasi: string, harga: string): string {
   const raw = (harga || '').trim();
-  if (!raw) return 'IDR Hubungi Admin /pax';
+  if (!raw) return 'IDR (Menyesuaikan jumlah peserta) /pax';
+
+  // Check if text indicates "menyesuaikan"
+  if (/menyesuaikan/i.test(raw)) {
+    return 'IDR (Menyesuaikan jumlah peserta) /pax';
+  }
 
   // Already has /pax or /pak
   if (/\/(pax|pak|orang)/i.test(raw)) {
     return raw.toUpperCase().startsWith('IDR') ? raw : `IDR ${raw}`;
   }
 
-  // Pure text like "Menyesuaikan jumlah peserta" or "(Menyesuaikan jumlah peserta)"
+  // Pure text like "Menyesuaikan jumlah peserta"
   const isLettersOnly = /[a-zA-Z]/.test(raw) && !/^\s*(\d{1,3}[.,]?)+$/.test(raw) && !raw.toUpperCase().startsWith('IDR');
   if (isLettersOnly) {
     const cleanText = raw.replace(/^[(\s]+|[)\s]+$/g, '');
@@ -285,10 +290,9 @@ export function formatMepoPriceItem(lokasi: string, harga: string): string {
 }
 
 /**
- * Groups MEPO into Jakarta vs Regional (Basecamp, Madiun, Solo, etc.)
- * with explicit *(Min X Pax) indicators
+ * Groups MEPO with specific *(Min 15 Pax) for Jakarta and *(Min 6 Pax) for Madiun / regional
  */
-export function formatMepoCaptionSection(trip: Trip, indent: string = '  '): string[] {
+export function formatMepoCaptionSection(trip: Trip, indent: string = ''): string[] {
   if (!trip.harga_mepo || trip.harga_mepo.length === 0) return [];
 
   const minMadiun = trip.min_peserta || '6';
@@ -304,15 +308,24 @@ export function formatMepoCaptionSection(trip: Trip, indent: string = '  '): str
     jakartaMepos.forEach(m => {
       lines.push(`${indent}• ${m.lokasi || 'Jakarta'} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
     });
-    lines.push(`${indent}  *(Min ${minJakarta} Pax)`);
+    lines.push(`${indent}*(Min ${minJakarta} Pax)`);
   }
 
   // 2. Basecamp, Solo, Madiun, etc. (Jateng & Jatim)
   if (otherMepos.length > 0) {
+    let hasPlacedMinMadiun = false;
     otherMepos.forEach(m => {
       lines.push(`${indent}• ${m.lokasi || 'Meeting Point'} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
+      if (m.lokasi.toLowerCase().includes('madiun')) {
+        lines.push(`${indent}*(Min ${minMadiun} Pax)`);
+        hasPlacedMinMadiun = true;
+      }
     });
-    lines.push(`${indent}  *(Min ${minMadiun} Pax)`);
+
+    // If Madiun was not explicitly named in the list, still output the regional minimum note
+    if (!hasPlacedMinMadiun) {
+      lines.push(`${indent}*(Min ${minMadiun} Pax)`);
+    }
   }
 
   return lines;

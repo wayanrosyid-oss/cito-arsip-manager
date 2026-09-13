@@ -489,7 +489,23 @@ export function determineInitialRole(): { role: 'admin' | 'tim'; isSecretKey: bo
       return { role: 'admin', isSecretKey: false };
     }
 
-    // 4. Default for ANY other visitor/team phone: ALWAYS lock to 'tim' mode
+    // 4. Editor/Development environment (AI Studio, localhost, dev preview)
+    // Always open Admin mode inside AI Studio development editor so Mas Yuno can edit trips freely
+    const host = window.location.hostname;
+    const isDevEnvironment =
+      host === 'localhost' ||
+      host === '127.0.0.1' ||
+      host.includes('run.app') ||
+      host.includes('webcontainer') ||
+      host.includes('googleusercontent.com') ||
+      host.includes('aistudio');
+
+    if (isDevEnvironment) {
+      setOwnerAuthorized(true);
+      return { role: 'admin', isSecretKey: false };
+    }
+
+    // 5. Default for ANY other visitor/team phone in production (Vercel): ALWAYS lock to 'tim' mode
     lockDeviceToTeam();
     return { role: 'tim', isSecretKey: false };
   } catch {

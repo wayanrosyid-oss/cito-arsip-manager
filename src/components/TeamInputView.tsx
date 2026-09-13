@@ -56,11 +56,12 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
   const [tanggalSelesai, setTanggalSelesai] = useState('');
   const [durasi, setDurasi] = useState('2 Hari 1 Malam');
   const [jadwalTambahan, setJadwalTambahan] = useState<TripSchedule[]>([]);
-  const [minPeserta, setMinPeserta] = useState('15');
+  const [minPeserta, setMinPeserta] = useState('6');
+  const [minPesertaJakarta, setMinPesertaJakarta] = useState('15');
   const [maxPeserta, setMaxPeserta] = useState('30');
   const [mepoList, setMepoList] = useState<MeetingPoint[]>([
     { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-    { lokasi: 'Madiun', harga: 'IDR 700.000' },
+    { lokasi: 'Madiun', harga: '(Menyesuaikan jumlah peserta)' },
     { lokasi: 'Surabaya', harga: 'IDR 850.000' },
   ]);
   const [includeText, setIncludeText] = useState(DEFAULT_CITO_INCLUDE.join('\n'));
@@ -183,9 +184,16 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
   const handleMepoChange = (index: number, field: 'lokasi' | 'harga', val: string) => {
     const updated = [...mepoList];
     if (field === 'harga') {
-      const digits = val.replace(/[^0-9]/g, '');
-      const formatted = digits ? `IDR ${Number(digits).toLocaleString('id-ID')}` : val;
-      updated[index].harga = formatted;
+      const isMadiun = (updated[index].lokasi || '').toLowerCase().includes('madiun');
+      const hasLetters = /[a-zA-Z]/.test(val);
+      if (hasLetters || isMadiun) {
+        // Allow text freely (e.g. (Menyesuaikan jumlah peserta))
+        updated[index].harga = val;
+      } else {
+        const digits = val.replace(/[^0-9]/g, '');
+        const formatted = digits ? `IDR ${Number(digits).toLocaleString('id-ID')}` : val;
+        updated[index].harga = formatted;
+      }
     } else {
       updated[index].lokasi = val;
     }
@@ -200,9 +208,12 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
     setKetinggianMdpl(defaultMtn.height);
     setJalur(defaultMtn.trails[0] || 'Via Kledung');
     setJadwalTambahan([]);
+    setMinPeserta('6');
+    setMinPesertaJakarta('15');
+    setMaxPeserta('30');
     setMepoList([
       { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-      { lokasi: 'Madiun', harga: 'IDR 700.000' },
+      { lokasi: 'Madiun', harga: '(Menyesuaikan jumlah peserta)' },
       { lokasi: 'Surabaya', harga: 'IDR 850.000' },
     ]);
     setIncludeText(DEFAULT_CITO_INCLUDE.join('\n'));
@@ -238,7 +249,8 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
       tanggal_selesai: tanggalSelesai,
       durasi: durasi.trim(),
       jadwal_tambahan: jadwalTambahan.filter((j) => j.tanggal_mulai && j.tanggal_selesai),
-      min_peserta: minPeserta.trim() || '15',
+      min_peserta: minPeserta.trim() || '6',
+      min_peserta_jakarta: minPesertaJakarta.trim() || '15',
       max_peserta: maxPeserta.trim() || '30',
       harga_mepo: mepoList.filter((m) => m.lokasi.trim() || m.harga.trim()),
       include: includeText.split('\n').map((s) => s.trim()).filter(Boolean),
@@ -637,27 +649,46 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
 
             {/* Section 3: Kuota Peserta */}
             <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
-              <h3 className="text-xs font-bold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-[#275d1d]" />
-                3. Kuota Peserta
-              </h3>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <h3 className="text-xs font-bold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-[#275d1d]" />
+                  3. Kuota Peserta (Skema Baru)
+                </h3>
+                <span className="text-[11px] font-extrabold bg-[#275d1d]/10 text-[#275d1d] px-2.5 py-0.5 rounded-full border border-[#275d1d]/30">
+                  Tampilan: {minPeserta || '6'} - {minPesertaJakarta || '15'} / {maxPeserta || '30'} Pax
+                </span>
+              </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
                   <label className="block text-xs font-bold text-gray-800 mb-1">
-                    Minimal Peserta (pax):
+                    Min. Madiun / Jawa (pax):
                   </label>
                   <input
                     type="text"
                     value={minPeserta}
                     onChange={(e) => setMinPeserta(e.target.value)}
-                    placeholder="15"
+                    placeholder="6"
                     className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
                   />
+                  <span className="text-[10px] text-gray-500 mt-0.5 block">Patokan pamflet flyer</span>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-800 mb-1">
-                    Maksimal Peserta (pax):
+                    Min. Khusus Jakarta (pax):
+                  </label>
+                  <input
+                    type="text"
+                    value={minPesertaJakarta}
+                    onChange={(e) => setMinPesertaJakarta(e.target.value)}
+                    placeholder="15"
+                    className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                  />
+                  <span className="text-[10px] text-gray-500 mt-0.5 block">Khusus mepo Jakarta</span>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-800 mb-1">
+                    Maksimal Total (pax):
                   </label>
                   <input
                     type="text"
@@ -666,6 +697,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                     placeholder="30"
                     className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
                   />
+                  <span className="text-[10px] text-gray-500 mt-0.5 block">Batas maksimal kuota</span>
                 </div>
               </div>
 
@@ -676,11 +708,16 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
 
             {/* Section 4: Harga Titik Kumpul (Meeting Point / MEPO) */}
             <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
-                  <DollarSign className="w-4 h-4 text-[#275d1d]" />
-                  4. Harga Titik Kumpul (Meeting Point / MEPO)
-                </h3>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                <div>
+                  <h3 className="text-xs font-bold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
+                    <DollarSign className="w-4 h-4 text-[#275d1d]" />
+                    4. Harga Titik Kumpul (Meeting Point / MEPO)
+                  </h3>
+                  <p className="text-[11px] text-gray-600 mt-0.5">
+                    Khusus Madiun bisa diisi huruf (misal: <em>(Menyesuaikan jumlah peserta)</em>) atau angka.
+                  </p>
+                </div>
                 <button
                   type="button"
                   onClick={handleAddMepo}
@@ -691,35 +728,52 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 </button>
               </div>
 
-              <div className="space-y-2">
-                {mepoList.map((mepo, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <input
-                      type="text"
-                      value={mepo.lokasi}
-                      onChange={(e) => handleMepoChange(idx, 'lokasi', e.target.value)}
-                      placeholder="Lokasi (mis. Basecamp, Madiun, Surabaya)"
-                      className="flex-1 bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#275d1d]"
-                    />
-                    <input
-                      type="text"
-                      value={mepo.harga}
-                      onChange={(e) => handleMepoChange(idx, 'harga', e.target.value)}
-                      placeholder="IDR 600.000"
-                      className="w-36 sm:w-48 bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-[#275d1d] focus:outline-none focus:border-[#275d1d]"
-                    />
-                    {mepoList.length > 1 && (
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveMepo(idx)}
-                        className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
-                        title="Hapus baris ini"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
-                ))}
+              <div className="space-y-2.5">
+                {mepoList.map((mepo, idx) => {
+                  const isMadiun = (mepo.lokasi || '').toLowerCase().includes('madiun');
+                  return (
+                    <div key={idx} className="space-y-1.5 bg-[#fbfbfb] p-2.5 rounded-xl border border-[#275d1d]/20">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          value={mepo.lokasi}
+                          onChange={(e) => handleMepoChange(idx, 'lokasi', e.target.value)}
+                          placeholder="Lokasi (mis. Jakarta / Solo / Madiun / Basecamp)"
+                          className="flex-1 bg-white border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                        />
+                        <input
+                          type="text"
+                          value={mepo.harga}
+                          onChange={(e) => handleMepoChange(idx, 'harga', e.target.value)}
+                          placeholder="Harga / Keterangan (Angka/Huruf)"
+                          className="w-44 sm:w-56 bg-white border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-[#275d1d] focus:outline-none focus:border-[#275d1d]"
+                        />
+                        {mepoList.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveMepo(idx)}
+                            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer shrink-0"
+                            title="Hapus baris ini"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+                      {isMadiun && (
+                        <div className="flex items-center gap-2 pl-1">
+                          <span className="text-[10px] text-gray-500">Shortcut Madiun:</span>
+                          <button
+                            type="button"
+                            onClick={() => handleMepoChange(idx, 'harga', '(Menyesuaikan jumlah peserta)')}
+                            className="text-[10px] font-bold text-[#275d1d] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                          >
+                            ⚡ (Menyesuaikan jumlah peserta)
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             </div>
 

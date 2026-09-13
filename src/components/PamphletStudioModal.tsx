@@ -49,6 +49,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
   const [ratio, setRatio] = useState<'4:5' | '9:16'>('9:16');
   const [bgUrl, setBgUrl] = useState<string>(trip.background_url || '/default-bg.jpg');
   const [dimRatio, setDimRatio] = useState<number>(trip.background_overlay_dim ?? 0.2);
+  const [slide6Photo, setSlide6Photo] = useState<string>(trip.slide6_photo_url || '');
   const [isRendering, setIsRendering] = useState(false);
   const [isExporting, setIsExporting] = useState<string | null>(null);
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
@@ -59,6 +60,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const logoFileInputRef = useRef<HTMLInputElement>(null);
+  const slide6FileInputRef = useRef<HTMLInputElement>(null);
 
   // Synchronize when trip or initialSlide changes
   useEffect(() => {
@@ -66,6 +68,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
       setActiveSlide(initialSlide);
       setBgUrl(trip.background_url || '/default-bg.jpg');
       setDimRatio(trip.background_overlay_dim ?? 0.2);
+      setSlide6Photo(trip.slide6_photo_url || '');
       setActiveLogo(trip.logo_url || getCustomLogo() || OFFICIAL_LOGO_URL);
       setIsCustomLogoActive(Boolean(trip.logo_url || getCustomLogo()));
       setHasSavedBg(false);
@@ -83,11 +86,20 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     return () => window.removeEventListener('cito_logo_updated', handleGlobalLogoUpdate);
   }, [trip.logo_url]);
 
-  // Render canvas preview whenever activeSlide, ratio, bgUrl, dimRatio, or activeLogo changes
+  const effectiveTrip = {
+    ...trip,
+    slide6_photo_url: slide6Photo || trip.slide6_photo_url,
+  };
+
+  // Render canvas preview whenever activeSlide, ratio, bgUrl, dimRatio, activeLogo, or slide6Photo changes
   const updatePreview = useCallback(async () => {
     setIsRendering(true);
     try {
-      const canvas = await renderSlideCanvas(activeSlide, trip, ratio, bgUrl, dimRatio, activeLogo);
+      const currentTrip = {
+        ...trip,
+        slide6_photo_url: slide6Photo || trip.slide6_photo_url,
+      };
+      const canvas = await renderSlideCanvas(activeSlide, currentTrip, ratio, bgUrl, dimRatio, activeLogo);
       const dataUrl = canvas.toDataURL('image/png');
       setPreviewDataUrl(dataUrl);
     } catch (err) {
@@ -95,7 +107,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     } finally {
       setIsRendering(false);
     }
-  }, [activeSlide, trip, ratio, bgUrl, dimRatio, activeLogo]);
+  }, [activeSlide, trip, ratio, bgUrl, dimRatio, activeLogo, slide6Photo]);
 
   useEffect(() => {
     if (isOpen) {
@@ -104,6 +116,39 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
   }, [isOpen, updatePreview]);
 
   if (!isOpen) return null;
+
+  // Handle Slide 6 custom photo upload
+  const handleSlide6PhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      onShowToast('Pilih file gambar valid (JPG, PNG, WebP)');
+      return;
+    }
+
+    try {
+      const optimized = await optimizeBackgroundImage(file);
+      setSlide6Photo(optimized);
+      if (onSaveTrip) {
+        onSaveTrip({ ...trip, slide6_photo_url: optimized, updated_at: Date.now() });
+      }
+      onShowToast('Foto khusus Slide 6 berhasil diunggah & disimpan!');
+    } catch (err) {
+      console.error('Failed to optimize slide 6 photo', err);
+      onShowToast('Gagal memproses foto Slide 6');
+    } finally {
+      e.target.value = '';
+    }
+  };
+
+  const handleResetSlide6Photo = () => {
+    setSlide6Photo('');
+    if (onSaveTrip) {
+      onSaveTrip({ ...trip, slide6_photo_url: undefined, updated_at: Date.now() });
+    }
+    onShowToast('Foto Slide 6 direset');
+  };
 
   // Handle custom image upload from computer/device
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -173,7 +218,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
   const handleSaveBackgroundToTrip = () => {
     if (onSaveTrip) {
       const updated: Trip = {
-        ...trip,
+        ...effectiveTrip,
         background_url: bgUrl || '/default-bg.jpg',
         background_overlay_dim: dimRatio,
         updated_at: Date.now(),
@@ -189,7 +234,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     setIsExporting('single');
     onShowToast(`Menyiapkan slide ${activeSlide} (${ratio})...`);
     try {
-      await exportSlidePNG(activeSlide, trip, ratio, bgUrl, dimRatio, activeLogo);
+      await exportSlidePNG(activeSlide, effectiveTrip, ratio, bgUrl, dimRatio, activeLogo);
       onShowToast(`Slide ${activeSlide} (${ratio}) berhasil diunduh!`);
     } catch (err) {
       console.error(err);
@@ -199,12 +244,12 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     }
   };
 
-  // Download all 5 slides in a ZIP archive
+  // Download all slides in a ZIP archive
   const handleDownloadAllZip = async () => {
     setIsExporting('zip');
-    onShowToast(`Memproses 5 slide carousel (${ratio}) ke ZIP...`);
+    onShowToast(`Memproses ${SLIDES_LIST.length} slide carousel (${ratio}) ke ZIP...`);
     try {
-      await exportAllSlidesZip(trip, ratio, bgUrl, dimRatio, activeLogo);
+      await exportAllSlidesZip(effectiveTrip, ratio, bgUrl, dimRatio, activeLogo);
       onShowToast(`Semua slide (${ratio}) berhasil diunduh dalam ZIP!`);
     } catch (err) {
       console.error(err);
@@ -571,14 +616,63 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               </div>
 
               {/* Box 3: Detail Slide Info */}
-              <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-2">
-                <h4 className="text-xs font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-[#275d1d]" />
-                  {SLIDES_LIST[activeSlideIndex].title}
-                </h4>
+              <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-2.5">
+                <div className="flex items-center justify-between gap-2">
+                  <h4 className="text-xs font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-1.5">
+                    <Layers className="w-4 h-4 text-[#275d1d]" />
+                    {SLIDES_LIST[activeSlideIndex].title}
+                  </h4>
+                  {activeSlide === 'random_photo' && slide6Photo && (
+                    <span className="text-[10px] font-bold text-[#275d1d] bg-[#d1d1d1] px-2 py-0.5 rounded">
+                      Foto Kustom Aktif
+                    </span>
+                  )}
+                </div>
                 <p className="text-xs text-gray-700 leading-relaxed">
                   {SLIDES_LIST[activeSlideIndex].subtitle}
                 </p>
+
+                {activeSlide === 'random_photo' && (
+                  <div className="bg-[#f5f5f5] p-3 rounded-lg border border-[#275d1d]/20 space-y-2">
+                    <div className="text-[11px] text-gray-800">
+                      📸 <strong>Khusus Slide 6:</strong> Menampilkan foto pemandangan bebas dengan watermark floating booking Cito Adventure di bagian bawah. Anda dapat mengunggah foto khusus untuk slide ini:
+                    </div>
+                    <input
+                      type="file"
+                      ref={slide6FileInputRef}
+                      onChange={handleSlide6PhotoUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => slide6FileInputRef.current?.click()}
+                        className="py-1.5 px-3 bg-[#275d1d] hover:bg-[#1f4a17] text-white rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                      >
+                        <Upload className="w-3.5 h-3.5 text-white" />
+                        <span>Unggah Foto Khusus Slide 6</span>
+                      </button>
+                      {slide6Photo && (
+                        <button
+                          type="button"
+                          onClick={handleResetSlide6Photo}
+                          className="py-1.5 px-2.5 bg-white hover:bg-gray-100 text-rose-700 border border-rose-300 rounded-lg text-xs font-bold transition-all flex items-center gap-1 cursor-pointer"
+                          title="Hapus foto khusus Slide 6 dan gunakan latar utama"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          <span>Hapus</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+
+                {activeSlide === 'contact' && (
+                  <div className="bg-[#f5f5f5] p-2.5 rounded-lg border border-[#275d1d]/20 text-[11px] text-gray-800">
+                    💡 <strong>Slide 5:</strong> Format 4 kartu rapi (2 WhatsApp Admin Jatim & Jakarta, Instagram Resmi, dan Akun Live Streaming TikTok).
+                  </div>
+                )}
 
                 {activeSlide === 'itinerary' && (
                   <div className="bg-[#f5f5f5] p-2.5 rounded-lg border border-[#275d1d]/20 text-[11px] text-gray-800">
@@ -619,7 +713,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                   </span>
                 </button>
 
-                {/* Download All 5 Slides in ZIP */}
+                {/* Download All Slides in ZIP */}
                 <button
                   type="button"
                   onClick={handleDownloadAllZip}
@@ -630,7 +724,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                   <span>
                     {isExporting === 'zip'
                       ? 'Memproses ZIP...'
-                      : `Unduh 5 Slide Carousel (ZIP)`}
+                      : `Unduh 6 Slide Carousel (ZIP)`}
                   </span>
                 </button>
               </div>

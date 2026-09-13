@@ -277,10 +277,10 @@ export const TripDetail: React.FC<TripDetailProps> = ({
               <Users className="w-3.5 h-3.5 text-[#275d1d]" /> Target Kuota Peserta
             </span>
             <p className="text-sm sm:text-base font-extrabold text-gray-900 font-['Space_Grotesk'] mt-1">
-              {trip.min_peserta || '-'} – {trip.max_peserta || '-'} Pax
+              {trip.min_peserta || '6'} - {trip.min_peserta_jakarta || '15'} / {trip.max_peserta || '30'} Pax
             </p>
             <p className="text-[11px] text-[#275d1d] font-semibold italic mt-0.5">
-              *(Jika peserta kurang, ada penyesuaian harga)
+              *(Min Madiun: {trip.min_peserta || '6'} | Min Jakarta: {trip.min_peserta_jakarta || '15'} | Maks: {trip.max_peserta || '30'} Pax)
             </p>
           </div>
         </div>

@@ -830,6 +830,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 jalur={jalur}
                 tanggalMulai={tanggalMulai}
                 tanggalSelesai={tanggalSelesai}
+                hidePreviewText={true}
               />
             </div>
 

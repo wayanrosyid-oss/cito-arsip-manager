@@ -35,6 +35,7 @@ interface ItineraryEditorProps {
   tanggalMulai?: string;
   tanggalSelesai?: string;
   onShowToast?: (msg: string) => void;
+  hidePreviewText?: boolean;
 }
 
 export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
@@ -45,6 +46,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
   tanggalMulai = '',
   tanggalSelesai = '',
   onShowToast,
+  hidePreviewText = false,
 }) => {
   const [activeTab, setActiveTab] = useState<'table' | 'text'>('table');
   const [days, setDays] = useState<ItineraryDay[]>([]);
@@ -283,14 +285,16 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
             <span>
               💡 Masukkan data pada kolom <strong>Hari</strong>, <strong>Tanggal</strong>, lalu tambahkan baris <strong>Jam Mulai - Jam Selesai : Keterangan</strong>. Hasil format teks akan terbuat otomatis.
             </span>
-            <button
-              type="button"
-              onClick={() => setShowPreview(!showPreview)}
-              className="text-[#275d1d] hover:underline font-bold flex items-center gap-1 cursor-pointer"
-            >
-              <span>{showPreview ? 'Sembunyikan Preview' : 'Lihat Hasil Format'}</span>
-              {showPreview ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
-            </button>
+            {!hidePreviewText && (
+              <button
+                type="button"
+                onClick={() => setShowPreview(!showPreview)}
+                className="text-[#275d1d] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+              >
+                <span>{showPreview ? 'Sembunyikan Preview' : 'Lihat Hasil Format'}</span>
+                {showPreview ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+              </button>
+            )}
           </div>
 
           {/* Days Cards Container */}
@@ -467,7 +471,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
       )}
 
       {/* Live Preview Dropdown / Panel */}
-      {(showPreview || activeTab === 'table') && (
+      {!hidePreviewText && (showPreview || activeTab === 'table') && (
         <div className="bg-[#f7f7f7] border border-[#275d1d]/30 rounded-lg p-3 space-y-1.5">
           <div className="flex items-center justify-between text-[11px] text-gray-800 font-bold">
             <span className="flex items-center gap-1.5 text-[#275d1d]">

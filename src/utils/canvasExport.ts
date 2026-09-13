@@ -1,6 +1,6 @@
 import { Trip } from '../types';
 import { formatDateRange, getAllTripSchedules } from './formatters';
-import { getCustomLogo } from './storage';
+import { getCustomLogo, OFFICIAL_LOGO_URL } from './storage';
 import {
   drawWhatsAppIcon,
   drawInstagramIcon,
@@ -446,7 +446,7 @@ async function renderCoverSlide(
 
   // 2. Top Right: Cito Adventure Logo + Text (Supports user uploaded custom logo)
   try {
-    const activeLogoUrl = customLogoUrl || trip.logo_url || getCustomLogo() || '/logo.png?v=20260913';
+    const activeLogoUrl = customLogoUrl || trip.logo_url || getCustomLogo() || OFFICIAL_LOGO_URL;
     const logoImg = await loadImage(activeLogoUrl);
     const naturalW = logoImg.naturalWidth || logoImg.width || 1;
     const naturalH = logoImg.naturalHeight || logoImg.height || 1;
@@ -1058,7 +1058,7 @@ async function renderContactSlide(
 
   // Draw Cito Adventure Logo above card (Supports user uploaded custom logo)
   try {
-    const activeLogoUrl = customLogoUrl || trip.logo_url || getCustomLogo() || '/logo.png?v=20260913';
+    const activeLogoUrl = customLogoUrl || trip.logo_url || getCustomLogo() || OFFICIAL_LOGO_URL;
     const logoImg = await loadImage(activeLogoUrl);
     const naturalW = logoImg.naturalWidth || logoImg.width || 1;
     const naturalH = logoImg.naturalHeight || logoImg.height || 1;

@@ -4,18 +4,21 @@ import { idbGet, idbSet, idbDelete } from './indexedDb';
 import { saveLogoToCloud } from '../firebase';
 
 const STORAGE_KEY = 'cito_adventure_trips_v3';
-export const CUSTOM_LOGO_KEY = 'cito_custom_logo_v2';
+export const CUSTOM_LOGO_KEY = 'cito_custom_logo_v3';
+export const OFFICIAL_LOGO_URL = '/logo.png?v=20260913_official_v4';
 const INITIAL_SETUP_DONE_KEY = 'cito_adventure_init_done_v3';
 
-// Automatically purge legacy custom logos so the official new default logo (/logo.png) takes effect
+// Automatically purge legacy custom logos so the official authentic logo (/logo.png) takes effect
 if (typeof window !== 'undefined') {
   try {
     localStorage.removeItem('cito_custom_logo_v1');
+    localStorage.removeItem('cito_custom_logo_v2');
     localStorage.removeItem('cito_custom_brand_logo');
   } catch {
     // ignore
   }
   idbDelete('cito_custom_logo_v1');
+  idbDelete('cito_custom_logo_v2');
   idbDelete('cito_custom_brand_logo');
 }
 

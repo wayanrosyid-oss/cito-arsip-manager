@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2 } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { downloadProjectZip } from '../utils/projectZip';
-import { getCustomLogo, setCustomLogo, clearCustomLogo } from '../utils/storage';
+import { getCustomLogo, setCustomLogo, clearCustomLogo, OFFICIAL_LOGO_URL } from '../utils/storage';
 import { optimizeLogoImage } from '../utils/imageOptimizer';
 
 interface NavbarProps {
@@ -24,7 +24,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onCopyTeamLink,
   onOpenTeamMode,
 }) => {
-  const [logoSrc, setLogoSrc] = useState<string>(getCustomLogo() || '/logo.png?v=20260913');
+  const [logoSrc, setLogoSrc] = useState<string>(getCustomLogo() || OFFICIAL_LOGO_URL);
   const [isCustom, setIsCustom] = useState<boolean>(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,7 +35,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         setLogoSrc(custom);
         setIsCustom(true);
       } else {
-        setLogoSrc('/logo.png?v=20260913');
+        setLogoSrc(OFFICIAL_LOGO_URL);
         setIsCustom(false);
       }
     };

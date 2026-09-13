@@ -8,7 +8,7 @@ import {
   exportAllSlidesZip,
   PRESET_BACKGROUNDS,
 } from '../utils/canvasExport';
-import { getCustomLogo, setCustomLogo, clearCustomLogo } from '../utils/storage';
+import { getCustomLogo, setCustomLogo, clearCustomLogo, OFFICIAL_LOGO_URL } from '../utils/storage';
 import { optimizeLogoImage, optimizeBackgroundImage } from '../utils/imageOptimizer';
 import { CaptionStudioModal } from './CaptionStudioModal';
 import {
@@ -53,7 +53,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
   const [isExporting, setIsExporting] = useState<string | null>(null);
   const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
   const [hasSavedBg, setHasSavedBg] = useState(false);
-  const [activeLogo, setActiveLogo] = useState<string>(trip.logo_url || getCustomLogo() || '/logo.png?v=20260913');
+  const [activeLogo, setActiveLogo] = useState<string>(trip.logo_url || getCustomLogo() || OFFICIAL_LOGO_URL);
   const [isCustomLogoActive, setIsCustomLogoActive] = useState<boolean>(Boolean(trip.logo_url || getCustomLogo()));
   const [isCaptionModalOpen, setIsCaptionModalOpen] = useState(false);
 
@@ -66,7 +66,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
       setActiveSlide(initialSlide);
       setBgUrl(trip.background_url || '/default-bg.jpg');
       setDimRatio(trip.background_overlay_dim ?? 0.2);
-      setActiveLogo(trip.logo_url || getCustomLogo() || '/logo.png?v=20260913');
+      setActiveLogo(trip.logo_url || getCustomLogo() || OFFICIAL_LOGO_URL);
       setIsCustomLogoActive(Boolean(trip.logo_url || getCustomLogo()));
       setHasSavedBg(false);
     }
@@ -75,7 +75,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
   // Listen for global logo updates
   useEffect(() => {
     const handleGlobalLogoUpdate = () => {
-      const current = trip.logo_url || getCustomLogo() || '/logo.png?v=20260913';
+      const current = trip.logo_url || getCustomLogo() || OFFICIAL_LOGO_URL;
       setActiveLogo(current);
       setIsCustomLogoActive(Boolean(trip.logo_url || getCustomLogo()));
     };
@@ -163,7 +163,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
 
   const handleResetLogo = () => {
     clearCustomLogo();
-    setActiveLogo('/logo.png');
+    setActiveLogo(OFFICIAL_LOGO_URL);
     setIsCustomLogoActive(false);
     onShowToast('Logo direset ke logo bawaan');
     updatePreview();

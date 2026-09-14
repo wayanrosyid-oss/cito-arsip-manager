@@ -15,6 +15,7 @@ import { CloudSyncModal } from './components/CloudSyncModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { Toast } from './components/Toast';
 import { TeamInputView } from './components/TeamInputView';
+import { TeamDataModal } from './components/TeamDataModal';
 import { Trip, TripStatus } from './types';
 import {
   getStoredTrips,
@@ -24,10 +25,6 @@ import {
   getDeletedTripIds,
   recordDeletedTripId,
   unrecordDeletedTripId,
-  determineInitialRole,
-  isOwnerAuthorized,
-  setOwnerAuthorized,
-  lockDeviceToTeam,
 } from './utils/storage';
 import {
   subscribeToCloudTrips,
@@ -37,7 +34,7 @@ import {
   subscribeToCloudLogo,
 } from './firebase';
 import { playIncomingDraftChime } from './utils/audioNotify';
-import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCircle, Link2, Key, ShieldCheck } from 'lucide-react';
+import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCircle, Link2 } from 'lucide-react';
 
 export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -45,9 +42,7 @@ export default function App() {
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
-  const [viewMode, setViewMode] = useState<'admin' | 'tim'>(() => {
-    return determineInitialRole().role;
-  });
+  const [viewMode, setViewMode] = useState<'admin' | 'tim'>('admin');
   const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
   const knownDraftIdsRef = useRef<Set<string>>(new Set());
 
@@ -60,6 +55,7 @@ export default function App() {
   const [tripToDelete, setTripToDelete] = useState<Trip | null>(null);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCloudSyncOpen, setIsCloudSyncOpen] = useState(false);
+  const [isTeamDataModalOpen, setIsTeamDataModalOpen] = useState(false);
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -68,18 +64,6 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState<'list' | 'detail'>('list');
 
   useEffect(() => {
-    const roleInfo = determineInitialRole();
-    setViewMode(roleInfo.role);
-
-    if (roleInfo.isSecretKey) {
-      showToast('🔑 Akses Pemilik Mas Yuno Terverifikasi! Selamat datang kembali.');
-    }
-
-    // If device is in team mode, do NOT subscribe to the full trips database
-    if (roleInfo.role === 'tim') {
-      return;
-    }
-
     // 1. Instant local read so app renders immediately without empty flash
     const localTrips = getStoredTrips();
     setTrips(localTrips);
@@ -169,18 +153,11 @@ export default function App() {
       syncCloudLogoToLocal(cloudLogo);
     });
 
-    const handlePopState = () => {
-      const updated = determineInitialRole();
-      setViewMode(updated.role);
-    };
-    window.addEventListener('popstate', handlePopState);
-
     return () => {
       unsubscribeTrips();
       unsubscribeLogo();
-      window.removeEventListener('popstate', handlePopState);
     };
-  }, [viewMode]);
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -296,35 +273,41 @@ export default function App() {
     const url = `${window.location.origin}${window.location.pathname}?mode=tim`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(() => {
-        showToast('📋 Link Formulir Tim disalin! Kirimkan ke tim lapangan lewat WhatsApp.');
+        showToast('Link Formulir Tim berhasil disalin! Kirimkan ke tim Anda lewat WhatsApp.');
       }).catch(() => {
-        prompt('Salin link formulir tim lapangan:', url);
+        prompt('Salin link lembar input jadwal tim ini:', url);
       });
     } else {
-      prompt('Salin link formulir tim lapangan:', url);
+      prompt('Salin link lembar input jadwal tim ini:', url);
     }
   };
 
-  const handleCopyAdminLink = () => {
-    const url = `${window.location.origin}${window.location.pathname}?admin=yuno`;
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-      navigator.clipboard.writeText(url).then(() => {
-        showToast('🔑 Link Kunci Mas Yuno disalin! Simpan di WhatsApp / Catatan pribadi Anda.');
-      }).catch(() => {
-        prompt('Salin link rahasia Mas Yuno:', url);
-      });
-    } else {
-      prompt('Salin link rahasia Mas Yuno:', url);
-    }
-  };
+  // URL mode listener for team input
+  useEffect(() => {
+    const checkMode = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'tim' || params.get('tim') === '1' || window.location.hash === '#input-tim') {
+        setViewMode('tim');
+      }
+    };
+    checkMode();
+    window.addEventListener('popstate', checkMode);
+    return () => window.removeEventListener('popstate', checkMode);
+  }, []);
 
   if (viewMode === 'tim') {
     return (
       <TeamInputView
+        onBackToDashboard={() => {
+          window.history.pushState({}, '', window.location.pathname);
+          setViewMode('admin');
+        }}
         onTripSubmitted={(newTrip) => {
-          if (isOwnerAuthorized()) {
-            handleSaveTrip(newTrip);
-          }
+          window.history.pushState({}, '', window.location.pathname);
+          setViewMode('admin');
+          setSelectedTripId(newTrip.id);
+          setIsDraftBannerDismissed(false);
+          showToast(`Draf jadwal ${newTrip.nama_gunung} berhasil diterima di dashboard!`);
         }}
       />
     );
@@ -348,7 +331,8 @@ export default function App() {
         cloudStatus={cloudStatus}
         onOpenCloudSync={() => setIsCloudSyncOpen(true)}
         onCopyTeamLink={handleCopyTeamLink}
-        onCopyAdminLink={handleCopyAdminLink}
+        onOpenTeamMode={() => setViewMode('tim')}
+        onOpenTeamData={() => setIsTeamDataModalOpen(true)}
       />
 
       {/* Main Content Layout */}
@@ -385,7 +369,7 @@ export default function App() {
               </button>
               <button
                 onClick={() => {
-                  const approved = { ...draftTrips[0], is_draft: false, updated_at: Date.now() };
+                  const approved = { ...draftTrips[0], is_draft: false, from_team: true, updated_at: Date.now() };
                   handleSaveTrip(approved);
                   showToast(`Trip ${draftTrips[0].nama_gunung} resmi disetujui & dipublikasikan!`);
                 }}
@@ -615,6 +599,12 @@ export default function App() {
           showToast(`Berhasil menyinkronkan ${updated.length} trip dari Cloud!`);
         }}
         cloudStatus={cloudStatus}
+      />
+
+      <TeamDataModal
+        isOpen={isTeamDataModalOpen}
+        onClose={() => setIsTeamDataModalOpen(false)}
+        onShowToast={showToast}
       />
 
       {/* Notifications & Offline Status */}

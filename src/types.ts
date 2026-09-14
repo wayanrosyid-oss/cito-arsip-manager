@@ -38,14 +38,23 @@ export interface Trip {
   kontak_wa_jakarta?: string;
   kontak_ig: string;
   background_url?: string;
-  slide6_photo_url?: string;
   background_overlay_dim?: number;
   logo_url?: string;
   is_draft?: boolean;
+  from_team?: boolean;
   draf_oleh?: string;
   draf_catatan?: string;
   created_at: number;
   updated_at: number;
+}
+
+export interface TeamMember {
+  id: string;
+  status: string; // e.g. Guide, Porter, Kameramen, Leader, Sweeper
+  nama: string;
+  no_wa: string;
+  instagram: string;
+  created_at?: number;
 }
 
 export interface MountainItem {

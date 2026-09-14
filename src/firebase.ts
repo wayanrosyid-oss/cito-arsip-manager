@@ -124,8 +124,7 @@ export function subscribeToCloudTrips(
       console.error('Error listening to Cloud Firestore trips:', error);
       if (onError) {
         onError(error);
-      }
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'permission-denied') {
+      } else {
         handleFirestoreError(error, OperationType.LIST, TRIPS_COLLECTION);
       }
     }
@@ -215,9 +214,6 @@ export function subscribeToCloudLogo(
     },
     (error) => {
       console.warn('Cloud logo snapshot error:', error);
-      if (error && typeof error === 'object' && 'code' in error && error.code === 'permission-denied') {
-        handleFirestoreError(error, OperationType.GET, `${SETTINGS_COLLECTION}/${LOGO_DOC_ID}`);
-      }
     }
   );
 }

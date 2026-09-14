@@ -211,7 +211,8 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
     const cleanTitle = namaGunung ? `🗓️ ITINERARY PENDAKIAN ${namaGunung.toUpperCase()} ${jalur ? jalur.toUpperCase() : ''}`.trim() : '';
     setTitleHeader(cleanTitle);
     updateDaysAndSync(defaultDays, cleanTitle);
-    if (onShowToast) onShowToast('Jadwal H-1 s/d Hari 2 berhasil disesuaikan otomatis!');
+    const dayCount = defaultDays.filter(d => !d.hariLabel.includes('Hari 0')).length;
+    if (onShowToast) onShowToast(`Jadwal Hari 0 s/d Hari ${dayCount} berhasil disesuaikan otomatis!`);
   };
 
   const handleCopyText = async () => {

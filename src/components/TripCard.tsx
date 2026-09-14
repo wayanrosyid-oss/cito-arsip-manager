@@ -38,11 +38,18 @@ export const TripCard: React.FC<TripCardProps> = ({
           : 'bg-white border-[#275d1d] hover:bg-emerald-50/20'
       }`}
     >
-      {/* Row 1: Mountain Name & Height + Chevron Icon */}
+      {/* Row 1: Mountain Name & Height + Dari Tim Badge + Chevron Icon */}
       <div className="flex items-center justify-between gap-2">
-        <h3 className="text-sm sm:text-base font-bold font-['Space_Grotesk'] text-[#275d1d] truncate">
-          {formatTitle()}
-        </h3>
+        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+          <h3 className="text-sm sm:text-base font-bold font-['Space_Grotesk'] text-[#275d1d] truncate">
+            {formatTitle()}
+          </h3>
+          {(trip.from_team || trip.is_draft) && (
+            <span className="inline-flex items-center text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-[#f5a623] text-white shadow-2xs shrink-0">
+              Dari Tim
+            </span>
+          )}
+        </div>
         <ChevronRight
           className={`w-5 h-5 transition-all shrink-0 ${
             isSelected
@@ -57,12 +64,6 @@ export const TripCard: React.FC<TripCardProps> = ({
         <span className="inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-[#275d1d] text-white">
           {jalurText}
         </span>
-
-        {trip.is_draft && (
-          <span className="inline-flex items-center text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500 text-white animate-pulse">
-            Draf Tim
-          </span>
-        )}
       </div>
     </div>
   );

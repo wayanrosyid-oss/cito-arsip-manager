@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2, Bell, Key, ShieldCheck } from 'lucide-react';
+import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2, Bell, Users } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { downloadProjectZip } from '../utils/projectZip';
 import { getCustomLogo, setCustomLogo, clearCustomLogo, OFFICIAL_LOGO_URL } from '../utils/storage';
@@ -14,8 +14,8 @@ interface NavbarProps {
   cloudStatus?: 'synced' | 'syncing' | 'offline';
   onOpenCloudSync?: () => void;
   onCopyTeamLink?: () => void;
-  onCopyAdminLink?: () => void;
   onOpenTeamMode?: () => void;
+  onOpenTeamData?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -27,8 +27,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   cloudStatus = 'synced',
   onOpenCloudSync,
   onCopyTeamLink,
-  onCopyAdminLink,
   onOpenTeamMode,
+  onOpenTeamData,
 }) => {
   const [logoSrc, setLogoSrc] = useState<string>(getCustomLogo() || OFFICIAL_LOGO_URL);
   const [isCustom, setIsCustom] = useState<boolean>(false);
@@ -205,23 +205,23 @@ export const Navbar: React.FC<NavbarProps> = ({
               type="button"
               onClick={onCopyTeamLink}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-amber-400/25 hover:bg-amber-400/35 text-amber-100 border border-amber-300/40 transition-colors cursor-pointer"
-              title="Salin Link Khusus Tim Lapangan (Hanya bisa input jadwal, mode admin dikunci)"
+              title="Salin Link Khusus untuk Tim Penginput Jadwal"
             >
               <Link2 className="w-3.5 h-3.5 text-amber-300" />
               <span>Link Form Tim</span>
             </button>
           )}
 
-          {onCopyAdminLink && (
+          {onOpenTeamData && (
             <button
+              id="team-data-btn"
               type="button"
-              onClick={onCopyAdminLink}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-emerald-500/25 hover:bg-emerald-500/35 text-emerald-100 border border-emerald-400/40 transition-colors cursor-pointer"
-              title="Salin Link Kunci Mas Yuno (?admin=yuno) untuk disimpan atau dibuka di HP/Laptop lain"
+              onClick={onOpenTeamData}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-white/20 hover:bg-white/30 text-white border border-white/35 transition-all shadow-2xs cursor-pointer active:scale-95"
+              title="Kelola Nomor Admin & Data Anggota Tim"
             >
-              <Key className="w-3.5 h-3.5 text-emerald-300" />
-              <span className="hidden xl:inline">Kunci Akses Mas Yuno</span>
-              <span className="xl:hidden">Kunci Admin</span>
+              <Users className="w-3.5 h-3.5 text-white" />
+              <span>Data Tim</span>
             </button>
           )}
 

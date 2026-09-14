@@ -1,4 +1,8 @@
 import { Trip, TripSchedule } from '../types';
+import {
+  generateDefaultStructuredDays,
+  structuredToText,
+} from './itineraryHelper';
 
 const MONTH_NAMES_ID = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
@@ -112,36 +116,9 @@ export function generateDefaultItinerary(
 ): string {
   const cleanMtn = mountainName || 'Gunung';
   const cleanJalur = jalur || 'Basecamp';
-  
-  const sDate = startDateStr ? new Date(startDateStr) : new Date();
-  const eDate = endDateStr ? new Date(endDateStr) : new Date(sDate.getTime() + 86400000);
-
-  // H-1 (Day 0)
-  const hMinus1 = new Date(sDate);
-  hMinus1.setDate(hMinus1.getDate() - 1);
-  const hMinus1Str = formatDateID(hMinus1.toISOString().split('T')[0]);
-  const day1Str = formatDateID(sDate.toISOString().split('T')[0]);
-  const day2Str = formatDateID(eDate.toISOString().split('T')[0]);
-
-  return `🗓️ ITINERARY PENDAKIAN ${cleanMtn.toUpperCase()} ${cleanJalur.toUpperCase()}
-
-Hari 0 (H-1) - ${hMinus1Str}:
-• 19.00 - 21.00 : Kumpul di meeting point (penjemputan peserta)
-• 21.00 - selesai : Perjalanan malam menuju basecamp
-
-Hari 1 - ${day1Str}:
-• 07.00 - 09.00 : Tiba di basecamp, istirahat, sarapan & briefing
-• 09.30 - 15.30 : Mulai pendakian menuju area camp
-• 16.00 - 18.00 : Pasang tenda & nikmati sunset
-• 19.00 - 21.00 : Makan malam hangat bersama & istirahat
-
-Hari 2 - ${day2Str}:
-• 03.00 - 06.00 : Summit attack berburu sunrise
-• 06.00 - 08.00 : Puncak ${cleanMtn}, selebrasi & sesi foto dokumentasi
-• 08.30 - 10.30 : Turun kembali ke camp area & sarapan
-• 11.30 - 15.00 : Perjalanan turun ke basecamp
-• 15.30 - 17.00 : Bersih-bersih & persiapan pulang
-• 17.00 - selesai : Perjalanan kembali ke meeting point masing-masing`;
+  const title = `🗓️ ITINERARY PENDAKIAN ${cleanMtn.toUpperCase()} ${cleanJalur.toUpperCase()}`;
+  const days = generateDefaultStructuredDays(mountainName, jalur, startDateStr, endDateStr);
+  return structuredToText(days, title);
 }
 
 export function generateMountainHashtags(mountainName: string, height: string): string[] {
@@ -256,19 +233,14 @@ export function replaceCaptionPlaceholders(template: string, trip: Trip): string
  */
 export function formatMepoPriceItem(lokasi: string, harga: string): string {
   const raw = (harga || '').trim();
-  if (!raw) return 'IDR (Menyesuaikan jumlah peserta) /pax';
-
-  // Check if text indicates "menyesuaikan"
-  if (/menyesuaikan/i.test(raw)) {
-    return 'IDR (Menyesuaikan jumlah peserta) /pax';
-  }
+  if (!raw) return 'IDR Hubungi Admin /pax';
 
   // Already has /pax or /pak
   if (/\/(pax|pak|orang)/i.test(raw)) {
     return raw.toUpperCase().startsWith('IDR') ? raw : `IDR ${raw}`;
   }
 
-  // Pure text like "Menyesuaikan jumlah peserta"
+  // Pure text like "Menyesuaikan jumlah peserta" or "(Menyesuaikan jumlah peserta)"
   const isLettersOnly = /[a-zA-Z]/.test(raw) && !/^\s*(\d{1,3}[.,]?)+$/.test(raw) && !raw.toUpperCase().startsWith('IDR');
   if (isLettersOnly) {
     const cleanText = raw.replace(/^[(\s]+|[)\s]+$/g, '');
@@ -290,9 +262,10 @@ export function formatMepoPriceItem(lokasi: string, harga: string): string {
 }
 
 /**
- * Groups MEPO with specific *(Min 15 Pax) for Jakarta and *(Min 6 Pax) for Madiun / regional
+ * Groups MEPO into Jakarta vs Regional (Basecamp, Madiun, Solo, etc.)
+ * with explicit *(Min X Pax) indicators
  */
-export function formatMepoCaptionSection(trip: Trip, indent: string = ''): string[] {
+export function formatMepoCaptionSection(trip: Trip, indent: string = '  '): string[] {
   if (!trip.harga_mepo || trip.harga_mepo.length === 0) return [];
 
   const minMadiun = trip.min_peserta || '6';
@@ -308,24 +281,15 @@ export function formatMepoCaptionSection(trip: Trip, indent: string = ''): strin
     jakartaMepos.forEach(m => {
       lines.push(`${indent}• ${m.lokasi || 'Jakarta'} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
     });
-    lines.push(`${indent}*(Min ${minJakarta} Pax)`);
+    lines.push(`${indent}  *(Min ${minJakarta} Pax)`);
   }
 
   // 2. Basecamp, Solo, Madiun, etc. (Jateng & Jatim)
   if (otherMepos.length > 0) {
-    let hasPlacedMinMadiun = false;
     otherMepos.forEach(m => {
       lines.push(`${indent}• ${m.lokasi || 'Meeting Point'} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
-      if (m.lokasi.toLowerCase().includes('madiun')) {
-        lines.push(`${indent}*(Min ${minMadiun} Pax)`);
-        hasPlacedMinMadiun = true;
-      }
     });
-
-    // If Madiun was not explicitly named in the list, still output the regional minimum note
-    if (!hasPlacedMinMadiun) {
-      lines.push(`${indent}*(Min ${minMadiun} Pax)`);
-    }
+    lines.push(`${indent}  *(Min ${minMadiun} Pax)`);
   }
 
   return lines;
@@ -446,13 +410,11 @@ export function generateInstagramFeedCaption(
   // 7. Call To Action & Kontak
   const waJatim = trip.kontak_wa_jatim || '+6282230444428';
   const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
-  const waJatimClean = waJatim.replace(/[^0-9]/g, '');
-  const waJakartaClean = waJakarta.replace(/[^0-9]/g, '');
 
   lines.push('');
   lines.push('📲 INFORMASI & PENDAFTARAN RESMI:');
-  lines.push(`• Admin Jatim & Jateng: ${waJatim} (https://wa.me/${waJatimClean})`);
-  lines.push(`• Admin Jakarta & Sekitar: ${waJakarta} (https://wa.me/${waJakartaClean})`);
+  lines.push(`• Admin Jatim & Jateng: ${waJatim}`);
+  lines.push(`• Admin Jakarta: ${waJakarta}`);
   lines.push(`📸 Instagram: ${trip.kontak_ig || '@citoadventuremadiun'}`);
   lines.push('');
 

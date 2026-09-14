@@ -4,7 +4,6 @@ import { getCustomLogo, OFFICIAL_LOGO_URL } from './storage';
 import {
   drawWhatsAppIcon,
   drawInstagramIcon,
-  drawTikTokLiveIcon,
   drawCalendarDurationIcon,
   drawGroupPesertaIcon,
   drawYukGasssGraphic,
@@ -14,7 +13,7 @@ import {
 } from './canvasIcons';
 import JSZip from 'jszip';
 
-export type SlideType = 'cover' | 'facilities' | 'itinerary' | 'notes' | 'contact' | 'random_photo';
+export type SlideType = 'cover' | 'facilities' | 'itinerary' | 'notes' | 'contact';
 
 export interface SlideOption {
   id: SlideType;
@@ -27,8 +26,7 @@ export const SLIDES_LIST: SlideOption[] = [
   { id: 'facilities', title: 'Slide 2: Fasilitas & S&K', subtitle: 'Include, Exclude, Porter, dan Syarat Ketentuan' },
   { id: 'itinerary', title: 'Slide 3: Itinerary Rundown', subtitle: 'Jadwal kegiatan terstruktur per hari' },
   { id: 'notes', title: 'Slide 4: Catatan Penting', subtitle: 'Persiapan fisik dan peringatan olahraga' },
-  { id: 'contact', title: 'Slide 5: Info Lanjut', subtitle: 'Kontak 4 Kartu: Admin Jatim, Jakarta, IG & Live Streaming' },
-  { id: 'random_photo', title: 'Slide 6: Random Foto', subtitle: 'Foto bebas pemandangan + Watermark Booking Cito' },
+  { id: 'contact', title: 'Slide 5: Info Lanjut', subtitle: 'Penutup & ajakan cek caption Instagram' },
 ];
 
 export interface PresetBackground {
@@ -1040,7 +1038,7 @@ async function renderNotesSlide(
 }
 
 // =======================================================
-// SLIDE 5: INFORMASI LEBIH LANJUT / CLOSING (Matches Image 2 - 4 boxes 2x2)
+// SLIDE 5: INFORMASI LEBIH LANJUT / CLOSING (Matches 4.png)
 // =======================================================
 async function renderContactSlide(
   trip: Trip,
@@ -1055,9 +1053,9 @@ async function renderContactSlide(
 
   const isRatio916 = ratio === '9:16';
   const cardW = width - 160;
-  const cardH = isRatio916 ? 680 : 560;
+  const cardH = isRatio916 ? 660 : 540;
   const cardX = (width - cardW) / 2;
-  const cardY = isRatio916 ? 560 : 320;
+  const cardY = isRatio916 ? 600 : 340;
 
   // Draw Cito Adventure Logo above card (Supports user uploaded custom logo)
   try {
@@ -1080,154 +1078,116 @@ async function renderContactSlide(
     console.warn('Could not load logo for contact slide', e);
   }
 
-  // Frosted Translucent Card with soft rounded corners
+  // Frosted Translucent Card
   ctx.save();
-  ctx.fillStyle = 'rgba(18, 28, 20, 0.88)';
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.22)';
+  ctx.fillStyle = 'rgba(12, 28, 18, 0.72)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
   ctx.lineWidth = 2;
   roundRect(ctx, cardX, cardY, cardW, cardH, 28, true, true);
   ctx.restore();
 
   // Pill Outline: "Informasi Lebih Lanjut"
   const pillW = 460;
-  const pillH = 66;
+  const pillH = 68;
   const pillX = (width - pillW) / 2;
-  const pillY = cardY + 34;
+  const pillY = cardY + 36;
 
   ctx.save();
   ctx.strokeStyle = '#FFFFFF';
-  ctx.lineWidth = 2.8;
+  ctx.lineWidth = 3;
   ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
   roundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, true, true);
 
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 28px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.font = '900 30px "Montserrat", "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText('Informasi Lebih Lanjut', width / 2, pillY + pillH / 2);
   ctx.restore();
 
-  // 4 White-Bordered Rounded Boxes arranged in a 2x2 Grid (Matches Image 2)
+  // Contact items: Two WhatsApp Admin Boxes Side by Side
   const waJatim = trip.kontak_wa_jatim || '+6282230444428';
   const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
-  const rawIg = (trip.kontak_ig || 'CITO ADVENTURE MADIUN').replace(/^@/, '').toUpperCase();
-  const igDisplay = `@${rawIg}`;
+  const igHandle = (trip.kontak_ig || 'CITO ADVENTURE MADIUN').replace(/^@/, '').toUpperCase();
 
-  const gridY = pillY + pillH + 28;
-  const gridGapX = 18;
-  const gridGapY = 16;
-  const boxW = (cardW - 60 - gridGapX) / 2;
-  const boxH = 104;
+  const boxesY = pillY + pillH + 28;
+  const boxGap = 20;
+  const boxW = (cardW - 60 - boxGap) / 2;
+  const boxH = 118;
 
-  const col1X = cardX + 30;
-  const col2X = col1X + boxW + gridGapX;
-  const row1Y = gridY;
-  const row2Y = row1Y + boxH + gridGapY;
-
-  // Helper to render individual 2x2 card box with clean white outline
-  const renderContactBox = (
-    bx: number,
-    by: number,
-    drawIconFn: (ctx: CanvasRenderingContext2D, cx: number, cy: number, sz: number) => void,
-    label: string,
-    val: string
-  ) => {
-    ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.07)';
-    ctx.strokeStyle = '#FFFFFF';
-    ctx.lineWidth = 2;
-    roundRect(ctx, bx, by, boxW, boxH, 18, true, true);
-
-    const iconCenterX = bx + 36;
-    const iconCenterY = by + boxH / 2;
-    drawIconFn(ctx, iconCenterX, iconCenterY, 36);
-
-    const textX = bx + 68;
-    ctx.textAlign = 'left';
-    ctx.fillStyle = '#FFFFFF';
-
-    // Label line
-    ctx.font = '700 12.5px "Montserrat", sans-serif';
-    ctx.fillText(label, textX, by + 38);
-
-    // Value line
-    ctx.font = '900 18.5px "Montserrat", "Space Grotesk", sans-serif';
-    ctx.fillText(val, textX, by + 68);
-    ctx.restore();
-  };
-
-  // 1. Box Top-Left: Admin Jatim & Jateng (WhatsApp)
-  renderContactBox(
-    col1X,
-    row1Y,
-    (c, cx, cy, sz) => drawWhatsAppIcon(c, cx, cy, sz, '#FFFFFF'),
-    'ADMIN JATIM & JATENG',
-    waJatim
-  );
-
-  // 2. Box Top-Right: Admin Jakarta & Sekitar (WhatsApp)
-  renderContactBox(
-    col2X,
-    row1Y,
-    (c, cx, cy, sz) => drawWhatsAppIcon(c, cx, cy, sz, '#FFFFFF'),
-    'ADMIN JAKARTA & SEKITAR',
-    waJakarta
-  );
-
-  // 3. Box Bottom-Left: Instagram (Camera Icon)
-  renderContactBox(
-    col1X,
-    row2Y,
-    (c, cx, cy, sz) => drawInstagramIcon(c, cx, cy, sz, '#FFFFFF'),
-    'INSTAGRAM',
-    igDisplay
-  );
-
-  // 4. Box Bottom-Right: Live Streaming (TikTok Musical Note Icon)
-  renderContactBox(
-    col2X,
-    row2Y,
-    (c, cx, cy, sz) => drawTikTokLiveIcon(c, cx, cy, sz, '#FFFFFF'),
-    'LIVE STREAMING',
-    igDisplay
-  );
-
-  // Below the 4 boxes: "Detail trip & pendaftaran lengkap cek di caption"
-  const captionMsgY = row2Y + boxH + 42;
+  // Box 1: Admin Jatim & Jateng
+  const box1X = cardX + 30;
   ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, box1X, boxesY, boxW, boxH, 18, true, true);
+
+  drawWhatsAppIcon(ctx, box1X + 36, boxesY + boxH / 2, 42, '#22C55E');
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#86EFAC';
+  ctx.font = '800 13px "Montserrat", sans-serif';
+  ctx.fillText('ADMIN JATIM & JATENG', box1X + 70, boxesY + 40);
   ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 22px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(waJatim, box1X + 70, boxesY + 74);
+  ctx.restore();
+
+  // Box 2: Admin Jakarta & Sekitarnya
+  const box2X = box1X + boxW + boxGap;
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
+  ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, box2X, boxesY, boxW, boxH, 18, true, true);
+
+  drawWhatsAppIcon(ctx, box2X + 36, boxesY + boxH / 2, 42, '#22C55E');
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#86EFAC';
+  ctx.font = '800 13px "Montserrat", sans-serif';
+  ctx.fillText('ADMIN JAKARTA & SEKITAR', box2X + 70, boxesY + 40);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 22px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(waJakarta, box2X + 70, boxesY + 74);
+  ctx.restore();
+
+  // Instagram Card (Centered Below the 2 boxes)
+  const igCardY = boxesY + boxH + 18;
+  const igCardH = 68;
+  const igCardW = cardW - 60;
+  const igCardX = cardX + 30;
+
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+  ctx.lineWidth = 1.5;
+  roundRect(ctx, igCardX, igCardY, igCardW, igCardH, 16, true, true);
+
+  drawInstagramIcon(ctx, igCardX + 36, igCardY + igCardH / 2, 36, '#FFFFFF');
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#CBD5E1';
+  ctx.font = '700 13px "Montserrat", sans-serif';
+  ctx.fillText('INSTAGRAM RESMI', igCardX + 68, igCardY + 28);
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 20px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(`@${igHandle}`, igCardX + 68, igCardY + 50);
+  ctx.restore();
+
+  // "Detail trip & pendaftaran cek di caption"
+  const captionMsgY = igCardY + igCardH + 38;
+  ctx.save();
+  ctx.fillStyle = '#FBBF24';
   ctx.font = '800 23px "Montserrat", "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('"Detail trip & pendaftaran lengkap cek di caption"', width / 2, captionMsgY);
 
-  // Down Arrow ↓
+  // Down Arrow ⬇
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 36px "Montserrat", sans-serif';
-  ctx.fillText('↓', width / 2, captionMsgY + 44);
+  ctx.font = '900 36px sans-serif';
+  ctx.fillText('⬇', width / 2, captionMsgY + 44);
   ctx.restore();
 
   // Floating Bottom Booking Bar
-  drawBottomBookingBar(ctx, width, height, trip);
-
-  return canvas;
-}
-
-// =======================================================
-// SLIDE 6: RANDOM FOTO (Matches user Image 1)
-// Menampilkan foto landscape/gunung bersih + Watermark Booking Cito Adventure di bawah
-// =======================================================
-async function renderRandomPhotoSlide(
-  trip: Trip,
-  ratio: '4:5' | '9:16',
-  bgUrl?: string,
-  dimRatio: number = 0.05
-): Promise<HTMLCanvasElement> {
-  const width = 1080;
-  const height = ratio === '4:5' ? 1350 : 1920;
-  const photoUrl = trip.slide6_photo_url || bgUrl || trip.background_url || '/default-bg.jpg';
-  const { canvas, ctx } = await prepareBaseCanvas(width, height, photoUrl, dimRatio);
-
-  // Only Floating Bottom Booking Bar watermark (Matches Image 1)
   drawBottomBookingBar(ctx, width, height, trip);
 
   return canvas;
@@ -1253,8 +1213,6 @@ export async function renderSlideCanvas(
       return renderNotesSlide(trip, ratio, bgUrl, dimRatio);
     case 'contact':
       return renderContactSlide(trip, ratio, bgUrl, dimRatio, customLogoUrl);
-    case 'random_photo':
-      return renderRandomPhotoSlide(trip, ratio, bgUrl, dimRatio);
     default:
       return renderCoverSlide(trip, ratio, bgUrl, dimRatio, customLogoUrl);
   }

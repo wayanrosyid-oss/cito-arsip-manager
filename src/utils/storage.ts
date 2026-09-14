@@ -389,6 +389,93 @@ export function clearCustomLogo(): void {
   });
 }
 
+// ==========================================
+// Admin Phone & Team Members Management
+// ==========================================
+export const ADMIN_PHONE_STORAGE_KEY = 'cito_admin_notification_phone_v1';
+export const TEAM_MEMBERS_STORAGE_KEY = 'cito_team_members_v1';
+export const DEFAULT_ADMIN_PHONE = '+6282230444428';
+
+export const INITIAL_TEAM_MEMBERS: import('../types').TeamMember[] = [
+  {
+    id: 'tm-1',
+    status: 'Guide',
+    nama: 'Kang Yuno',
+    no_wa: '+6282230444428',
+    instagram: '@citoadventuremadiun',
+    created_at: 1700000000000,
+  },
+  {
+    id: 'tm-2',
+    status: 'Guide / Admin Jakarta',
+    nama: 'Admin Jakarta',
+    no_wa: '+6289503689266',
+    instagram: '@citoadventuremadiun',
+    created_at: 1700000001000,
+  },
+  {
+    id: 'tm-3',
+    status: 'Porter',
+    nama: 'Tim Porter Cito',
+    no_wa: '+6282230444428',
+    instagram: '@citoadventuremadiun',
+    created_at: 1700000002000,
+  },
+  {
+    id: 'tm-4',
+    status: 'Kameramen',
+    nama: 'Dokumentasi YT',
+    no_wa: '+6282230444428',
+    instagram: '@citoadventuremadiun',
+    created_at: 1700000003000,
+  },
+];
+
+export function getAdminPhone(): string {
+  try {
+    const saved = localStorage.getItem(ADMIN_PHONE_STORAGE_KEY);
+    if (saved && saved.trim()) {
+      return saved.trim();
+    }
+  } catch {
+    // ignore
+  }
+  return DEFAULT_ADMIN_PHONE;
+}
+
+export function saveAdminPhone(phone: string): void {
+  try {
+    localStorage.setItem(ADMIN_PHONE_STORAGE_KEY, phone.trim());
+  } catch {
+    // ignore
+  }
+  window.dispatchEvent(new CustomEvent('cito_admin_phone_updated', { detail: phone.trim() }));
+}
+
+export function getTeamMembers(): import('../types').TeamMember[] {
+  try {
+    const saved = localStorage.getItem(TEAM_MEMBERS_STORAGE_KEY);
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch {
+    // ignore
+  }
+  return INITIAL_TEAM_MEMBERS;
+}
+
+export function saveTeamMembers(members: import('../types').TeamMember[]): void {
+  try {
+    localStorage.setItem(TEAM_MEMBERS_STORAGE_KEY, JSON.stringify(members));
+  } catch {
+    // ignore
+  }
+  window.dispatchEvent(new CustomEvent('cito_team_members_updated', { detail: members }));
+}
+
 export function syncCloudLogoToLocal(dataUrl: string | null): void {
   if (dataUrl) {
     memoryCustomLogo = dataUrl;
@@ -413,103 +500,3 @@ export function syncCloudLogoToLocal(dataUrl: string | null): void {
     }
   }
 }
-
-export const ADMIN_AUTH_KEY = 'cito_is_owner_yuno';
-export const TEAM_LOCK_KEY = 'cito_team_locked';
-
-export function isOwnerAuthorized(): boolean {
-  if (typeof window === 'undefined') return false;
-  try {
-    return localStorage.getItem(ADMIN_AUTH_KEY) === 'true';
-  } catch {
-    return false;
-  }
-}
-
-export function setOwnerAuthorized(val: boolean): void {
-  if (typeof window === 'undefined') return;
-  try {
-    if (val) {
-      localStorage.setItem(ADMIN_AUTH_KEY, 'true');
-      localStorage.removeItem(TEAM_LOCK_KEY);
-    } else {
-      localStorage.removeItem(ADMIN_AUTH_KEY);
-    }
-  } catch {
-    // ignore
-  }
-}
-
-export function lockDeviceToTeam(): void {
-  if (typeof window === 'undefined') return;
-  try {
-    localStorage.removeItem(ADMIN_AUTH_KEY);
-    localStorage.setItem(TEAM_LOCK_KEY, 'true');
-    // Purge cached trips from this device so team phone does not hold admin trip archive
-    localStorage.removeItem(STORAGE_KEY);
-    memoryTrips = [];
-    idbDelete(STORAGE_KEY);
-  } catch {
-    // ignore
-  }
-}
-
-export function determineInitialRole(): { role: 'admin' | 'tim'; isSecretKey: boolean } {
-  if (typeof window === 'undefined') return { role: 'tim', isSecretKey: false };
-
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const hash = window.location.hash;
-
-    // 1. Secret owner/admin key parameter (khusus Mas Yuno)
-    // Supports: ?admin=yuno, ?kunci=yuno, ?admin=citoyuno, ?kunci=citoyuno, ?masyuno, ?admin=citomadiun
-    const adminParam = (params.get('admin') || params.get('kunci') || '').toLowerCase().trim();
-    const hasMasyuno = params.has('masyuno') || params.has('yuno');
-    const validKeys = ['yuno', 'citoyuno', 'citomadiun', 'owner', 'masyuno', 'cito'];
-
-    if (hasMasyuno || validKeys.includes(adminParam)) {
-      setOwnerAuthorized(true);
-      try {
-        // Clean URL so the secret key parameter is not left in the address bar
-        window.history.replaceState({}, '', window.location.pathname);
-      } catch {
-        // ignore
-      }
-      return { role: 'admin', isSecretKey: true };
-    }
-
-    // 2. Explicit team parameter (e.g. ?mode=tim, ?tim=1, #input-tim)
-    if (params.get('mode') === 'tim' || params.get('tim') === '1' || hash === '#input-tim') {
-      lockDeviceToTeam();
-      return { role: 'tim', isSecretKey: false };
-    }
-
-    // 3. Persistent check: has this device been authorized by Mas Yuno?
-    if (isOwnerAuthorized()) {
-      return { role: 'admin', isSecretKey: false };
-    }
-
-    // 4. Editor/Development environment (AI Studio, localhost, dev preview)
-    // Always open Admin mode inside AI Studio development editor so Mas Yuno can edit trips freely
-    const host = window.location.hostname;
-    const isDevEnvironment =
-      host === 'localhost' ||
-      host === '127.0.0.1' ||
-      host.includes('run.app') ||
-      host.includes('webcontainer') ||
-      host.includes('googleusercontent.com') ||
-      host.includes('aistudio');
-
-    if (isDevEnvironment) {
-      setOwnerAuthorized(true);
-      return { role: 'admin', isSecretKey: false };
-    }
-
-    // 5. Default for ANY other visitor/team phone in production (Vercel): ALWAYS lock to 'tim' mode
-    lockDeviceToTeam();
-    return { role: 'tim', isSecretKey: false };
-  } catch {
-    return { role: 'tim', isSecretKey: false };
-  }
-}
-

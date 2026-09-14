@@ -33,7 +33,7 @@ import {
 } from './TripModal';
 import { calculateDuration, generateDefaultItinerary } from '../utils/formatters';
 import { saveTripToCloud } from '../firebase';
-import { saveStoredTrips, getStoredTrips, isOwnerAuthorized } from '../utils/storage';
+import { saveStoredTrips, getStoredTrips, getAdminPhone } from '../utils/storage';
 import { playIncomingDraftChime } from '../utils/audioNotify';
 import { ItineraryEditor } from './ItineraryEditor';
 
@@ -56,12 +56,12 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
   const [tanggalSelesai, setTanggalSelesai] = useState('');
   const [durasi, setDurasi] = useState('2 Hari 1 Malam');
   const [jadwalTambahan, setJadwalTambahan] = useState<TripSchedule[]>([]);
-  const [minPeserta, setMinPeserta] = useState('6');
+  const [minPeserta, setMinPeserta] = useState('15');
   const [minPesertaJakarta, setMinPesertaJakarta] = useState('15');
   const [maxPeserta, setMaxPeserta] = useState('30');
   const [mepoList, setMepoList] = useState<MeetingPoint[]>([
     { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-    { lokasi: 'Madiun', harga: '(Menyesuaikan jumlah peserta)' },
+    { lokasi: 'Madiun', harga: 'IDR 700.000' },
     { lokasi: 'Surabaya', harga: 'IDR 850.000' },
   ]);
   const [includeText, setIncludeText] = useState(DEFAULT_CITO_INCLUDE.join('\n'));
@@ -184,16 +184,9 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
   const handleMepoChange = (index: number, field: 'lokasi' | 'harga', val: string) => {
     const updated = [...mepoList];
     if (field === 'harga') {
-      const isMadiun = (updated[index].lokasi || '').toLowerCase().includes('madiun');
-      const hasLetters = /[a-zA-Z]/.test(val);
-      if (hasLetters || isMadiun) {
-        // Allow text freely (e.g. (Menyesuaikan jumlah peserta))
-        updated[index].harga = val;
-      } else {
-        const digits = val.replace(/[^0-9]/g, '');
-        const formatted = digits ? `IDR ${Number(digits).toLocaleString('id-ID')}` : val;
-        updated[index].harga = formatted;
-      }
+      const digits = val.replace(/[^0-9]/g, '');
+      const formatted = digits ? `IDR ${Number(digits).toLocaleString('id-ID')}` : val;
+      updated[index].harga = formatted;
     } else {
       updated[index].lokasi = val;
     }
@@ -208,12 +201,9 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
     setKetinggianMdpl(defaultMtn.height);
     setJalur(defaultMtn.trails[0] || 'Via Kledung');
     setJadwalTambahan([]);
-    setMinPeserta('6');
-    setMinPesertaJakarta('15');
-    setMaxPeserta('30');
     setMepoList([
       { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-      { lokasi: 'Madiun', harga: '(Menyesuaikan jumlah peserta)' },
+      { lokasi: 'Madiun', harga: 'IDR 700.000' },
       { lokasi: 'Surabaya', harga: 'IDR 850.000' },
     ]);
     setIncludeText(DEFAULT_CITO_INCLUDE.join('\n'));
@@ -243,14 +233,15 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
       jalur: jalur.trim(),
       status: 'Buka',
       is_draft: true,
+      from_team: true,
       draf_oleh: namaPenginput.trim() || 'wong caruban',
       draf_catatan: catatanTim.trim() || undefined,
       tanggal_mulai: tanggalMulai,
       tanggal_selesai: tanggalSelesai,
       durasi: durasi.trim(),
       jadwal_tambahan: jadwalTambahan.filter((j) => j.tanggal_mulai && j.tanggal_selesai),
-      min_peserta: minPeserta.trim() || '6',
-      min_peserta_jakarta: minPesertaJakarta.trim() || '15',
+      min_peserta: minPeserta.trim() || '15',
+      min_peserta_jakarta: minPesertaJakarta.trim() || minPeserta.trim() || '15',
       max_peserta: maxPeserta.trim() || '30',
       harga_mepo: mepoList.filter((m) => m.lokasi.trim() || m.harga.trim()),
       include: includeText.split('\n').map((s) => s.trim()).filter(Boolean),
@@ -271,11 +262,9 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
       // 1. Save directly to Cloud Firestore (instant push across all devices)
       await saveTripToCloud(newTrip);
 
-      // 2. Only save to local storage if this device is the authorized owner/admin
-      if (isOwnerAuthorized()) {
-        const existing = getStoredTrips();
-        saveStoredTrips([newTrip, ...existing]);
-      }
+      // 2. Also save to local storage if running in same browser
+      const existing = getStoredTrips();
+      saveStoredTrips([newTrip, ...existing]);
 
       // 3. Play pleasant success audio chime
       playIncomingDraftChime();
@@ -286,10 +275,9 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
       }
     } catch (err) {
       console.error('Failed to submit team trip to Cloud:', err);
-      if (isOwnerAuthorized()) {
-        const existing = getStoredTrips();
-        saveStoredTrips([newTrip, ...existing]);
-      }
+      // Fallback local save
+      const existing = getStoredTrips();
+      saveStoredTrips([newTrip, ...existing]);
       setSubmittedTrip(newTrip);
       setSubmitError('Tersimpan di memori perangkat ini. Jika Mas Yuno menggunakan perangkat lain, silakan klik tombol WhatsApp di bawah.');
     } finally {
@@ -299,10 +287,11 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
 
   const handleNotifyWhatsApp = () => {
     if (!submittedTrip) return;
-    const phone = '6282230444428';
+    const adminPhone = getAdminPhone();
+    const phoneClean = adminPhone.replace(/[^0-9]/g, '') || '6282230444428';
     const text = `HOEEE MAS YUNO...! Saya (${submittedTrip.draf_oleh || 'Tim'}) sudah menginput draf jadwal trip baru:\n\n🏔️ *${submittedTrip.nama_gunung}* ${submittedTrip.ketinggian_mdpl ? `(${submittedTrip.ketinggian_mdpl})` : ''}\n📍 *Jalur:* ${submittedTrip.jalur}\n🗓️ *Jadwal:* ${submittedTrip.tanggal_mulai} s/d ${submittedTrip.tanggal_selesai} (${submittedTrip.durasi})\n👥 *Kuota:* ${submittedTrip.min_peserta}–${submittedTrip.max_peserta} Orang\n\nData sudah otomatis masuk ke sistem Cloud CITO Adventure & siap di-review untuk diterbitkan!`;
     const encoded = encodeURIComponent(text);
-    const waUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encoded}`;
+    const waUrl = `https://api.whatsapp.com/send?phone=${phoneClean}&text=${encoded}`;
     window.open(waUrl, '_blank');
   };
 
@@ -312,24 +301,28 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
       <header className="bg-[#275d1d] text-white border-b-4 border-[#1f4a17] shadow-md sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2.5">
-            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 shrink-0">
+            <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center border border-white/20">
               <Mountain className="w-6 h-6 text-white" />
             </div>
             <div>
               <div className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-emerald-200 font-['Space_Grotesk']">
                 Lembar Kerja Lapangan
               </div>
-              <h1 className="text-sm sm:text-lg font-extrabold font-['Space_Grotesk'] leading-tight">
+              <h1 className="text-base sm:text-lg font-extrabold font-['Space_Grotesk'] leading-tight">
                 Input Jadwal Trip – Tim CITO Adventure
               </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5 px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-lg bg-white/10 text-emerald-100 text-[11px] sm:text-xs font-bold border border-white/20 shrink-0 shadow-inner">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
-            <span className="hidden sm:inline">Khusus Tim Lapangan</span>
-            <span className="sm:hidden">Tim Cito</span>
-          </div>
+          {onBackToDashboard && (
+            <button
+              onClick={onBackToDashboard}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all cursor-pointer"
+            >
+              <ArrowLeft className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Buka Dashboard</span>
+            </button>
+          )}
         </div>
       </header>
 
@@ -364,7 +357,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 🗓️ Tanggal: {submittedTrip.tanggal_mulai} s/d {submittedTrip.tanggal_selesai} ({submittedTrip.durasi})
               </div>
               <div className="text-gray-700">
-                👥 Kuota: {submittedTrip.min_peserta}–{submittedTrip.max_peserta} Pax
+                👥 Kuota: {submittedTrip.min_peserta}–{submittedTrip.min_peserta_jakarta || submittedTrip.min_peserta} / {submittedTrip.max_peserta} Pax
               </div>
               <div className="text-gray-500 text-[11px] pt-1">
                 Diinput oleh: <strong>{submittedTrip.draf_oleh}</strong>
@@ -647,15 +640,15 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
               ))}
             </div>
 
-            {/* Section 3: Kuota Peserta */}
+            {/* Section 3: Kuota Peserta (SKEMA BARU) */}
             <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <h3 className="text-xs font-bold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
                   <Users className="w-4 h-4 text-[#275d1d]" />
                   3. Kuota Peserta (Skema Baru)
                 </h3>
-                <span className="text-[11px] font-extrabold bg-[#275d1d]/10 text-[#275d1d] px-2.5 py-0.5 rounded-full border border-[#275d1d]/30">
-                  Tampilan: {minPeserta || '6'} - {minPesertaJakarta || '15'} / {maxPeserta || '30'} Pax
+                <span className="text-[11px] font-bold text-[#275d1d] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                  Tampilan: {minPeserta || '15'} – {minPesertaJakarta || '15'} / {maxPeserta || '30'} Pax
                 </span>
               </div>
 
@@ -665,59 +658,55 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                     Min. Madiun / Jawa (pax):
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     value={minPeserta}
                     onChange={(e) => setMinPeserta(e.target.value)}
-                    placeholder="6"
+                    placeholder="15"
                     className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
                   />
-                  <span className="text-[10px] text-gray-500 mt-0.5 block">Patokan pamflet flyer</span>
+                  <span className="text-[10px] text-gray-500 block mt-0.5">Patokan pamflet flyer</span>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-800 mb-1">
                     Min. Khusus Jakarta (pax):
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     value={minPesertaJakarta}
                     onChange={(e) => setMinPesertaJakarta(e.target.value)}
                     placeholder="15"
                     className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
                   />
-                  <span className="text-[10px] text-gray-500 mt-0.5 block">Khusus mepo Jakarta</span>
+                  <span className="text-[10px] text-gray-500 block mt-0.5">Khusus mepo Jakarta</span>
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-800 mb-1">
                     Maksimal Total (pax):
                   </label>
                   <input
-                    type="text"
+                    type="number"
                     value={maxPeserta}
                     onChange={(e) => setMaxPeserta(e.target.value)}
                     placeholder="30"
                     className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
                   />
-                  <span className="text-[10px] text-gray-500 mt-0.5 block">Batas maksimal kuota</span>
+                  <span className="text-[10px] text-gray-500 block mt-0.5">Batas maksimal kuota</span>
                 </div>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-medium">
-                ⓘ (Jika peserta kurang dari batas minimal, akan ada penyesuaian harga sesuai kesepakatan)
+              <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-semibold flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-[#275d1d]" />
+                <span>(Jika peserta kurang akan ada penyesuaian harga)</span>
               </div>
             </div>
 
             {/* Section 4: Harga Titik Kumpul (Meeting Point / MEPO) */}
             <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between flex-wrap gap-2">
-                <div>
-                  <h3 className="text-xs font-bold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
-                    <DollarSign className="w-4 h-4 text-[#275d1d]" />
-                    4. Harga Titik Kumpul (Meeting Point / MEPO)
-                  </h3>
-                  <p className="text-[11px] text-gray-600 mt-0.5">
-                    Khusus Madiun bisa diisi huruf (misal: <em>(Menyesuaikan jumlah peserta)</em>) atau angka.
-                  </p>
-                </div>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
+                  <DollarSign className="w-4 h-4 text-[#275d1d]" />
+                  4. Harga Titik Kumpul (Meeting Point / MEPO)
+                </h3>
                 <button
                   type="button"
                   onClick={handleAddMepo}
@@ -728,52 +717,49 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 </button>
               </div>
 
-              <div className="space-y-2.5">
-                {mepoList.map((mepo, idx) => {
-                  const isMadiun = (mepo.lokasi || '').toLowerCase().includes('madiun');
-                  return (
-                    <div key={idx} className="space-y-1.5 bg-[#fbfbfb] p-2.5 rounded-xl border border-[#275d1d]/20">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={mepo.lokasi}
-                          onChange={(e) => handleMepoChange(idx, 'lokasi', e.target.value)}
-                          placeholder="Lokasi (mis. Jakarta / Solo / Madiun / Basecamp)"
-                          className="flex-1 bg-white border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#275d1d]"
-                        />
-                        <input
-                          type="text"
-                          value={mepo.harga}
-                          onChange={(e) => handleMepoChange(idx, 'harga', e.target.value)}
-                          placeholder="Harga / Keterangan (Angka/Huruf)"
-                          className="w-44 sm:w-56 bg-white border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-[#275d1d] focus:outline-none focus:border-[#275d1d]"
-                        />
-                        {mepoList.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveMepo(idx)}
-                            className="p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer shrink-0"
-                            title="Hapus baris ini"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        )}
-                      </div>
-                      {isMadiun && (
-                        <div className="flex items-center gap-2 pl-1">
-                          <span className="text-[10px] text-gray-500">Shortcut Madiun:</span>
-                          <button
-                            type="button"
-                            onClick={() => handleMepoChange(idx, 'harga', '(Menyesuaikan jumlah peserta)')}
-                            className="text-[10px] font-bold text-[#275d1d] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
-                          >
-                            ⚡ (Menyesuaikan jumlah peserta)
-                          </button>
-                        </div>
+              <div className="space-y-2">
+                {mepoList.map((mepo, idx) => (
+                  <div key={idx} className="space-y-1 w-full">
+                    <div className="flex items-center gap-1.5 sm:gap-2 w-full">
+                      <input
+                        type="text"
+                        value={mepo.lokasi}
+                        onChange={(e) => handleMepoChange(idx, 'lokasi', e.target.value)}
+                        placeholder="Lokasi (mis. Basecamp, Madiun, Surabaya)"
+                        className="flex-1 min-w-0 bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                      />
+                      <input
+                        type="text"
+                        value={mepo.harga}
+                        onChange={(e) => handleMepoChange(idx, 'harga', e.target.value)}
+                        placeholder="IDR 600.000 / fleksibel"
+                        title={mepo.harga}
+                        className="w-28 sm:w-44 shrink-0 min-w-0 bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm font-bold text-[#275d1d] focus:outline-none focus:border-[#275d1d]"
+                      />
+                      {mepoList.length > 1 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveMepo(idx)}
+                          className="shrink-0 p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          title="Hapus baris ini"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
                       )}
                     </div>
-                  );
-                })}
+                    {/* Tombol Cepat / Shortcut Keterangan Peserta */}
+                    <div className="flex items-center gap-1 pl-0.5">
+                      <button
+                        type="button"
+                        onClick={() => handleMepoChange(idx, 'harga', '(Menyesuaikan jumlah peserta)')}
+                        className="text-[10px] text-[#275d1d] hover:text-[#1a3814] hover:underline font-semibold flex items-center gap-1 cursor-pointer bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
+                        title="Klik untuk otomatis mengisi '(Menyesuaikan jumlah peserta)'"
+                      >
+                        ⚡ (Menyesuaikan jumlah peserta)
+                      </button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 

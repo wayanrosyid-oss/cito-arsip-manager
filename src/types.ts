@@ -39,6 +39,7 @@ export interface Trip {
   kontak_ig: string;
   background_url?: string;
   background_overlay_dim?: number;
+  slide6_photo_url?: string;
   logo_url?: string;
   is_draft?: boolean;
   from_team?: boolean;

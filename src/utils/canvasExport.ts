@@ -4,6 +4,7 @@ import { getCustomLogo, OFFICIAL_LOGO_URL } from './storage';
 import {
   drawWhatsAppIcon,
   drawInstagramIcon,
+  drawTikTokLiveIcon,
   drawCalendarDurationIcon,
   drawGroupPesertaIcon,
   drawYukGasssGraphic,
@@ -13,7 +14,7 @@ import {
 } from './canvasIcons';
 import JSZip from 'jszip';
 
-export type SlideType = 'cover' | 'facilities' | 'itinerary' | 'notes' | 'contact';
+export type SlideType = 'cover' | 'facilities' | 'itinerary' | 'notes' | 'contact' | 'random_photo';
 
 export interface SlideOption {
   id: SlideType;
@@ -26,7 +27,8 @@ export const SLIDES_LIST: SlideOption[] = [
   { id: 'facilities', title: 'Slide 2: Fasilitas & S&K', subtitle: 'Include, Exclude, Porter, dan Syarat Ketentuan' },
   { id: 'itinerary', title: 'Slide 3: Itinerary Rundown', subtitle: 'Jadwal kegiatan terstruktur per hari' },
   { id: 'notes', title: 'Slide 4: Catatan Penting', subtitle: 'Persiapan fisik dan peringatan olahraga' },
-  { id: 'contact', title: 'Slide 5: Info Lanjut', subtitle: 'Penutup & ajakan cek caption Instagram' },
+  { id: 'contact', title: 'Slide 5: Info Lebih Lanjut', subtitle: 'Kontak WhatsApp, Instagram & Live Streaming Cito' },
+  { id: 'random_photo', title: 'Slide 6: Random Foto', subtitle: 'Foto dokumentasi/jalur bebas & watermark booking bawah' },
 ];
 
 export interface PresetBackground {
@@ -1038,7 +1040,7 @@ async function renderNotesSlide(
 }
 
 // =======================================================
-// SLIDE 5: INFORMASI LEBIH LANJUT / CLOSING (Matches 4.png)
+// SLIDE 5: INFORMASI LEBIH LANJUT / CLOSING (Matches 1.png)
 // =======================================================
 async function renderContactSlide(
   trip: Trip,
@@ -1052,10 +1054,10 @@ async function renderContactSlide(
   const { canvas, ctx } = await prepareBaseCanvas(width, height, bgUrl, dimRatio);
 
   const isRatio916 = ratio === '9:16';
-  const cardW = width - 160;
-  const cardH = isRatio916 ? 660 : 540;
+  const cardW = width - 140;
+  const cardH = isRatio916 ? 690 : 610;
   const cardX = (width - cardW) / 2;
-  const cardY = isRatio916 ? 600 : 340;
+  const cardY = isRatio916 ? 560 : 310;
 
   // Draw Cito Adventure Logo above card (Supports user uploaded custom logo)
   try {
@@ -1064,11 +1066,11 @@ async function renderContactSlide(
     const naturalW = logoImg.naturalWidth || logoImg.width || 1;
     const naturalH = logoImg.naturalHeight || logoImg.height || 1;
     const aspect = naturalW / naturalH;
-    const maxDimension = isRatio916 ? 150 : 120;
+    const maxDimension = isRatio916 ? 150 : 124;
     const logoW = aspect >= 1 ? maxDimension : maxDimension * aspect;
     const logoH = aspect <= 1 ? maxDimension : maxDimension / aspect;
     const logoX = (width - logoW) / 2;
-    const logoY = cardY - logoH - (isRatio916 ? 24 : 16);
+    const logoY = cardY - logoH - (isRatio916 ? 28 : 20);
     ctx.save();
     ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
     ctx.shadowBlur = 16;
@@ -1078,24 +1080,24 @@ async function renderContactSlide(
     console.warn('Could not load logo for contact slide', e);
   }
 
-  // Frosted Translucent Card
+  // Dark Rounded Card Container (Matches 1.png)
   ctx.save();
-  ctx.fillStyle = 'rgba(12, 28, 18, 0.72)';
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.18)';
-  ctx.lineWidth = 2;
-  roundRect(ctx, cardX, cardY, cardW, cardH, 28, true, true);
+  ctx.fillStyle = 'rgba(44, 53, 42, 0.96)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
+  ctx.lineWidth = 2.5;
+  roundRect(ctx, cardX, cardY, cardW, cardH, 32, true, true);
   ctx.restore();
 
-  // Pill Outline: "Informasi Lebih Lanjut"
+  // Pill Outline Header: "Informasi Lebih Lanjut"
   const pillW = 460;
   const pillH = 68;
   const pillX = (width - pillW) / 2;
-  const pillY = cardY + 36;
+  const pillY = cardY + 34;
 
   ctx.save();
   ctx.strokeStyle = '#FFFFFF';
   ctx.lineWidth = 3;
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.25)';
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
   roundRect(ctx, pillX, pillY, pillW, pillH, pillH / 2, true, true);
 
   ctx.fillStyle = '#FFFFFF';
@@ -1105,89 +1107,133 @@ async function renderContactSlide(
   ctx.fillText('Informasi Lebih Lanjut', width / 2, pillY + pillH / 2);
   ctx.restore();
 
-  // Contact items: Two WhatsApp Admin Boxes Side by Side
+  // Contact items: 2x2 Grid of 4 Boxes (Matches 1.png)
   const waJatim = trip.kontak_wa_jatim || '+6282230444428';
   const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
-  const igHandle = (trip.kontak_ig || 'CITO ADVENTURE MADIUN').replace(/^@/, '').toUpperCase();
+  const rawIg = (trip.kontak_ig || 'CITO ADVENTURE MADIUN').replace(/^@/, '').toUpperCase();
+  const cleanIgDisplay = rawIg.startsWith('@') ? rawIg : `@${rawIg}`;
 
   const boxesY = pillY + pillH + 28;
-  const boxGap = 20;
-  const boxW = (cardW - 60 - boxGap) / 2;
-  const boxH = 118;
+  const boxGapX = 20;
+  const boxGapY = 16;
+  const boxW = (cardW - 60 - boxGapX) / 2;
+  const boxH = 106;
 
-  // Box 1: Admin Jatim & Jateng
-  const box1X = cardX + 30;
+  // Box 1: Admin Jatim & Jateng (Top-Left)
+  const b1X = cardX + 30;
+  const b1Y = boxesY;
   ctx.save();
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
   ctx.lineWidth = 2;
-  roundRect(ctx, box1X, boxesY, boxW, boxH, 18, true, true);
-
-  drawWhatsAppIcon(ctx, box1X + 36, boxesY + boxH / 2, 42, '#22C55E');
+  roundRect(ctx, b1X, b1Y, boxW, boxH, 18, true, true);
+  drawWhatsAppIcon(ctx, b1X + 42, b1Y + boxH / 2, 42, '#FFFFFF');
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#86EFAC';
-  ctx.font = '800 13px "Montserrat", sans-serif';
-  ctx.fillText('ADMIN JATIM & JATENG', box1X + 70, boxesY + 40);
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 22px "Montserrat", "Space Grotesk", sans-serif';
-  ctx.fillText(waJatim, box1X + 70, boxesY + 74);
+  ctx.font = '800 13px "Montserrat", sans-serif';
+  ctx.fillText('ADMIN JATIM & JATENG', b1X + 80, b1Y + 38);
+  ctx.font = '900 23px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(waJatim, b1X + 80, b1Y + 72);
   ctx.restore();
 
-  // Box 2: Admin Jakarta & Sekitarnya
-  const box2X = box1X + boxW + boxGap;
+  // Box 2: Admin Jakarta & Sekitar (Top-Right)
+  const b2X = b1X + boxW + boxGapX;
+  const b2Y = boxesY;
   ctx.save();
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.08)';
-  ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
   ctx.lineWidth = 2;
-  roundRect(ctx, box2X, boxesY, boxW, boxH, 18, true, true);
-
-  drawWhatsAppIcon(ctx, box2X + 36, boxesY + boxH / 2, 42, '#22C55E');
+  roundRect(ctx, b2X, b2Y, boxW, boxH, 18, true, true);
+  drawWhatsAppIcon(ctx, b2X + 42, b2Y + boxH / 2, 42, '#FFFFFF');
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#86EFAC';
+  ctx.fillStyle = '#FFFFFF';
   ctx.font = '800 13px "Montserrat", sans-serif';
-  ctx.fillText('ADMIN JAKARTA & SEKITAR', box2X + 70, boxesY + 40);
-  ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 22px "Montserrat", "Space Grotesk", sans-serif';
-  ctx.fillText(waJakarta, box2X + 70, boxesY + 74);
+  ctx.fillText('ADMIN JAKARTA & SEKITAR', b2X + 80, b2Y + 38);
+  ctx.font = '900 23px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(waJakarta, b2X + 80, b2Y + 72);
   ctx.restore();
 
-  // Instagram Card (Centered Below the 2 boxes)
-  const igCardY = boxesY + boxH + 18;
-  const igCardH = 68;
-  const igCardW = cardW - 60;
-  const igCardX = cardX + 30;
-
+  // Box 3: Instagram (Bottom-Left)
+  const b3X = cardX + 30;
+  const b3Y = boxesY + boxH + boxGapY;
   ctx.save();
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.06)';
-  ctx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
-  ctx.lineWidth = 1.5;
-  roundRect(ctx, igCardX, igCardY, igCardW, igCardH, 16, true, true);
-
-  drawInstagramIcon(ctx, igCardX + 36, igCardY + igCardH / 2, 36, '#FFFFFF');
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, b3X, b3Y, boxW, boxH, 18, true, true);
+  drawInstagramIcon(ctx, b3X + 42, b3Y + boxH / 2, 38, '#FFFFFF');
   ctx.textAlign = 'left';
-  ctx.fillStyle = '#CBD5E1';
-  ctx.font = '700 13px "Montserrat", sans-serif';
-  ctx.fillText('INSTAGRAM RESMI', igCardX + 68, igCardY + 28);
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 20px "Montserrat", "Space Grotesk", sans-serif';
-  ctx.fillText(`@${igHandle}`, igCardX + 68, igCardY + 50);
+  ctx.font = '800 13px "Montserrat", sans-serif';
+  ctx.fillText('INSTAGRAM', b3X + 80, b3Y + 38);
+  ctx.font = '900 18px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(cleanIgDisplay, b3X + 80, b3Y + 72);
   ctx.restore();
 
-  // "Detail trip & pendaftaran cek di caption"
-  const captionMsgY = igCardY + igCardH + 38;
+  // Box 4: Live Streaming (Bottom-Right)
+  const b4X = b3X + boxW + boxGapX;
+  const b4Y = boxesY + boxH + boxGapY;
   ctx.save();
-  ctx.fillStyle = '#FBBF24';
-  ctx.font = '800 23px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+  ctx.lineWidth = 2;
+  roundRect(ctx, b4X, b4Y, boxW, boxH, 18, true, true);
+  drawTikTokLiveIcon(ctx, b4X + 42, b4Y + boxH / 2, 42, '#FFFFFF');
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '800 13px "Montserrat", sans-serif';
+  ctx.fillText('LIVE STREAMING', b4X + 80, b4Y + 38);
+  ctx.font = '900 18px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.fillText(cleanIgDisplay, b4X + 80, b4Y + 72);
+  ctx.restore();
+
+  // "Detail trip & pendaftaran lengkap cek di caption"
+  const captionMsgY = b3Y + boxH + 46;
+  ctx.save();
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = '900 24px "Montserrat", "Space Grotesk", sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText('"Detail trip & pendaftaran lengkap cek di caption"', width / 2, captionMsgY);
 
-  // Down Arrow ⬇
+  // Down Arrow ↓
   ctx.fillStyle = '#FFFFFF';
-  ctx.font = '900 36px sans-serif';
-  ctx.fillText('⬇', width / 2, captionMsgY + 44);
+  ctx.font = '900 38px sans-serif';
+  ctx.fillText('↓', width / 2, captionMsgY + 44);
   ctx.restore();
 
   // Floating Bottom Booking Bar
+  drawBottomBookingBar(ctx, width, height, trip);
+
+  return canvas;
+}
+
+// =======================================================
+// SLIDE 6: RANDOM FOTO / DOKUMENTASI BEBAS (Matches 2.png)
+// Watermark Booking Only at bottom, full photo canvas
+// =======================================================
+async function renderRandomPhotoSlide(
+  trip: Trip,
+  ratio: '4:5' | '9:16',
+  bgUrl?: string,
+  dimRatio: number = 0,
+  customPhotoUrl?: string
+): Promise<HTMLCanvasElement> {
+  const width = 1080;
+  const height = ratio === '4:5' ? 1350 : 1920;
+
+  // Use custom photo for slide 6 if provided, otherwise trip.slide6_photo_url, otherwise bgUrl, otherwise default
+  const photoToUse =
+    customPhotoUrl ||
+    trip.slide6_photo_url ||
+    bgUrl ||
+    trip.background_url ||
+    '/default-bg.jpg';
+
+  // For slide 6, dimRatio defaults to 0 (clean, vibrant photo) unless dim specified
+  const activeDim = Math.max(0, dimRatio);
+  const { canvas, ctx } = await prepareBaseCanvas(width, height, photoToUse, activeDim);
+
+  // Draw ONLY Floating Bottom Booking Bar (Matches 2.png exactly)
   drawBottomBookingBar(ctx, width, height, trip);
 
   return canvas;
@@ -1200,7 +1246,8 @@ export async function renderSlideCanvas(
   ratio: '4:5' | '9:16',
   bgUrl?: string,
   dimRatio: number = 0.2,
-  customLogoUrl?: string
+  customLogoUrl?: string,
+  slide6PhotoUrl?: string
 ): Promise<HTMLCanvasElement> {
   switch (slideType) {
     case 'cover':
@@ -1213,6 +1260,8 @@ export async function renderSlideCanvas(
       return renderNotesSlide(trip, ratio, bgUrl, dimRatio);
     case 'contact':
       return renderContactSlide(trip, ratio, bgUrl, dimRatio, customLogoUrl);
+    case 'random_photo':
+      return renderRandomPhotoSlide(trip, ratio, bgUrl, dimRatio, slide6PhotoUrl);
     default:
       return renderCoverSlide(trip, ratio, bgUrl, dimRatio, customLogoUrl);
   }
@@ -1225,9 +1274,18 @@ export async function exportSlidePNG(
   ratio: '4:5' | '9:16',
   bgUrl?: string,
   dimRatio: number = 0.2,
-  customLogoUrl?: string
+  customLogoUrl?: string,
+  slide6PhotoUrl?: string
 ): Promise<void> {
-  const canvas = await renderSlideCanvas(slideType, trip, ratio, bgUrl, dimRatio, customLogoUrl);
+  const canvas = await renderSlideCanvas(
+    slideType,
+    trip,
+    ratio,
+    bgUrl,
+    dimRatio,
+    customLogoUrl,
+    slide6PhotoUrl
+  );
   const cleanMtn = trip.nama_gunung.toLowerCase().replace(/[^a-z0-9]/g, '-');
   const cleanRatio = ratio.replace(':', 'x');
   const filename = `${slideType}-${cleanMtn}-${cleanRatio}.png`;
@@ -1248,13 +1306,14 @@ export async function exportSlidePNG(
   });
 }
 
-// Download ALL 5 Carousel Slides as a convenient ZIP package!
+// Download ALL 6 Carousel Slides as a convenient ZIP package!
 export async function exportAllSlidesZip(
   trip: Trip,
   ratio: '4:5' | '9:16',
   bgUrl?: string,
   dimRatio: number = 0.2,
-  customLogoUrl?: string
+  customLogoUrl?: string,
+  slide6PhotoUrl?: string
 ): Promise<void> {
   const zip = new JSZip();
   const cleanMtn = trip.nama_gunung.toLowerCase().replace(/[^a-z0-9]/g, '-');
@@ -1262,7 +1321,15 @@ export async function exportAllSlidesZip(
 
   for (let idx = 0; idx < SLIDES_LIST.length; idx++) {
     const slide = SLIDES_LIST[idx];
-    const canvas = await renderSlideCanvas(slide.id, trip, ratio, bgUrl, dimRatio, customLogoUrl);
+    const canvas = await renderSlideCanvas(
+      slide.id,
+      trip,
+      ratio,
+      bgUrl,
+      dimRatio,
+      customLogoUrl,
+      slide6PhotoUrl
+    );
     const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, 'image/png'));
     if (blob) {
       zip.file(`slide-${idx + 1}-${slide.id}-${cleanMtn}-${cleanRatio}.png`, blob);
@@ -1273,7 +1340,7 @@ export async function exportAllSlidesZip(
   const url = URL.createObjectURL(zipBlob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `carousel-${cleanMtn}-${cleanRatio}.zip`;
+  a.download = `carousel-6-slides-${cleanMtn}-${cleanRatio}.zip`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);

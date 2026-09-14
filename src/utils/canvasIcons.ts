@@ -87,6 +87,43 @@ export function drawInstagramIcon(
 }
 
 /**
+ * TikTok / Live Streaming Icon (Matches 1.png Box 4):
+ * Clean circle with music note / TikTok glyph inside.
+ */
+export function drawTikTokLiveIcon(
+  ctx: CanvasRenderingContext2D,
+  cx: number,
+  cy: number,
+  size: number,
+  color: string = '#FFFFFF'
+) {
+  ctx.save();
+  ctx.translate(cx, cy);
+
+  // Outer circle outline
+  ctx.strokeStyle = color;
+  ctx.lineWidth = Math.max(1.5, size * 0.06);
+  ctx.beginPath();
+  ctx.arc(0, 0, (size / 2) - 1, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Draw musical note / TikTok glyph inside
+  const s = size / 24;
+  ctx.scale(s, s);
+  ctx.translate(-12, -12);
+
+  ctx.fillStyle = color;
+  const notePath =
+    'M12.5 4c1.2 0 2.4.1 3.5.1.1 1.4.6 2.7 1.6 3.7 1 1 2.3 1.5 3.7 1.6v3.6c-1.3-.1-2.6-.4-3.8-1-.5-.2-1-.5-1.5-.8v7.8c-.1 1.2-.5 2.5-1.2 3.5-1.2 1.7-3.2 2.8-5.3 2.9-1.3.1-2.6-.3-3.7-.9-1.8-1.1-3.1-3-3.3-5.1 0-.4 0-.9.2-1.3.2-1.7 1-3.3 2.3-4.4 1.5-1.3 3.6-1.9 5.5-1.5.1 1.3 0 2.6 0 4-.9-.3-1.9-.2-2.7.3-.6.4-1 .9-1.2 1.6-.2.5-.2 1-.1 1.4.2 1.5 1.6 2.7 3.1 2.6 1 0 2-.6 2.5-1.4.2-.3.3-.6.4-.9.1-1.6.1-3.2.1-4.8V4z';
+
+  if (typeof Path2D !== 'undefined') {
+    const p = new Path2D(notePath);
+    ctx.fill(p);
+  }
+  ctx.restore();
+}
+
+/**
  * 3. Calendar with Clock Icon (Matches 4.png):
  * Used for trip duration (e.g. 2 Hari 1 Malam).
  * Rounded calendar with 2 rings, header divider, day grid, and clock in lower-right corner.

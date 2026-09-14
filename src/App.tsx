@@ -46,21 +46,12 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
   const [viewMode, setViewMode] = useState<'admin' | 'tim'>(() => {
-    if (typeof window === 'undefined') return 'tim';
-    const hasSecret = checkAdminAccessInUrl(window.location.search, window.location.hash);
-    if (hasSecret) {
-      setMasYunoAuthenticated(true);
-      return 'admin';
-    }
-    const isAuth = isMasYunoAuthenticated();
-    if (!isAuth) {
-      // Default: Siapa pun yang membuka link biasa atau lama otomatis dikunci di Mode Tim
-      return 'tim';
-    }
+    if (typeof window === 'undefined') return 'admin';
     const params = new URLSearchParams(window.location.search);
-    if (params.get('mode') === 'tim') {
+    if (params.get('mode') === 'tim' || window.location.hash === '#tim') {
       return 'tim';
     }
+    setMasYunoAuthenticated(true);
     return 'admin';
   });
   const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
@@ -324,6 +315,12 @@ export default function App() {
   // URL mode listener and Secret Admin Key verification
   useEffect(() => {
     const evaluateAccess = () => {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'tim' || window.location.hash === '#tim') {
+        setViewMode('tim');
+        return;
+      }
+
       const hasSecret = checkAdminAccessInUrl(window.location.search, window.location.hash);
       if (hasSecret) {
         setMasYunoAuthenticated(true);
@@ -338,20 +335,9 @@ export default function App() {
         return;
       }
 
-      const isAuth = isMasYunoAuthenticated();
-      if (!isAuth) {
-        // Tanpa kunci rahasia: Wajib terkunci di Mode Tim Lapangan
-        setViewMode('tim');
-        return;
-      }
-
-      // Jika Mas Yuno telah terverifikasi:
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('mode') === 'tim') {
-        setViewMode('tim');
-      } else {
-        setViewMode('admin');
-      }
+      // Default: Akses penuh Mode Admin
+      setMasYunoAuthenticated(true);
+      setViewMode('admin');
     };
 
     evaluateAccess();
@@ -362,6 +348,10 @@ export default function App() {
   if (viewMode === 'tim') {
     return (
       <TeamInputView
+        onBackToDashboard={() => {
+          setMasYunoAuthenticated(true);
+          setViewMode('admin');
+        }}
         onTripSubmitted={(newTrip) => {
           setSelectedTripId(newTrip.id);
           setIsDraftBannerDismissed(false);

@@ -25,6 +25,9 @@ import {
   getDeletedTripIds,
   recordDeletedTripId,
   unrecordDeletedTripId,
+  isMasYunoAuthenticated,
+  setMasYunoAuthenticated,
+  checkAdminAccessInUrl,
 } from './utils/storage';
 import {
   subscribeToCloudTrips,
@@ -42,7 +45,24 @@ export default function App() {
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
-  const [viewMode, setViewMode] = useState<'admin' | 'tim'>('admin');
+  const [viewMode, setViewMode] = useState<'admin' | 'tim'>(() => {
+    if (typeof window === 'undefined') return 'tim';
+    const hasSecret = checkAdminAccessInUrl(window.location.search, window.location.hash);
+    if (hasSecret) {
+      setMasYunoAuthenticated(true);
+      return 'admin';
+    }
+    const isAuth = isMasYunoAuthenticated();
+    if (!isAuth) {
+      // Default: Siapa pun yang membuka link biasa atau lama otomatis dikunci di Mode Tim
+      return 'tim';
+    }
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'tim') {
+      return 'tim';
+    }
+    return 'admin';
+  });
   const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
   const knownDraftIdsRef = useRef<Set<string>>(new Set());
 
@@ -114,16 +134,14 @@ export default function App() {
           }
         }
 
-        if (mergedTrips.length > 0) {
-          setTrips(mergedTrips);
-          saveStoredTrips(mergedTrips);
-          setSelectedTripId((prev) => {
-            if (prev && mergedTrips.some((t) => t.id === prev)) {
-              return prev;
-            }
-            return mergedTrips[0]?.id || null;
-          });
-        }
+        setTrips(mergedTrips);
+        saveStoredTrips(mergedTrips);
+        setSelectedTripId((prev) => {
+          if (prev && mergedTrips.some((t) => t.id === prev)) {
+            return prev;
+          }
+          return mergedTrips[0]?.id || null;
+        });
 
         // Auto-upload any local trips that are not yet in Cloud
         if (localPendingTrips.length > 0) {
@@ -273,7 +291,7 @@ export default function App() {
     const url = `${window.location.origin}${window.location.pathname}?mode=tim`;
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(url).then(() => {
-        showToast('Link Formulir Tim berhasil disalin! Kirimkan ke tim Anda lewat WhatsApp.');
+        showToast('Link Form Tim berhasil disalin! Siap dikirimkan ke WhatsApp tim lapangan.');
       }).catch(() => {
         prompt('Salin link lembar input jadwal tim ini:', url);
       });
@@ -282,32 +300,72 @@ export default function App() {
     }
   };
 
-  // URL mode listener for team input
+  const handleCopyAdminKeyLink = () => {
+    const url = `${window.location.origin}${window.location.pathname}?admin=yuno`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('🔑 Link Kunci Akses Mas Yuno berhasil disalin! Simpan di WhatsApp/Catatan pribadi Mas Yuno.');
+      }).catch(() => {
+        prompt('Salin link Kunci Akses Mas Yuno:', url);
+      });
+    } else {
+      prompt('Salin link Kunci Akses Mas Yuno:', url);
+    }
+  };
+
+  const handleLockToTeamMode = () => {
+    if (confirm('Kunci perangkat ini kembali ke Mode Tim Lapangan? (Untuk membuka kembali, buka link rahasia ?admin=yuno)')) {
+      setMasYunoAuthenticated(false);
+      setViewMode('tim');
+      showToast('🔒 Perangkat ini telah dikunci ke Mode Tim Lapangan.');
+    }
+  };
+
+  // URL mode listener and Secret Admin Key verification
   useEffect(() => {
-    const checkMode = () => {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get('mode') === 'tim' || params.get('tim') === '1' || window.location.hash === '#input-tim') {
+    const evaluateAccess = () => {
+      const hasSecret = checkAdminAccessInUrl(window.location.search, window.location.hash);
+      if (hasSecret) {
+        setMasYunoAuthenticated(true);
+        setViewMode('admin');
+        showToast('🔑 Akses Pemilik Mas Yuno Terverifikasi!');
+        try {
+          const cleanUrl = window.location.pathname;
+          window.history.replaceState({}, '', cleanUrl);
+        } catch {
+          // ignore
+        }
+        return;
+      }
+
+      const isAuth = isMasYunoAuthenticated();
+      if (!isAuth) {
+        // Tanpa kunci rahasia: Wajib terkunci di Mode Tim Lapangan
         setViewMode('tim');
+        return;
+      }
+
+      // Jika Mas Yuno telah terverifikasi:
+      const params = new URLSearchParams(window.location.search);
+      if (params.get('mode') === 'tim') {
+        setViewMode('tim');
+      } else {
+        setViewMode('admin');
       }
     };
-    checkMode();
-    window.addEventListener('popstate', checkMode);
-    return () => window.removeEventListener('popstate', checkMode);
+
+    evaluateAccess();
+    window.addEventListener('popstate', evaluateAccess);
+    return () => window.removeEventListener('popstate', evaluateAccess);
   }, []);
 
   if (viewMode === 'tim') {
     return (
       <TeamInputView
-        onBackToDashboard={() => {
-          window.history.pushState({}, '', window.location.pathname);
-          setViewMode('admin');
-        }}
         onTripSubmitted={(newTrip) => {
-          window.history.pushState({}, '', window.location.pathname);
-          setViewMode('admin');
           setSelectedTripId(newTrip.id);
           setIsDraftBannerDismissed(false);
-          showToast(`Draf jadwal ${newTrip.nama_gunung} berhasil diterima di dashboard!`);
+          showToast(`Draf jadwal ${newTrip.nama_gunung} berhasil dikirim ke Mas Yuno!`);
         }}
       />
     );
@@ -331,6 +389,8 @@ export default function App() {
         cloudStatus={cloudStatus}
         onOpenCloudSync={() => setIsCloudSyncOpen(true)}
         onCopyTeamLink={handleCopyTeamLink}
+        onCopyAdminKeyLink={handleCopyAdminKeyLink}
+        onLockToTeamMode={handleLockToTeamMode}
         onOpenTeamMode={() => setViewMode('tim')}
         onOpenTeamData={() => setIsTeamDataModalOpen(true)}
       />

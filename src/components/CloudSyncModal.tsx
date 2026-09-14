@@ -39,11 +39,13 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
   const [isDownloading, setIsDownloading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
 
-  const currentUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const adminUrl = typeof window !== 'undefined'
+    ? `${window.location.origin}${window.location.pathname}?admin=yuno`
+    : '';
 
   useEffect(() => {
-    if (isOpen && currentUrl) {
-      QRCode.toDataURL(currentUrl, {
+    if (isOpen && adminUrl) {
+      QRCode.toDataURL(adminUrl, {
         width: 220,
         margin: 1.5,
         color: {
@@ -54,12 +56,12 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
         .then((url) => setQrCodeDataUrl(url))
         .catch((err) => console.error('QR code generation error:', err));
     }
-  }, [isOpen, currentUrl]);
+  }, [isOpen, adminUrl]);
 
   if (!isOpen) return null;
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(currentUrl);
+    navigator.clipboard.writeText(adminUrl);
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
   };
@@ -242,10 +244,10 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
           <div className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center space-y-3">
             <div className="flex items-center justify-center gap-2 text-xs font-bold text-gray-800">
               <Smartphone className="w-4 h-4 text-[#275d1d]" />
-              <span>Buka Langsung di HP Anda</span>
+              <span>Buka Langsung di HP Anda (Akses Admin Mas Yuno)</span>
             </div>
-            <p className="text-[11px] text-gray-500">
-              Scan barcode di bawah dengan kamera HP Anda untuk langsung membuka aplikasi:
+            <p className="text-[11px] text-gray-600 max-w-sm mx-auto leading-relaxed">
+              Scan barcode di bawah dengan kamera HP pribadi Mas Yuno. Barcode ini otomatis menyertakan <strong>kunci akses admin</strong> sehingga HP Mas Yuno langsung terbuka sebagai Admin penuh:
             </p>
 
             <div className="flex justify-center">
@@ -253,7 +255,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
                 <div className="p-2 bg-white rounded-xl shadow-xs border border-gray-200 inline-block">
                   <img
                     src={qrCodeDataUrl}
-                    alt="QR Code Buka di HP"
+                    alt="QR Code Buka di HP Mas Yuno"
                     className="w-36 h-36 sm:w-40 sm:h-40 object-contain mx-auto"
                   />
                 </div>
@@ -269,7 +271,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
               <input
                 type="text"
                 readOnly
-                value={currentUrl}
+                value={adminUrl}
                 className="flex-1 bg-white border border-gray-300 rounded-lg px-2.5 py-1.5 text-[10px] text-gray-600 font-mono select-all truncate"
               />
               <button

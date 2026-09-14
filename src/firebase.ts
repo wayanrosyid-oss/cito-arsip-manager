@@ -124,8 +124,11 @@ export function subscribeToCloudTrips(
       console.error('Error listening to Cloud Firestore trips:', error);
       if (onError) {
         onError(error);
-      } else {
+      }
+      try {
         handleFirestoreError(error, OperationType.LIST, TRIPS_COLLECTION);
+      } catch (err) {
+        // Logged structured error context for diagnostics
       }
     }
   );
@@ -214,6 +217,11 @@ export function subscribeToCloudLogo(
     },
     (error) => {
       console.warn('Cloud logo snapshot error:', error);
+      try {
+        handleFirestoreError(error, OperationType.GET, `${SETTINGS_COLLECTION}/${LOGO_DOC_ID}`);
+      } catch (err) {
+        // Logged structured error context
+      }
     }
   );
 }

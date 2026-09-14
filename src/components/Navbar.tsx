@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2, Bell, Users } from 'lucide-react';
+import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2, Bell, Users, Key, Lock } from 'lucide-react';
 import { PWAInstallButton } from './PWAInstallButton';
 import { downloadProjectZip } from '../utils/projectZip';
 import { getCustomLogo, setCustomLogo, clearCustomLogo, OFFICIAL_LOGO_URL } from '../utils/storage';
@@ -14,6 +14,8 @@ interface NavbarProps {
   cloudStatus?: 'synced' | 'syncing' | 'offline';
   onOpenCloudSync?: () => void;
   onCopyTeamLink?: () => void;
+  onCopyAdminKeyLink?: () => void;
+  onLockToTeamMode?: () => void;
   onOpenTeamMode?: () => void;
   onOpenTeamData?: () => void;
 }
@@ -27,6 +29,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   cloudStatus = 'synced',
   onOpenCloudSync,
   onCopyTeamLink,
+  onCopyAdminKeyLink,
+  onLockToTeamMode,
   onOpenTeamMode,
   onOpenTeamData,
 }) => {
@@ -204,11 +208,35 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onCopyTeamLink}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-amber-400/25 hover:bg-amber-400/35 text-amber-100 border border-amber-300/40 transition-colors cursor-pointer"
-              title="Salin Link Khusus untuk Tim Penginput Jadwal"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-400 hover:bg-amber-300 text-amber-950 shadow-sm border border-amber-500/40 transition-all cursor-pointer active:scale-95"
+              title="Salin Link Khusus untuk Tim Penginput Jadwal (?mode=tim)"
             >
-              <Link2 className="w-3.5 h-3.5 text-amber-300" />
+              <Link2 className="w-3.5 h-3.5 text-amber-950" />
               <span>Link Form Tim</span>
+            </button>
+          )}
+
+          {onCopyAdminKeyLink && (
+            <button
+              type="button"
+              onClick={onCopyAdminKeyLink}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm border border-emerald-300/40 transition-all cursor-pointer active:scale-95"
+              title="Salin Link Kunci Rahasia Pemilik Mas Yuno (?admin=yuno)"
+            >
+              <Key className="w-3.5 h-3.5 text-white" />
+              <span>Kunci Akses Mas Yuno</span>
+            </button>
+          )}
+
+          {onLockToTeamMode && (
+            <button
+              type="button"
+              onClick={onLockToTeamMode}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-black/20 hover:bg-black/30 text-white/90 border border-white/20 transition-all cursor-pointer"
+              title="Kunci perangkat ini kembali ke Mode Tim Lapangan"
+            >
+              <Lock className="w-3.5 h-3.5 text-amber-300" />
+              <span className="hidden xl:inline">Kunci Mode Tim</span>
             </button>
           )}
 

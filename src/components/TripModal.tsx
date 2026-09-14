@@ -352,6 +352,10 @@ export const TripModal: React.FC<TripModalProps> = ({
       background_url: tripToEdit?.background_url || '/default-bg.jpg',
       background_overlay_dim: tripToEdit?.background_overlay_dim ?? 0.2,
       logo_url: tripToEdit?.logo_url || '',
+      is_draft: tripToEdit?.is_draft ?? false,
+      from_team: tripToEdit?.from_team ?? false,
+      draf_oleh: tripToEdit?.draf_oleh,
+      draf_catatan: tripToEdit?.draf_catatan,
       created_at: tripToEdit?.created_at || Date.now(),
       updated_at: Date.now(),
     };

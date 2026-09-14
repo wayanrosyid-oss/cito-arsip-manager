@@ -314,15 +314,11 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
             </div>
           </div>
 
-          {onBackToDashboard && (
-            <button
-              onClick={onBackToDashboard}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold border border-white/20 transition-all cursor-pointer"
-            >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Buka Dashboard</span>
-            </button>
-          )}
+          {/* Lencana Permanen Khusus Tim Lapangan */}
+          <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900/70 border border-emerald-400/40 text-emerald-200 text-xs font-bold tracking-wide shadow-xs select-none">
+            <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
+            <span>Khusus Tim Lapangan</span>
+          </div>
         </div>
       </header>
 

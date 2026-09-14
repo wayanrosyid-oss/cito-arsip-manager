@@ -222,7 +222,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             </div>
             <button
               onClick={() => {
-                const approved = { ...trip, is_draft: false, updated_at: Date.now() };
+                const approved = { ...trip, is_draft: false, from_team: true, updated_at: Date.now() };
                 onSaveTrip(approved);
                 onShowToast(`Trip ${trip.nama_gunung} resmi disetujui & dipublikasikan!`);
               }}

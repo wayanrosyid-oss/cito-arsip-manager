@@ -500,3 +500,50 @@ export function syncCloudLogoToLocal(dataUrl: string | null): void {
     }
   }
 }
+
+export const MAS_YUNO_AUTH_KEY = 'cito_mas_yuno_auth_v1';
+
+export function isMasYunoAuthenticated(): boolean {
+  if (typeof window === 'undefined') return false;
+  try {
+    return localStorage.getItem(MAS_YUNO_AUTH_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+export function setMasYunoAuthenticated(status: boolean): void {
+  if (typeof window === 'undefined') return;
+  try {
+    if (status) {
+      localStorage.setItem(MAS_YUNO_AUTH_KEY, 'true');
+    } else {
+      localStorage.removeItem(MAS_YUNO_AUTH_KEY);
+    }
+  } catch {
+    // ignore
+  }
+}
+
+export function checkAdminAccessInUrl(search: string, hash: string): boolean {
+  try {
+    const params = new URLSearchParams(search);
+    const adminVal = (params.get('admin') || '').toLowerCase().trim();
+    const kunciVal = (params.get('kunci') || '').toLowerCase().trim();
+    
+    // Support ?admin=yuno, ?admin=citoyuno, ?kunci=yuno, ?masyuno, ?yuno
+    if (adminVal === 'yuno' || adminVal === 'citoyuno' || kunciVal === 'yuno') {
+      return true;
+    }
+    if (params.has('masyuno') || params.has('yuno')) {
+      return true;
+    }
+    const cleanHash = (hash || '').toLowerCase().trim();
+    if (cleanHash === '#masyuno' || cleanHash === '#admin-yuno' || cleanHash === '#yuno') {
+      return true;
+    }
+  } catch {
+    // ignore
+  }
+  return false;
+}

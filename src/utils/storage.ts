@@ -504,14 +504,16 @@ export function syncCloudLogoToLocal(dataUrl: string | null): void {
 export const MAS_YUNO_AUTH_KEY = 'cito_mas_yuno_auth_v1';
 
 export function isMasYunoAuthenticated(): boolean {
-  if (typeof window === 'undefined') return true;
+  if (typeof window === 'undefined') return false;
   try {
-    const val = localStorage.getItem(MAS_YUNO_AUTH_KEY);
-    // Default to true so Mas Yuno can immediately use and test Admin in AI Studio
-    if (val === null) return true;
-    return val === 'true';
+    // Di lingkungan AI Studio Dev (ais-dev-*.run.app atau localhost), otomatis admin agar Mas Yuno nyaman testing
+    if (window.location.hostname.includes('ais-dev') || window.location.hostname === 'localhost') {
+      return true;
+    }
+    // Di Vercel / publik / HP tim: Default WAJIB FALSE (Terkunci di Mode Tim), kecuali sudah diverifikasi dengan kunci rahasia
+    return localStorage.getItem(MAS_YUNO_AUTH_KEY) === 'true';
   } catch {
-    return true;
+    return false;
   }
 }
 

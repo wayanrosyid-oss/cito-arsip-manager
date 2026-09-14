@@ -33,17 +33,17 @@ import {
 } from './TripModal';
 import { calculateDuration, generateDefaultItinerary } from '../utils/formatters';
 import { saveTripToCloud } from '../firebase';
-import { saveStoredTrips, getStoredTrips, getAdminPhone } from '../utils/storage';
+import { saveStoredTrips, getStoredTrips, getAdminPhone, setMasYunoAuthenticated } from '../utils/storage';
 import { playIncomingDraftChime } from '../utils/audioNotify';
 import { ItineraryEditor } from './ItineraryEditor';
 
 interface TeamInputViewProps {
-  onBackToDashboard?: () => void;
+  onUnlockAdmin?: () => void;
   onTripSubmitted?: (trip: Trip) => void;
 }
 
 export const TeamInputView: React.FC<TeamInputViewProps> = ({
-  onBackToDashboard,
+  onUnlockAdmin,
   onTripSubmitted,
 }) => {
   const [namaPenginput, setNamaPenginput] = useState('');
@@ -314,23 +314,31 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
             </div>
           </div>
 
-          {/* Lencana & Tombol Kembali ke Admin jika dibuka oleh Mas Yuno */}
+          {/* Lencana Khusus Tim Lapangan (Discreet Secret Unlock khusus Mas Yuno jika diklik) */}
           <div className="flex items-center gap-2">
-            {onBackToDashboard && (
-              <button
-                type="button"
-                onClick={onBackToDashboard}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-95 border border-white/30"
-                title="Buka Dashboard Utama Admin"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span>Dashboard Admin</span>
-              </button>
-            )}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900/70 border border-emerald-400/40 text-emerald-200 text-xs font-bold tracking-wide shadow-xs select-none">
+            <button
+              type="button"
+              onClick={() => {
+                const input = window.prompt('Mas Yuno? Masukkan kunci rahasia untuk membuka Mode Admin:');
+                if (!input) return;
+                const clean = input.trim().toLowerCase();
+                if (clean === 'yuno' || clean === 'citoyuno' || clean === '1928') {
+                  setMasYunoAuthenticated(true);
+                  if (onUnlockAdmin) {
+                    onUnlockAdmin();
+                  } else {
+                    window.location.href = window.location.pathname;
+                  }
+                } else {
+                  alert('Kunci rahasia salah. Akses Admin ditolak.');
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900/70 border border-emerald-400/40 text-emerald-200 text-xs font-bold tracking-wide shadow-xs select-none hover:bg-emerald-900 transition-colors cursor-pointer"
+              title="Khusus Tim Lapangan"
+            >
               <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
               <span>Khusus Tim Lapangan</span>
-            </div>
+            </button>
           </div>
         </div>
       </header>
@@ -399,17 +407,6 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 <Plus className="w-4 h-4" />
                 <span>Input Jadwal Trip Lainnya</span>
               </button>
-
-              {onBackToDashboard && (
-                <button
-                  type="button"
-                  onClick={onBackToDashboard}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#275d1d] border-2 border-[#275d1d] text-xs sm:text-sm font-bold transition-all cursor-pointer"
-                >
-                  <ArrowLeft className="w-4 h-4 text-[#275d1d]" />
-                  <span>Buka Dashboard Admin</span>
-                </button>
-              )}
             </div>
           </div>
         ) : (

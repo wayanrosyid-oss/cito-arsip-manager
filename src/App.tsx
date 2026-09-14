@@ -46,12 +46,24 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
   const [viewMode, setViewMode] = useState<'admin' | 'tim'>(() => {
-    if (typeof window === 'undefined') return 'admin';
+    if (typeof window === 'undefined') return 'tim';
+    // 1. Cek apakah link mengandung kunci rahasia Mas Yuno (?admin=yuno atau ?kunci=yuno atau #masyuno)
+    const hasSecret = checkAdminAccessInUrl(window.location.search, window.location.hash);
+    if (hasSecret) {
+      setMasYunoAuthenticated(true);
+      return 'admin';
+    }
+    // 2. Cek apakah browser ini sudah terverifikasi sebagai Mas Yuno sebelumnya
+    const isAuth = isMasYunoAuthenticated();
+    if (!isAuth) {
+      // DEFAULT SEMUA PERANGKAT BARU / HP TIM: 100% TERKUNCI DI MODE TIM!
+      return 'tim';
+    }
+    // 3. Jika Mas Yuno telah terverifikasi tapi sengaja membuka link ?mode=tim
     const params = new URLSearchParams(window.location.search);
     if (params.get('mode') === 'tim' || window.location.hash === '#tim') {
       return 'tim';
     }
-    setMasYunoAuthenticated(true);
     return 'admin';
   });
   const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
@@ -335,8 +347,15 @@ export default function App() {
         return;
       }
 
-      // Default: Akses penuh Mode Admin
-      setMasYunoAuthenticated(true);
+      // Periksa apakah perangkat ini sudah berstatus Mas Yuno
+      const isAuth = isMasYunoAuthenticated();
+      if (!isAuth) {
+        // PERANGKAT TIM / PUBLIK: WAJIB TERKUNCI DI MODE TIM
+        setViewMode('tim');
+        return;
+      }
+
+      // Jika Mas Yuno telah terverifikasi:
       setViewMode('admin');
     };
 
@@ -348,9 +367,9 @@ export default function App() {
   if (viewMode === 'tim') {
     return (
       <TeamInputView
-        onBackToDashboard={() => {
-          setMasYunoAuthenticated(true);
+        onUnlockAdmin={() => {
           setViewMode('admin');
+          showToast('🔑 Akses Pemilik Mas Yuno Terbuka!');
         }}
         onTripSubmitted={(newTrip) => {
           setSelectedTripId(newTrip.id);

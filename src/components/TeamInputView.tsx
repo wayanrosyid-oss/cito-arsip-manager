@@ -314,31 +314,14 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
             </div>
           </div>
 
-          {/* Lencana Khusus Tim Lapangan (Discreet Secret Unlock khusus Mas Yuno jika diklik) */}
+          {/* Lencana Khusus Tim Lapangan (Murni label teks statis, tidak ada tombol/popup) */}
           <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => {
-                const input = window.prompt('Mas Yuno? Masukkan kunci rahasia untuk membuka Mode Admin:');
-                if (!input) return;
-                const clean = input.trim().toLowerCase();
-                if (clean === 'yuno' || clean === 'citoyuno' || clean === '1928') {
-                  setMasYunoAuthenticated(true);
-                  if (onUnlockAdmin) {
-                    onUnlockAdmin();
-                  } else {
-                    window.location.href = window.location.pathname;
-                  }
-                } else {
-                  alert('Kunci rahasia salah. Akses Admin ditolak.');
-                }
-              }}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900/70 border border-emerald-400/40 text-emerald-200 text-xs font-bold tracking-wide shadow-xs select-none hover:bg-emerald-900 transition-colors cursor-pointer"
-              title="Khusus Tim Lapangan"
+            <div
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900/70 border border-emerald-400/40 text-emerald-200 text-xs font-bold tracking-wide shadow-xs select-none"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
               <span>Khusus Tim Lapangan</span>
-            </button>
+            </div>
           </div>
         </div>
       </header>

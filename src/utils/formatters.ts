@@ -265,32 +265,24 @@ export function formatMepoPriceItem(lokasi: string, harga: string): string {
  * Groups MEPO into Jakarta vs Regional (Basecamp, Madiun, Solo, etc.)
  * with explicit *(Min X Pax) indicators
  */
-export function formatMepoCaptionSection(trip: Trip, indent: string = '  '): string[] {
+export function formatMepoCaptionSection(trip: Trip, indent: string = ''): string[] {
   if (!trip.harga_mepo || trip.harga_mepo.length === 0) return [];
 
-  const minMadiun = trip.min_peserta || '6';
-  const minJakarta = trip.min_peserta_jakarta || '15';
-
-  const jakartaMepos = trip.harga_mepo.filter(m => m.lokasi.toLowerCase().includes('jakarta'));
-  const otherMepos = trip.harga_mepo.filter(m => !m.lokasi.toLowerCase().includes('jakarta'));
+  const minMadiun = trip.min_peserta || '7';
+  const minJakarta = trip.min_peserta_jakarta || '7';
 
   const lines: string[] = [];
 
-  // 1. Jakarta MEPO (if any)
-  if (jakartaMepos.length > 0) {
-    jakartaMepos.forEach(m => {
-      lines.push(`${indent}• ${m.lokasi || 'Jakarta'} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
-    });
-    lines.push(`${indent}  *(Min ${minJakarta} Pax)`);
-  }
+  trip.harga_mepo.forEach((m) => {
+    const locLower = (m.lokasi || '').toLowerCase();
+    lines.push(`${indent}• ${m.lokasi} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
 
-  // 2. Basecamp, Solo, Madiun, etc. (Jateng & Jatim)
-  if (otherMepos.length > 0) {
-    otherMepos.forEach(m => {
-      lines.push(`${indent}• ${m.lokasi || 'Meeting Point'} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
-    });
-    lines.push(`${indent}  *(Min ${minMadiun} Pax)`);
-  }
+    if (locLower.includes('jakarta')) {
+      lines.push(`${indent}  *(Min ${minJakarta} Pax)`);
+    } else if (locLower.includes('madiun')) {
+      lines.push(`${indent}  *(Min ${minMadiun} Pax)`);
+    }
+  });
 
   return lines;
 }
@@ -327,10 +319,9 @@ export function generateInstagramFeedCaption(
     ? replaceCaptionPlaceholders(customHookIntro, trip)
     : replaceCaptionPlaceholders(defaultHookItem.introTemplate, trip);
 
-  const minMadiun = trip.min_peserta || '6';
-  const minJakarta = trip.min_peserta_jakarta || '15';
-  const maxTotal = trip.max_peserta || '30';
-  const pesertaStr = `${minMadiun} - ${minJakarta} / ${maxTotal} Pax`;
+  const minMadiun = trip.min_peserta || '7';
+  const maxTotal = trip.max_peserta || '20';
+  const pesertaStr = `${minMadiun} / ${maxTotal} Pax`;
 
   const lines: string[] = [];
 
@@ -346,7 +337,7 @@ export function generateInstagramFeedCaption(
 
   // 2. Info Inti
   lines.push('📌 DETAIL INFORMASI TRIP:');
-  lines.push(`🏔️ Gunung: ${mtnUpper} ${heightUpper}`);
+  lines.push(`🏔️ Gunung: ${mtnUpper}${heightUpper ? ` ${heightUpper}` : ''}`);
   lines.push(`📍 Jalur: ${jalurUpper}`);
 
   const allSchedules = getAllTripSchedules(trip);
@@ -357,7 +348,7 @@ export function generateInstagramFeedCaption(
       lines.push(`  • ${schRange}`);
     });
   } else {
-    lines.push(`🗓️ Jadwal trip: ${dateRangeStr}`);
+    lines.push(`🗓️ Jadwal trip:\n  • ${dateRangeStr}`);
   }
   lines.push(`👥 Kuota: ${pesertaStr}`);
 
@@ -478,10 +469,9 @@ export function generateWhatsAppBroadcastCaption(
   } else {
     lines.push(`📅 *Jadwal:* ${dateRangeStr}`);
   }
-  const minMadiun = trip.min_peserta || '6';
-  const minJakarta = trip.min_peserta_jakarta || '15';
-  const maxTotal = trip.max_peserta || '30';
-  const kuotaStr = `${minMadiun} - ${minJakarta} / ${maxTotal} Pax`;
+  const minMadiun = trip.min_peserta || '7';
+  const maxTotal = trip.max_peserta || '20';
+  const kuotaStr = `${minMadiun} / ${maxTotal} Pax`;
   lines.push(`👥 *Kuota Peserta:* ${kuotaStr} (Sendiri bisa langsung join)`);
 
   if (includeMepo && trip.harga_mepo && trip.harga_mepo.length > 0) {

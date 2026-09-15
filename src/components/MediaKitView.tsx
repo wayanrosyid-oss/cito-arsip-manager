@@ -17,7 +17,7 @@ import {
   Loader2,
 } from 'lucide-react';
 import { Trip } from '../types';
-import { formatDateRange } from '../utils/formatters';
+import { formatDateRange, generateInstagramFeedCaption } from '../utils/formatters';
 import {
   exportSlidePNG,
   exportAllSlidesZip,
@@ -51,76 +51,15 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
   // Format date range
   const dateRange = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai);
 
-  // 1. Generate Caption Promosi Utama (Gaya Caption Siap Copas)
+  // 1. Generate Caption Promosi Utama (Gaya Caption Siap Copas Sesuai Format Baru)
   const promoCaptionText = React.useMemo(() => {
-    const lines: string[] = [];
-    const heightStr = trip.ketinggian_mdpl ? ` (${trip.ketinggian_mdpl})` : '';
-    
-    lines.push(`🔥 OPEN TRIP ${trip.nama_gunung.toUpperCase()}${heightStr}`);
-    lines.push(`📍 Jalur: ${trip.jalur}`);
-    lines.push(`🗓️ Jadwal: ${dateRange}`);
-    lines.push(`⏱️ Durasi: ${trip.durasi}`);
-
-    // Jadwal Tambahan jika ada
-    if (trip.jadwal_tambahan && trip.jadwal_tambahan.length > 0) {
-      lines.push(`\n📅 Pilihan Tanggal Lainnya:`);
-      trip.jadwal_tambahan.forEach((sch) => {
-        lines.push(`• ${formatDateRange(sch.tanggal_mulai, sch.tanggal_selesai)}${sch.label ? ` (${sch.label})` : ''}`);
-      });
-    }
-
-    // Meeting Point & Biaya
-    if (trip.harga_mepo && trip.harga_mepo.length > 0) {
-      lines.push(`\n💰 MEETING POINT & HARGA:`);
-      trip.harga_mepo.forEach((m) => {
-        lines.push(`• ${m.lokasi}: ${m.harga}`);
-      });
-    }
-
-    // Fasilitas Include
-    if (trip.include && trip.include.length > 0) {
-      lines.push(`\n✅ FASILITAS INCLUDE:`);
-      trip.include.forEach((inc) => {
-        lines.push(`- ${inc}`);
-      });
-    }
-
-    // Exclude
-    if (trip.exclude && trip.exclude.length > 0) {
-      lines.push(`\n❌ EXCLUDE:`);
-      trip.exclude.forEach((exc) => {
-        lines.push(`- ${exc}`);
-      });
-    }
-
-    // Extra Porter jika ada
-    if (trip.extra_porter) {
-      lines.push(`\n🎒 Porter Tambahan: ${trip.extra_porter}`);
-    }
-
-    // Syarat & Ketentuan (S&K)
-    if (trip.sk_berlaku && trip.sk_berlaku.length > 0) {
-      lines.push(`\n📋 SYARAT & KETENTUAN:`);
-      trip.sk_berlaku.forEach((sk, idx) => {
-        lines.push(`${idx + 1}. ${sk}`);
-      });
-    }
-
-    // Catatan Penting jika ada
-    if (trip.catatan_penting) {
-      lines.push(`\n⚠️ CATATAN PENTING:`);
-      lines.push(trip.catatan_penting);
-    }
-
-    // Informasi Pendaftaran
-    lines.push(`\n════════════════════════════════`);
-    lines.push(`📲 INFORMASI & PENDAFTARAN:`);
-    if (trip.kontak_wa) lines.push(`• WhatsApp: ${trip.kontak_wa}`);
-    if (trip.kontak_ig) lines.push(`• Instagram: @${trip.kontak_ig.replace(/^@/, '')}`);
-    lines.push(`⚡ Cito Adventure Madiun - Sahabat Pendakian Terbaikmu!`);
-
-    return lines.join('\n');
-  }, [trip, dateRange]);
+    return generateInstagramFeedCaption(trip, {
+      includeMepo: true,
+      includeFacilities: true,
+      includeSK: true,
+      includeItinerary: false,
+    });
+  }, [trip]);
 
   // 2. Generate Teks Itinerary (Khusus & Terpisah)
   const itineraryText = React.useMemo(() => {

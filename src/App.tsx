@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Navbar } from './components/Navbar';
 import { TripCard } from './components/TripCard';
 import { TripDetail } from './components/TripDetail';
@@ -44,7 +44,17 @@ import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCir
 
 export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
-  const [selectedTripId, setSelectedTripId] = useState<string | null>(null);
+  const [selectedTripId, setSelectedTripId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    const urlTripId = params.get('trip');
+    if (urlTripId) return urlTripId;
+    try {
+      return localStorage.getItem('cito_active_trip_id') || null;
+    } catch {
+      return null;
+    }
+  });
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
@@ -93,14 +103,43 @@ export default function App() {
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Mobile view toggle ('list' | 'detail')
-  const [mobileTab, setMobileTab] = useState<'list' | 'detail'>('list');
+  const [mobileTab, setMobileTab] = useState<'list' | 'detail'>(() => {
+    if (typeof window === 'undefined') return 'list';
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('tab') === 'detail' || params.get('trip')) return 'detail';
+    return 'list';
+  });
+
+  // Sinkronisasi selectedTripId & mobileTab ke URL query params & localStorage agar tahan refresh di HP & PC
+  const handleSelectTrip = useCallback((tripId: string, tab?: 'list' | 'detail') => {
+    setSelectedTripId(tripId);
+    try {
+      localStorage.setItem('cito_active_trip_id', tripId);
+    } catch {}
+
+    const newTab = tab || 'detail';
+    setMobileTab(newTab);
+
+    // Update URL tanpa reload halaman
+    if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('trip', tripId);
+      url.searchParams.set('tab', newTab);
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
 
   useEffect(() => {
     // 1. Instant local read so app renders immediately without empty flash
     const localTrips = sortTripsByDepartureDate(getStoredTrips());
     setTrips(localTrips);
     if (localTrips.length > 0) {
-      setSelectedTripId(localTrips[0].id);
+      setSelectedTripId((prev) => {
+        if (prev && localTrips.some((t) => t.id === prev)) {
+          return prev;
+        }
+        return localTrips[0].id;
+      });
     }
     // Seed initial draft IDs so existing drafts don't trigger sound on first page open
     const initialDrafts = localTrips.filter((t) => t.is_draft);
@@ -528,7 +567,14 @@ export default function App() {
         {/* Mobile Navigation Pills */}
         <div className="flex md:hidden items-center justify-between gap-2 mb-4 bg-white p-1 rounded-lg border-2 border-[#275d1d]/30 shadow-xs">
           <button
-            onClick={() => setMobileTab('list')}
+            onClick={() => {
+              setMobileTab('list');
+              if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+                const url = new URL(window.location.href);
+                url.searchParams.set('tab', 'list');
+                window.history.replaceState({}, '', url.toString());
+              }
+            }}
             className={`flex-1 py-1.5 rounded text-xs font-bold transition-all ${
               mobileTab === 'list'
                 ? 'bg-[#275d1d] text-white shadow'
@@ -538,7 +584,11 @@ export default function App() {
             Daftar Trip ({filteredTrips.length})
           </button>
           <button
-            onClick={() => setMobileTab('detail')}
+            onClick={() => {
+              if (activeTrip) {
+                handleSelectTrip(activeTrip.id, 'detail');
+              }
+            }}
             disabled={!activeTrip}
             className={`flex-1 py-1.5 rounded text-xs font-bold transition-all ${
               mobileTab === 'detail'
@@ -593,8 +643,7 @@ export default function App() {
                     trip={trip}
                     isSelected={activeTrip?.id === trip.id}
                     onSelect={(t) => {
-                      setSelectedTripId(t.id);
-                      setMobileTab('detail');
+                      handleSelectTrip(t.id, 'detail');
                     }}
                   />
                 ))
@@ -638,7 +687,14 @@ export default function App() {
             {/* Mobile Back to List Button */}
             <div className="md:hidden mb-3">
               <button
-                onClick={() => setMobileTab('list')}
+                onClick={() => {
+                  setMobileTab('list');
+                  if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('tab', 'list');
+                    window.history.replaceState({}, '', url.toString());
+                  }
+                }}
                 className="inline-flex items-center gap-1.5 text-xs font-bold text-[#275d1d] hover:underline cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />

@@ -149,7 +149,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-200">
+    <div key={trip.id} className="space-y-6 animate-in fade-in slide-in-from-right-2 duration-300 ease-out">
       {/* Top Banner & Heading */}
       <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 sm:p-6 shadow-md">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -313,10 +313,10 @@ export const TripDetail: React.FC<TripDetailProps> = ({
               <Users className="w-3.5 h-3.5 text-[#275d1d]" /> Target Kuota Peserta
             </span>
             <p className="text-sm sm:text-base font-extrabold text-gray-900 font-['Space_Grotesk'] mt-1">
-              {trip.min_peserta || '15'} – {trip.min_peserta_jakarta || trip.min_peserta || '15'} / {trip.max_peserta || '30'} Pax
+              {trip.min_peserta || '7'} / {trip.max_peserta || '20'} Pax
             </p>
             <p className="text-[11px] text-[#275d1d] font-semibold italic mt-0.5">
-              *(Min Madiun: {trip.min_peserta || '15'} | Min Jakarta: {trip.min_peserta_jakarta || trip.min_peserta || '15'} | Maks: {trip.max_peserta || '30'} Pax)
+              *(Min Madiun: {trip.min_peserta || '7'} | Min Jakarta: {trip.min_peserta_jakarta || trip.min_peserta || '7'} | Maks: {trip.max_peserta || '20'} Pax)
             </p>
           </div>
         </div>

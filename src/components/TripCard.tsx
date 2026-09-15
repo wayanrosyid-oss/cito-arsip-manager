@@ -16,7 +16,7 @@ export const TripCard: React.FC<TripCardProps> = ({
   onSelect,
   isSelected,
 }) => {
-  // Format title like: "Gunung Argopuro 3088 Mdpl"
+  // Format title like: "Gunung Sumbing 3371 Mdpl"
   const formatTitle = () => {
     const name = trip.nama_gunung || '';
     const rawHeight = (trip.ketinggian_mdpl || '').replace(/[().]/g, '').trim();
@@ -32,16 +32,22 @@ export const TripCard: React.FC<TripCardProps> = ({
   return (
     <div
       onClick={() => onSelect(trip)}
-      className={`group relative rounded-2xl border-2 p-3 sm:p-3.5 transition-all cursor-pointer shadow-xs hover:shadow-md ${
+      className={`group relative rounded-2xl p-3.5 sm:p-4 transition-all duration-200 cursor-pointer ${
         isSelected
-          ? 'bg-white border-[#275d1d] ring-2 ring-[#275d1d]/40 shadow-sm'
-          : 'bg-white border-[#275d1d] hover:bg-emerald-50/20'
+          ? 'bg-white border-2 border-[#275d1d] shadow-md ring-1 ring-[#275d1d]/30 scale-[1.01]'
+          : 'bg-white/95 border border-slate-300 hover:border-slate-400 hover:bg-white shadow-2xs hover:shadow-xs opacity-70 hover:opacity-100'
       }`}
     >
       {/* Row 1: Mountain Name & Height + Dari Tim Badge + Chevron Icon */}
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
-          <h3 className="text-sm sm:text-base font-bold font-['Space_Grotesk'] text-[#275d1d] truncate">
+          <h3
+            className={`text-sm sm:text-base font-bold font-['Space_Grotesk'] truncate transition-colors ${
+              isSelected
+                ? 'text-[#1f4a17] font-extrabold'
+                : 'text-slate-500 font-semibold group-hover:text-slate-700'
+            }`}
+          >
             {formatTitle()}
           </h3>
           {(trip.from_team || trip.is_draft) && (
@@ -53,15 +59,21 @@ export const TripCard: React.FC<TripCardProps> = ({
         <ChevronRight
           className={`w-5 h-5 transition-all shrink-0 ${
             isSelected
-              ? 'text-[#275d1d] translate-x-0.5'
-              : 'text-gray-300 group-hover:text-[#275d1d] group-hover:translate-x-0.5'
+              ? 'text-[#275d1d] translate-x-1 font-bold'
+              : 'text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5'
           }`}
         />
       </div>
 
       {/* Row 2: Jalur Pill Badge */}
-      <div className="mt-2 flex items-center gap-1.5 flex-wrap">
-        <span className="inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full bg-[#275d1d] text-white">
+      <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
+        <span
+          className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full transition-colors ${
+            isSelected
+              ? 'bg-[#1f4a17] text-white shadow-xs'
+              : 'bg-slate-300/80 text-slate-600 group-hover:bg-slate-300 group-hover:text-slate-700'
+          }`}
+        >
           {jalurText}
         </span>
       </div>

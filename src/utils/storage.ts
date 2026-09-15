@@ -67,7 +67,7 @@ export const INITIAL_TRIPS: Trip[] = [
     extra_porter: 'Jika di perlukan',
     sk_berlaku: [
       'Peserta Untuk Umum (Sendiri Bisa Join)',
-      'Minimal Peserta : 15 Orang (apabila kuota tidak terpenuhi, akan ada penyesuaian biaya)',
+      'Apabila kuota tidak terpenuhi, akan ada biaya tambahan biaya sesuai kesepakatan bersama',
       'DP minimal Rp 200.000',
       'Pelunasan Maksimal H-5',
       'Pembatalan Oleh Peserta: DP Hangus',

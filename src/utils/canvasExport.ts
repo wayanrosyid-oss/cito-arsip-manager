@@ -1,5 +1,5 @@
 import { Trip } from '../types';
-import { formatDateRange, getAllTripSchedules } from './formatters';
+import { formatDateRange, getAllTripSchedules, getBasecampStartPrice } from './formatters';
 import { getCustomLogo, OFFICIAL_LOGO_URL } from './storage';
 import {
   drawWhatsAppIcon,
@@ -504,10 +504,8 @@ async function renderCoverSlide(
   ctx.textAlign = 'center';
   ctx.fillText('Start from', width / 2, priceY);
 
-  // Price Pill: "IDR 600.000"
-  const startPrice = trip.harga_mepo && trip.harga_mepo.length > 0 && trip.harga_mepo[0].harga
-    ? trip.harga_mepo[0].harga
-    : 'IDR 600.000';
+  // Price Pill: "IDR 600.000" (Selalu dipatok dari Meeting Point Basecamp)
+  const startPrice = getBasecampStartPrice(trip);
   const formattedPrice = startPrice.toLowerCase().includes('idr') || startPrice.toLowerCase().includes('rp')
     ? startPrice.toUpperCase()
     : `IDR ${startPrice}`;

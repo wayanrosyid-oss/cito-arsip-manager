@@ -262,27 +262,90 @@ export function formatMepoPriceItem(lokasi: string, harga: string): string {
 }
 
 /**
- * Groups MEPO into Jakarta vs Regional (Basecamp, Madiun, Solo, etc.)
- * with explicit *(Min X Pax) indicators
+ * Mendapatkan harga patokan Basecamp (diutamakan mencari MEPO Basecamp)
+ */
+export function getBasecampStartPrice(trip: Trip): string {
+  if (!trip.harga_mepo || trip.harga_mepo.length === 0) {
+    return 'IDR 600.000';
+  }
+
+  // 1. Cari yang bernama Basecamp / BC
+  const bcItem = trip.harga_mepo.find(
+    (m) => m.lokasi.toLowerCase().includes('basecamp') || m.lokasi.toLowerCase().includes('bc ') || m.lokasi.toLowerCase() === 'bc'
+  );
+  if (bcItem && bcItem.harga && bcItem.harga.trim()) {
+    return bcItem.harga.trim();
+  }
+
+  // 2. Fallback: Cari harga angka terendah
+  let lowestNum = Infinity;
+  let lowestRaw = '';
+  for (const m of trip.harga_mepo) {
+    const digits = (m.harga || '').replace(/[^0-9]/g, '');
+    if (digits) {
+      const val = parseInt(digits, 10);
+      if (val > 0 && val < lowestNum) {
+        lowestNum = val;
+        lowestRaw = m.harga.trim();
+      }
+    }
+  }
+
+  if (lowestRaw) return lowestRaw;
+  return trip.harga_mepo[0]?.harga || 'IDR 600.000';
+}
+
+/**
+ * Groups and sorts MEPO into:
+ * 1. Jakarta on top with *(Min X Pax)
+ * 2. Basecamp and other intermediate cities in middle
+ * 3. Madiun on bottom with *(Min Y Pax)
  */
 export function formatMepoCaptionSection(trip: Trip, indent: string = ''): string[] {
   if (!trip.harga_mepo || trip.harga_mepo.length === 0) return [];
 
   const minMadiun = trip.min_peserta || '7';
-  const minJakarta = trip.min_peserta_jakarta || '7';
+  const minJakarta = trip.min_peserta_jakarta || '10';
+
+  const jakartaMepos = trip.harga_mepo.filter((m) =>
+    (m.lokasi || '').toLowerCase().includes('jakarta')
+  );
+  const madiunMepos = trip.harga_mepo.filter((m) =>
+    (m.lokasi || '').toLowerCase().includes('madiun')
+  );
+  const middleMepos = trip.harga_mepo.filter(
+    (m) =>
+      !(m.lokasi || '').toLowerCase().includes('jakarta') &&
+      !(m.lokasi || '').toLowerCase().includes('madiun')
+  );
 
   const lines: string[] = [];
 
-  trip.harga_mepo.forEach((m) => {
-    const locLower = (m.lokasi || '').toLowerCase();
-    lines.push(`${indent}• ${m.lokasi} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
+  // 1. Jakarta di paling atas + *(Min 10 Pax)
+  if (jakartaMepos.length > 0) {
+    jakartaMepos.forEach((m) => {
+      lines.push(`${indent}• ${m.lokasi} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
+    });
+    lines.push(`${indent}  *(Min ${minJakarta} Pax)`);
+  }
 
-    if (locLower.includes('jakarta')) {
-      lines.push(`${indent}  *(Min ${minJakarta} Pax)`);
-    } else if (locLower.includes('madiun')) {
-      lines.push(`${indent}  *(Min ${minMadiun} Pax)`);
-    }
-  });
+  // 2. Basecamp & Kota-kota lain di tengah (bebas)
+  if (middleMepos.length > 0) {
+    middleMepos.forEach((m) => {
+      lines.push(`${indent}• ${m.lokasi} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
+    });
+  }
+
+  // 3. Madiun di paling bawah + *(Min 7 Pax)
+  if (madiunMepos.length > 0) {
+    madiunMepos.forEach((m) => {
+      lines.push(`${indent}• ${m.lokasi} : ${formatMepoPriceItem(m.lokasi, m.harga)}`);
+    });
+    lines.push(`${indent}  *(Min ${minMadiun} Pax)`);
+  } else if (middleMepos.length > 0 && jakartaMepos.length > 0) {
+    // Jika tidak ada madiun eksplisit tapi ada mepo daerah lain, pasang min kuota daerah di akhir
+    lines.push(`${indent}  *(Min ${minMadiun} Pax)`);
+  }
 
   return lines;
 }
@@ -522,7 +585,7 @@ export function generateWhatsAppBroadcastCaption(
 export function generateStoryQuickCaption(trip: Trip): string {
   const mtnUpper = (trip.nama_gunung || 'GUNUNG').toUpperCase();
   const dateRangeStr = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || 'Jadwal Terbuka';
-  const startPrice = trip.harga_mepo?.[0]?.harga || 'Harga Terjangkau';
+  const startPrice = getBasecampStartPrice(trip);
   const waJatim = trip.kontak_wa_jatim || '+6282230444428';
   const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
 

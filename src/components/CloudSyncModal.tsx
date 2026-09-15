@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { Trip } from '../types';
 import { uploadAllTripsToCloud, fetchAllCloudTrips, saveTripToCloud } from '../firebase';
-import { getDeletedTripIds, saveStoredTrips } from '../utils/storage';
+import { getDeletedTripIds, saveStoredTrips, sortTripsByDepartureDate } from '../utils/storage';
 
 interface CloudSyncModalProps {
   isOpen: boolean;
@@ -98,8 +98,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
           }
         }
 
-        const merged = [...validCloudTrips, ...localPendingTrips];
-        merged.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+        const merged = sortTripsByDepartureDate([...validCloudTrips, ...localPendingTrips]);
 
         onTripsUpdated(merged);
         saveStoredTrips(merged);

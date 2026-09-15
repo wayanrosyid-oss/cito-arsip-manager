@@ -28,6 +28,7 @@ import {
   isMasYunoAuthenticated,
   setMasYunoAuthenticated,
   checkAdminAccessInUrl,
+  sortTripsByDepartureDate,
 } from './utils/storage';
 import {
   subscribeToCloudTrips,
@@ -88,7 +89,7 @@ export default function App() {
 
   useEffect(() => {
     // 1. Instant local read so app renders immediately without empty flash
-    const localTrips = getStoredTrips();
+    const localTrips = sortTripsByDepartureDate(getStoredTrips());
     setTrips(localTrips);
     if (localTrips.length > 0) {
       setSelectedTripId(localTrips[0].id);
@@ -118,9 +119,8 @@ export default function App() {
           }
         }
 
-        // Combined safe dataset
-        const mergedTrips = [...validCloudTrips, ...localPendingTrips];
-        mergedTrips.sort((a, b) => (b.created_at || 0) - (a.created_at || 0));
+        // Combined safe dataset (sorted by departure date)
+        const mergedTrips = sortTripsByDepartureDate([...validCloudTrips, ...localPendingTrips]);
 
         // Detect newly incoming drafts from team (real-time alert)
         const incomingDrafts = mergedTrips.filter((t) => t.is_draft && !knownDraftIdsRef.current.has(t.id));
@@ -198,6 +198,7 @@ export default function App() {
       updated = [savedTrip, ...trips];
       showToast(`Trip ${savedTrip.nama_gunung} berhasil ditambahkan (Tersinkron ke Cloud)`);
     }
+    updated = sortTripsByDepartureDate(updated);
     setTrips(updated);
     saveStoredTrips(updated);
     setSelectedTripId(savedTrip.id);

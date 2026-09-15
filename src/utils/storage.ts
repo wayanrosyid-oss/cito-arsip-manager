@@ -67,7 +67,7 @@ export const INITIAL_TRIPS: Trip[] = [
     extra_porter: 'Jika di perlukan',
     sk_berlaku: [
       'Peserta Untuk Umum (Sendiri Bisa Join)',
-      'Apabila kuota tidak terpenuhi, akan ada biaya tambahan biaya sesuai kesepakatan bersama',
+      'Apabila kuota tidak terpenuhi, akan ada biaya tambahan sesuai kesepakatan bersama',
       'DP minimal Rp 200.000',
       'Pelunasan Maksimal H-5',
       'Pembatalan Oleh Peserta: DP Hangus',
@@ -256,6 +256,40 @@ export function getStoredTrips(): Trip[] {
     memoryTrips = [];
     return [];
   }
+}
+
+/**
+ * Mengurutkan daftar trip sesuai Opsi A:
+ * - Draf baru dari tim lapangan tetap dipin/ditaruh paling atas agar mudah ditinjau.
+ * - Trip diurutkan berdasarkan tanggal jadwal keberangkatan (tanggal_mulai) dari yang terdekat.
+ * - Jika tanggal sama, diurutkan berdasarkan waktu pembuatan terbaru.
+ */
+export function sortTripsByDepartureDate(trips: Trip[]): Trip[] {
+  return [...trips].sort((a, b) => {
+    // 1. Draf tim lapangan selalu di atas
+    if (a.is_draft && !b.is_draft) return -1;
+    if (!a.is_draft && b.is_draft) return 1;
+
+    // 2. Berdasarkan tanggal jadwal keberangkatan (tanggal_mulai)
+    const timeA = a.tanggal_mulai ? new Date(a.tanggal_mulai).getTime() : NaN;
+    const timeB = b.tanggal_mulai ? new Date(b.tanggal_mulai).getTime() : NaN;
+
+    const validA = !isNaN(timeA);
+    const validB = !isNaN(timeB);
+
+    if (validA && validB) {
+      if (timeA !== timeB) {
+        return timeA - timeB; // Tanggal keberangkatan terdekat / terbaru di awal
+      }
+    } else if (validA && !validB) {
+      return -1;
+    } else if (!validA && validB) {
+      return 1;
+    }
+
+    // 3. Fallback jika tanggal sama: urutan waktu input terbaru
+    return (b.created_at || 0) - (a.created_at || 0);
+  });
 }
 
 export function saveStoredTrips(trips: Trip[]): void {

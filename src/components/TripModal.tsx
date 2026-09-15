@@ -34,7 +34,7 @@ export const DEFAULT_CITO_EXCLUDE = [
 
 export const DEFAULT_CITO_SK = [
   'Peserta Untuk Umum (Sendiri Bisa Join)',
-  'Apabila kuota tidak terpenuhi, akan ada biaya tambahan biaya sesuai kesepakatan bersama',
+  'Apabila kuota tidak terpenuhi, akan ada biaya tambahan sesuai kesepakatan bersama',
   'DP minimal Rp 200.000',
   'Pelunasan Maksimal H-5',
   'Pembatalan Oleh Peserta: DP Hangus',

@@ -16,6 +16,7 @@ import { OfflineIndicator } from './components/OfflineIndicator';
 import { Toast } from './components/Toast';
 import { TeamInputView } from './components/TeamInputView';
 import { TeamDataModal } from './components/TeamDataModal';
+import { MediaKitView } from './components/MediaKitView';
 import { Trip, TripStatus } from './types';
 import {
   getStoredTrips,
@@ -80,6 +81,11 @@ export default function App() {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isCloudSyncOpen, setIsCloudSyncOpen] = useState(false);
   const [isTeamDataModalOpen, setIsTeamDataModalOpen] = useState(false);
+  const [activeMediaKitTripId, setActiveMediaKitTripId] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    const params = new URLSearchParams(window.location.search);
+    return params.get('kit') || params.get('mediakit') || null;
+  });
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -329,6 +335,13 @@ export default function App() {
   useEffect(() => {
     const evaluateAccess = () => {
       const params = new URLSearchParams(window.location.search);
+      const kitId = params.get('kit') || params.get('mediakit');
+      if (kitId) {
+        setActiveMediaKitTripId(kitId);
+      } else {
+        setActiveMediaKitTripId(null);
+      }
+
       if (params.get('mode') === 'tim' || window.location.hash === '#tim') {
         setViewMode('tim');
         return;
@@ -364,6 +377,56 @@ export default function App() {
     window.addEventListener('popstate', evaluateAccess);
     return () => window.removeEventListener('popstate', evaluateAccess);
   }, []);
+
+  const handleCopyMediaKitLink = (trip: Trip) => {
+    const url = `${window.location.origin}${window.location.pathname}?kit=${trip.id}`;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(() => {
+        showToast(`🔗 Link Media Kit ${trip.nama_gunung} berhasil disalin! Siap dikirim ke WhatsApp tim.`);
+      }).catch(() => {
+        prompt(`Salin link Media Kit ${trip.nama_gunung}:`, url);
+      });
+    } else {
+      prompt(`Salin link Media Kit ${trip.nama_gunung}:`, url);
+    }
+  };
+
+  const handleOpenMediaKit = (trip: Trip) => {
+    setActiveMediaKitTripId(trip.id);
+    try {
+      window.history.pushState({}, '', `?kit=${trip.id}`);
+    } catch {}
+  };
+
+  // Dedicated Media Kit View Route
+  if (activeMediaKitTripId) {
+    const targetTrip =
+      trips.find((t) => t.id === activeMediaKitTripId) ||
+      getStoredTrips().find((t) => t.id === activeMediaKitTripId);
+
+    if (targetTrip) {
+      return (
+        <MediaKitView
+          trip={targetTrip}
+          isAdmin={viewMode === 'admin' || isMasYunoAuthenticated()}
+          onBackToAdmin={() => {
+            setActiveMediaKitTripId(null);
+            try {
+              const cleanUrl = window.location.pathname;
+              window.history.replaceState({}, '', cleanUrl);
+            } catch {}
+          }}
+        />
+      );
+    } else if (trips.length === 0) {
+      return (
+        <div className="min-h-screen bg-[#0a0e14] flex flex-col items-center justify-center text-slate-300 p-6 space-y-4 text-center">
+          <div className="w-10 h-10 border-3 border-[#e5a93c] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm font-bold text-white">Memuat Media Kit Trip Cito Adventure...</p>
+        </div>
+      );
+    }
+  }
 
   if (viewMode === 'tim') {
     return (
@@ -588,6 +651,8 @@ export default function App() {
                 onOpenItinerary={handleOpenItineraryModal}
                 onShowToast={showToast}
                 onSaveTrip={handleSaveTrip}
+                onOpenMediaKit={handleOpenMediaKit}
+                onCopyMediaKitLink={handleCopyMediaKitLink}
               />
             ) : (
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-12 text-center space-y-4 shadow-md">

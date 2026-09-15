@@ -42,6 +42,8 @@ interface TripDetailProps {
   onOpenItinerary: (trip: Trip) => void;
   onShowToast: (msg: string) => void;
   onSaveTrip?: (updatedTrip: Trip) => void;
+  onOpenMediaKit?: (trip: Trip) => void;
+  onCopyMediaKitLink?: (trip: Trip) => void;
 }
 
 export const TripDetail: React.FC<TripDetailProps> = ({
@@ -51,6 +53,8 @@ export const TripDetail: React.FC<TripDetailProps> = ({
   onOpenItinerary,
   onShowToast,
   onSaveTrip,
+  onOpenMediaKit,
+  onCopyMediaKitLink,
 }) => {
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [isExporting, setIsExporting] = useState<string | null>(null);
@@ -195,6 +199,37 @@ export const TripDetail: React.FC<TripDetailProps> = ({
                 <span>Setujui & Terbitkan</span>
               </button>
             )}
+            <button
+              onClick={() => {
+                if (onOpenMediaKit) {
+                  onOpenMediaKit(trip);
+                } else {
+                  window.open(`${window.location.origin}${window.location.pathname}?kit=${trip.id}`, '_blank');
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[#0f141c] hover:bg-slate-800 text-[#e5a93c] border border-[#e5a93c]/50 text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Buka Media Kit & Bahan Promosi Tim"
+            >
+              <Sparkles className="w-4 h-4 text-[#e5a93c]" />
+              <span>Buka Media Kit</span>
+            </button>
+            <button
+              onClick={() => {
+                if (onCopyMediaKitLink) {
+                  onCopyMediaKitLink(trip);
+                } else {
+                  const url = `${window.location.origin}${window.location.pathname}?kit=${trip.id}`;
+                  navigator.clipboard.writeText(url).then(() => {
+                    onShowToast('🔗 Link Media Kit berhasil disalin! Siap dikirim ke WhatsApp tim.');
+                  });
+                }
+              }}
+              className="inline-flex items-center gap-1.5 px-3 py-2 rounded-md bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-400 text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-xs active:scale-95"
+              title="Salin Link Media Kit untuk dikirimkan ke WhatsApp tim"
+            >
+              <Share2 className="w-4 h-4 text-amber-700" />
+              <span className="hidden sm:inline">Salin Link Kit</span>
+            </button>
             <button
               onClick={() => onEdit(trip)}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs sm:text-sm font-bold transition-colors cursor-pointer shadow-xs"

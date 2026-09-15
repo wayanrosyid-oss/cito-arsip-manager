@@ -87,8 +87,8 @@ export function drawInstagramIcon(
 }
 
 /**
- * TikTok / Live Streaming Icon (Matches 1.png Box 4):
- * Clean circle with music note / TikTok glyph inside.
+ * TikTok / Live Streaming Icon (Matches Gambar 2):
+ * Clean solid TikTok musical note / 'd' glyph without any outer circle border.
  */
 export function drawTikTokLiveIcon(
   ctx: CanvasRenderingContext2D,
@@ -100,25 +100,26 @@ export function drawTikTokLiveIcon(
   ctx.save();
   ctx.translate(cx, cy);
 
-  // Outer circle outline
-  ctx.strokeStyle = color;
-  ctx.lineWidth = Math.max(1.5, size * 0.06);
-  ctx.beginPath();
-  ctx.arc(0, 0, (size / 2) - 1, 0, Math.PI * 2);
-  ctx.stroke();
-
-  // Draw musical note / TikTok glyph inside
+  // Scale directly based on 24x24 standard icon grid, centered at (cx, cy)
   const s = size / 24;
   ctx.scale(s, s);
   ctx.translate(-12, -12);
 
   ctx.fillStyle = color;
-  const notePath =
-    'M12.5 4c1.2 0 2.4.1 3.5.1.1 1.4.6 2.7 1.6 3.7 1 1 2.3 1.5 3.7 1.6v3.6c-1.3-.1-2.6-.4-3.8-1-.5-.2-1-.5-1.5-.8v7.8c-.1 1.2-.5 2.5-1.2 3.5-1.2 1.7-3.2 2.8-5.3 2.9-1.3.1-2.6-.3-3.7-.9-1.8-1.1-3.1-3-3.3-5.1 0-.4 0-.9.2-1.3.2-1.7 1-3.3 2.3-4.4 1.5-1.3 3.6-1.9 5.5-1.5.1 1.3 0 2.6 0 4-.9-.3-1.9-.2-2.7.3-.6.4-1 .9-1.2 1.6-.2.5-.2 1-.1 1.4.2 1.5 1.6 2.7 3.1 2.6 1 0 2-.6 2.5-1.4.2-.3.3-.6.4-.9.1-1.6.1-3.2.1-4.8V4z';
+  // Official clean TikTok glyph SVG path
+  const tikTokPath =
+    'M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.59-.98v8.68c-.02 1.4-.48 2.78-1.31 3.9-1.36 1.89-3.64 3.07-5.99 3.08-1.52.02-3.05-.44-4.3-1.32-2.03-1.4-3.32-3.67-3.47-6.13-.02-.45-.01-.9.04-1.35.26-1.92 1.25-3.69 2.77-4.9 1.73-1.43 4.04-2.07 6.25-1.66.02 1.48-.01 2.96 0 4.44-1.07-.35-2.27-.24-3.23.33-.7.42-1.22 1.07-1.47 1.85-.26.65-.24 1.38-.03 2.05.35 1.13 1.26 2.03 2.39 2.37 1.05.31 2.21.14 3.12-.46.77-.5 1.28-1.32 1.42-2.22.06-.51.06-1.02.05-1.54V.02z';
 
   if (typeof Path2D !== 'undefined') {
-    const p = new Path2D(notePath);
+    const p = new Path2D(tikTokPath);
     ctx.fill(p);
+  } else {
+    // Fallback if Path2D is not supported
+    ctx.beginPath();
+    ctx.arc(10, 16, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillRect(13, 4, 3, 12);
+    ctx.fillRect(14, 4, 6, 3);
   }
   ctx.restore();
 }

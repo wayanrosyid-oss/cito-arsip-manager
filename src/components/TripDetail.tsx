@@ -34,6 +34,7 @@ import { exportTripPamphletPNG, exportItineraryPosterPNG, SlideType } from '../u
 import { exportTripPDF, exportTripTXT } from '../utils/pdfExport';
 import { PamphletStudioModal } from './PamphletStudioModal';
 import { CaptionStudioModal } from './CaptionStudioModal';
+import { getTripMediaKitUrl } from '../utils/slug';
 
 interface TripDetailProps {
   trip: Trip;
@@ -204,21 +205,21 @@ export const TripDetail: React.FC<TripDetailProps> = ({
                 if (onOpenMediaKit) {
                   onOpenMediaKit(trip);
                 } else {
-                  window.open(`${window.location.origin}${window.location.pathname}?kit=${trip.id}`, '_blank');
+                  window.open(getTripMediaKitUrl(trip), '_blank');
                 }
               }}
               className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-md bg-[#0f141c] hover:bg-slate-800 text-[#e5a93c] border border-[#e5a93c]/50 text-xs sm:text-sm font-bold transition-all cursor-pointer shadow-xs active:scale-95"
-              title="Buka Media Kit & Bahan Promosi Tim"
+              title="Pratinjau Media Kit sebelum kirim link ke tim"
             >
               <Sparkles className="w-4 h-4 text-[#e5a93c]" />
-              <span>Buka Media Kit</span>
+              <span>Pratinjau Media Kit</span>
             </button>
             <button
               onClick={() => {
                 if (onCopyMediaKitLink) {
                   onCopyMediaKitLink(trip);
                 } else {
-                  const url = `${window.location.origin}${window.location.pathname}?kit=${trip.id}`;
+                  const url = getTripMediaKitUrl(trip);
                   navigator.clipboard.writeText(url).then(() => {
                     onShowToast('🔗 Link Media Kit berhasil disalin! Siap dikirim ke WhatsApp tim.');
                   });

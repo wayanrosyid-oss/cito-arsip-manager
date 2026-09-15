@@ -3,7 +3,6 @@ import {
   Copy,
   Check,
   Download,
-  Share2,
   Calendar,
   Clock,
   MapPin,
@@ -11,11 +10,7 @@ import {
   FileText,
   Layers,
   Sparkles,
-  ArrowLeft,
-  CheckCircle2,
-  ExternalLink,
-  ShieldCheck,
-  AlertCircle,
+  X,
   Smartphone,
   Instagram,
   FileArchive,
@@ -34,21 +29,20 @@ import { getCustomLogo, OFFICIAL_LOGO_URL } from '../utils/storage';
 
 interface MediaKitViewProps {
   trip: Trip;
-  onBackToAdmin?: () => void;
-  isAdmin?: boolean;
+  onClosePreview?: () => void;
+  isPreviewModal?: boolean;
 }
 
 export const MediaKitView: React.FC<MediaKitViewProps> = ({
   trip,
-  onBackToAdmin,
-  isAdmin = false,
+  onClosePreview,
+  isPreviewModal = false,
 }) => {
   const [selectedRatio, setSelectedRatio] = useState<'4:5' | '9:16'>('4:5');
   const [downloadingSlide, setDownloadingSlide] = useState<string | null>(null);
   const [isDownloadingZip, setIsDownloadingZip] = useState(false);
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [copiedItinerary, setCopiedItinerary] = useState(false);
-  const [copiedLink, setCopiedLink] = useState(false);
   const [previewUrls, setPreviewUrls] = useState<Record<string, string>>({});
   const [isGeneratingPreviews, setIsGeneratingPreviews] = useState(false);
 
@@ -206,17 +200,6 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
     }
   };
 
-  const handleCopyLink = async () => {
-    const url = `${window.location.origin}${window.location.pathname}?kit=${trip.id}`;
-    try {
-      await navigator.clipboard.writeText(url);
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2500);
-    } catch {
-      prompt('Salin link media kit ini:', url);
-    }
-  };
-
   // Download single slide PNG
   const handleDownloadSlide = async (slideType: SlideType) => {
     setDownloadingSlide(slideType);
@@ -264,16 +247,6 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
       <header className="sticky top-0 z-40 bg-[#0f141c]/95 backdrop-blur-md border-b border-[#275d1d]/40 px-4 sm:px-8 py-3.5 shadow-lg">
         <div className="max-w-5xl mx-auto flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            {onBackToAdmin && (
-              <button
-                onClick={onBackToAdmin}
-                className="p-2 rounded-lg bg-slate-800/80 hover:bg-slate-700 text-slate-200 hover:text-white transition-colors cursor-pointer"
-                title="Kembali ke Dashboard Admin"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </button>
-            )}
-
             <div className="flex items-center gap-2.5">
               <img
                 src={customLogo}
@@ -295,18 +268,16 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
           </div>
 
           <div className="flex items-center gap-2">
-            <button
-              onClick={handleCopyLink}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm ${
-                copiedLink
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700'
-              }`}
-            >
-              {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Share2 className="w-3.5 h-3.5" />}
-              <span className="hidden sm:inline">{copiedLink ? 'Link Tersalin!' : 'Bagikan Link'}</span>
-              <span className="sm:hidden">{copiedLink ? 'Tersalin' : 'Bagikan'}</span>
-            </button>
+            {isPreviewModal && onClosePreview && (
+              <button
+                onClick={onClosePreview}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-sm bg-red-600/80 hover:bg-red-600 text-white border border-red-500"
+                title="Tutup Pratinjau"
+              >
+                <X className="w-4 h-4" />
+                <span>Tutup Pratinjau</span>
+              </button>
+            )}
           </div>
         </div>
       </header>

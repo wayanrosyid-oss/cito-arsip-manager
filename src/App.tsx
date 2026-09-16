@@ -461,7 +461,7 @@ export default function App() {
           <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-3xl">
             🏔️
           </div>
-          <h2 className="text-xl font-extrabold text-white font-['Space_Grotesk']">Trip Tidak Ditemukan</h2>
+          <h2 className="text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">Trip Tidak Ditemukan</h2>
           <p className="text-xs sm:text-sm text-slate-400 max-w-sm leading-relaxed">
             Media kit untuk rute <span className="text-[#e5a93c] font-bold font-mono">"{activeMediaKitTripId}"</span> tidak ditemukan atau telah diperbarui.
           </p>
@@ -611,7 +611,7 @@ export default function App() {
             {/* Search & Header Card matching Image 2 */}
             <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-base font-bold font-['Space_Grotesk'] text-[#275d1d]">
+                <h2 className="text-base font-extrabold font-['Montserrat'] tracking-tight text-[#275d1d]">
                   Daftar Trip
                 </h2>
                 {draftTrips.length > 0 && (
@@ -716,7 +716,7 @@ export default function App() {
             ) : (
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-12 text-center space-y-4 shadow-md">
                 <Mountain className="w-14 h-14 text-[#275d1d]/50 mx-auto" />
-                <h3 className="text-lg font-bold font-['Space_Grotesk'] text-[#275d1d]">
+                <h3 className="text-lg font-extrabold font-['Montserrat'] tracking-tight text-[#275d1d]">
                   {trips.length === 0 ? 'Belum Ada Jadwal Trip' : 'Pilih atau Tambahkan Trip'}
                 </h3>
                 <p className="text-xs text-gray-700 max-w-sm mx-auto leading-relaxed">

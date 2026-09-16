@@ -178,10 +178,10 @@ export const TripDetail: React.FC<TripDetailProps> = ({
               </span>
             </div>
 
-            <h2 className="text-2xl sm:text-3xl font-extrabold font-['Space_Grotesk'] text-[#275d1d]">
+            <h2 className="text-2xl sm:text-3xl font-black font-['Montserrat'] tracking-tight text-[#275d1d]">
               🏔 {trip.nama_gunung.toUpperCase()} {trip.ketinggian_mdpl ? trip.ketinggian_mdpl.toUpperCase() : ''}
             </h2>
-            <p className="text-sm font-bold text-[#275d1d] font-['Space_Grotesk']">
+            <p className="text-sm font-extrabold text-[#275d1d] font-['Montserrat'] tracking-wide">
               📌 {trip.jalur.toUpperCase()}
             </p>
           </div>
@@ -291,7 +291,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
                 ))}
               </div>
             ) : (
-              <p className="text-sm sm:text-base font-extrabold text-gray-900 font-['Space_Grotesk'] mt-1">
+              <p className="text-sm sm:text-base font-extrabold text-gray-900 font-['Montserrat'] mt-1">
                 {dateRange}
               </p>
             )}
@@ -302,7 +302,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
               <span className="text-[11px] font-bold text-[#275d1d] flex items-center gap-1.5">
                 <Clock className="w-3.5 h-3.5 text-[#275d1d]" /> Durasi Pendakian
               </span>
-              <p className="text-sm sm:text-base font-extrabold text-[#275d1d] font-['Space_Grotesk'] mt-1">
+              <p className="text-sm sm:text-base font-extrabold text-[#275d1d] font-['Montserrat'] mt-1">
                 {trip.durasi}
               </p>
             </div>
@@ -312,7 +312,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             <span className="text-[11px] font-bold text-[#275d1d] flex items-center gap-1.5">
               <Users className="w-3.5 h-3.5 text-[#275d1d]" /> Target Kuota Peserta
             </span>
-            <p className="text-sm sm:text-base font-extrabold text-gray-900 font-['Space_Grotesk'] mt-1">
+            <p className="text-sm sm:text-base font-black text-gray-900 font-['Montserrat'] mt-1">
               {trip.min_peserta || '7'} / {trip.max_peserta || '20'} Pax
             </p>
             <p className="text-[11px] text-[#275d1d] font-semibold italic mt-0.5">
@@ -326,7 +326,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
       <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 sm:p-5 shadow-md space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#275d1d]/20 pb-3">
           <div>
-            <h3 className="text-xs sm:text-sm font-extrabold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-2">
+            <h3 className="text-xs sm:text-sm font-extrabold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-2">
               <Download className="w-4 h-4 text-[#275d1d]" />
               Pusat Export Media & Arsip Trip
             </h3>
@@ -461,7 +461,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
       <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
           <div>
-            <h3 className="text-sm font-bold text-[#275d1d] font-['Space_Grotesk'] flex items-center gap-2">
+            <h3 className="text-sm font-extrabold text-[#275d1d] font-['Montserrat'] flex items-center gap-2">
               <Share2 className="w-4 h-4 text-[#275d1d]" />
               Generator Caption & Broadcast Promosi
             </h3>
@@ -545,7 +545,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
 
       {/* Meeting Point & Pricing */}
       <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-3">
-        <h3 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk']">
+        <h3 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Montserrat']">
           Tarif per Meeting Point (MEPO)
         </h3>
         {trip.harga_mepo && trip.harga_mepo.length > 0 ? (
@@ -553,7 +553,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             {trip.harga_mepo.map((m, idx) => (
               <div key={idx} className="bg-[#f4f4f4] border border-[#275d1d]/30 rounded-lg p-3 flex items-center justify-between">
                 <span className="text-xs font-bold text-gray-800">{m.lokasi || 'Meeting Point'}</span>
-                <span className="text-xs sm:text-sm font-extrabold text-[#275d1d] font-['Space_Grotesk']">
+                <span className="text-xs sm:text-sm font-extrabold text-[#275d1d] font-['Montserrat']">
                   {m.harga || '-'}
                 </span>
               </div>
@@ -568,7 +568,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Include */}
         <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-3">
-          <h3 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
+          <h3 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
             <CheckCircle className="w-4 h-4 text-[#275d1d]" />
             Fasilitas Include
           </h3>
@@ -584,7 +584,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
 
         {/* Exclude */}
         <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-3">
-          <h3 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
+          <h3 className="text-xs font-extrabold text-gray-800 uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
             <XCircle className="w-4 h-4 text-rose-700" />
             Exclude (Tidak Termasuk)
           </h3>
@@ -607,7 +607,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
       {/* Itinerary Preview & Action */}
       <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-3">
         <div className="flex items-center justify-between flex-wrap gap-2">
-          <h3 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
+          <h3 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-[#275d1d]" />
             Rundown & Itinerary Kegiatan
           </h3>
@@ -629,7 +629,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
       <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-4">
         {trip.sk_berlaku && trip.sk_berlaku.length > 0 && (
           <div className="space-y-2">
-            <h4 className="text-xs font-bold text-gray-800 uppercase font-['Space_Grotesk']">
+            <h4 className="text-xs font-bold text-gray-800 uppercase font-['Montserrat']">
               Syarat & Ketentuan (S&K):
             </h4>
             <ul className="space-y-1.5 text-xs text-gray-800">
@@ -645,7 +645,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
 
         {trip.catatan_penting && (
           <div className="p-3.5 rounded-lg bg-[#275d1d]/10 border-2 border-[#275d1d]/30 text-xs text-[#1a3814]">
-            <strong className="block text-[#275d1d] mb-1 font-['Space_Grotesk'] text-sm">Catatan Penting:</strong>
+            <strong className="block text-[#275d1d] mb-1 font-['Montserrat'] text-sm">Catatan Penting:</strong>
             {trip.catatan_penting}
           </div>
         )}
@@ -655,7 +655,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
       <div className="bg-white border-2 border-[#275d1d] rounded-xl p-5 shadow-md space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#275d1d]/20 pb-3">
           <div>
-            <h4 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Space_Grotesk'] flex items-center gap-1.5">
+            <h4 className="text-xs font-extrabold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
               <MessageSquare className="w-4 h-4 text-[#275d1d]" />
               Nomor Kontak Admin (Materi Pamflet & Caption)
             </h4>
@@ -679,7 +679,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             <span className="block text-[11px] font-bold text-[#15803D] uppercase tracking-wide">
               Admin Jatim & Jateng
             </span>
-            <span className="text-sm sm:text-base font-black text-gray-900 font-['Space_Grotesk'] mt-0.5 block">
+            <span className="text-sm sm:text-base font-black text-gray-900 font-['Montserrat'] mt-0.5 block">
               {trip.kontak_wa_jatim || '+6282230444428'}
             </span>
             <span className="text-[10px] text-gray-500 mt-1 block">Tercetak di Pamflet & Caption</span>
@@ -690,7 +690,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             <span className="block text-[11px] font-bold text-[#15803D] uppercase tracking-wide">
               Admin Jakarta & Sekitar
             </span>
-            <span className="text-sm sm:text-base font-black text-gray-900 font-['Space_Grotesk'] mt-0.5 block">
+            <span className="text-sm sm:text-base font-black text-gray-900 font-['Montserrat'] mt-0.5 block">
               {trip.kontak_wa_jakarta || '+6289503689266'}
             </span>
             <span className="text-[10px] text-gray-500 mt-1 block">Tercetak di Pamflet & Caption</span>
@@ -701,7 +701,7 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             <span className="block text-[11px] font-bold text-[#275d1d] uppercase tracking-wide">
               Akun Instagram Resmi
             </span>
-            <span className="text-sm sm:text-base font-black text-gray-900 font-['Space_Grotesk'] mt-0.5 block">
+            <span className="text-sm sm:text-base font-black text-gray-900 font-['Montserrat'] mt-0.5 block">
               {trip.kontak_ig || '@citoadventuremadiun'}
             </span>
             <span className="text-[10px] text-gray-500 mt-1 block">Tercetak di Bar Booking Pamflet</span>

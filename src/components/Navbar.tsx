@@ -135,7 +135,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] sm:text-xs font-extrabold tracking-widest text-white/90 uppercase font-['Space_Grotesk']">
+              <span className="text-[10px] sm:text-xs font-bold tracking-wider text-white/90 uppercase font-['Montserrat']">
                 Cito Adventure Madiun
               </span>
               <button
@@ -147,7 +147,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {isCustom ? 'Logo Kustom Aktif' : 'Ganti Logo'}
               </button>
             </div>
-            <h1 className="text-lg sm:text-xl font-bold font-['Space_Grotesk'] tracking-tight text-white leading-tight">
+            <h1 className="text-lg sm:text-xl font-extrabold font-['Montserrat'] tracking-tight text-white leading-tight">
               Cito Trip Manager
             </h1>
           </div>

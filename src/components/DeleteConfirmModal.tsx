@@ -22,7 +22,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
       <div className="bg-white border-2 border-rose-600 text-gray-900 w-full max-w-md rounded-xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="bg-rose-600 px-5 py-3.5 flex items-center justify-between text-white">
-          <div className="flex items-center gap-2 font-bold text-sm sm:text-base font-['Space_Grotesk']">
+          <div className="flex items-center gap-2 font-extrabold text-sm sm:text-base font-['Montserrat'] tracking-tight">
             <AlertTriangle className="w-5 h-5 text-white" />
             <span>Konfirmasi Hapus Trip</span>
           </div>
@@ -41,7 +41,7 @@ export const DeleteConfirmModal: React.FC<DeleteConfirmModalProps> = ({
           </p>
 
           <div className="bg-rose-50 border border-rose-200 rounded-lg p-3 text-xs space-y-1">
-            <p className="font-extrabold text-sm text-rose-900 font-['Space_Grotesk']">
+            <p className="font-extrabold text-sm text-rose-900 font-['Montserrat']">
               🏔 {trip.nama_gunung} {trip.ketinggian_mdpl ? `(${trip.ketinggian_mdpl})` : ''}
             </p>
             <p className="text-gray-700">Jalur: <span className="font-semibold">{trip.jalur}</span></p>

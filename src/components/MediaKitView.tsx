@@ -199,7 +199,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-[#e5a93c]/20 text-[#e5a93c] border border-[#e5a93c]/40">
                   <Sparkles className="w-3 h-3 text-[#e5a93c]" /> Media Kit Promosi
                 </span>
-                <h1 className="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase font-['Space_Grotesk'] leading-tight">
+                <h1 className="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase font-['Montserrat'] leading-tight">
                   Cito Adventure Madiun
                 </h1>
               </div>
@@ -237,7 +237,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                 </span>
               </div>
 
-              <h2 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight font-['Space_Grotesk'] leading-tight">
+              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight font-['Montserrat'] leading-tight">
                 {trip.nama_gunung.toUpperCase()}
               </h2>
 
@@ -285,7 +285,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#e5a93c]" />
-                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Space_Grotesk']">
+                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">
                   Foto Pamflet Promosi HD
                 </h3>
               </div>
@@ -428,7 +428,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Space_Grotesk']">
+                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">
                   Teks Caption Promosi (Siap Copas)
                 </h3>
               </div>
@@ -475,7 +475,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
-                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Space_Grotesk']">
+                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">
                   Itinerary Rundown Perjalanan
                 </h3>
               </div>

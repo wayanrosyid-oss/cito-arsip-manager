@@ -43,7 +43,7 @@ export const PWAInstallButton: React.FC = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
             <div className="w-full max-w-sm rounded-xl bg-white border-2 border-[#275d1d] p-6 shadow-2xl text-[#1a2e16]">
               <div className="flex items-center justify-between mb-3 border-b pb-2 border-[#275d1d]/20">
-                <h3 className="text-base font-bold font-['Space_Grotesk'] text-[#275d1d]">Install di iPhone / iPad</h3>
+                <h3 className="text-base font-extrabold font-['Montserrat'] tracking-tight text-[#275d1d]">Install di iPhone / iPad</h3>
                 <button
                   onClick={() => setShowIOSGuide(false)}
                   className="text-gray-500 hover:text-black p-1"

@@ -42,9 +42,9 @@ export const TripCard: React.FC<TripCardProps> = ({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0 flex-wrap">
           <h3
-            className={`text-sm sm:text-base font-bold font-['Space_Grotesk'] truncate transition-colors ${
+            className={`text-sm sm:text-base font-['Montserrat'] truncate transition-colors ${
               isSelected
-                ? 'text-[#1f4a17] font-extrabold'
+                ? 'text-[#1f4a17] font-extrabold tracking-tight'
                 : 'text-slate-500 font-semibold group-hover:text-slate-700'
             }`}
           >

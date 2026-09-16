@@ -37,7 +37,7 @@ export const GitHubGuideModal: React.FC<GitHubGuideModalProps> = ({
           <div className="flex items-center gap-2.5">
             <Github className="w-6 h-6 text-white" />
             <div>
-              <h3 className="font-bold text-base sm:text-lg font-['Space_Grotesk'] text-white">
+              <h3 className="font-extrabold text-base sm:text-lg font-['Montserrat'] tracking-tight text-white">
                 Panduan Lengkap Deploy ke GitHub & Online
               </h3>
               <p className="text-xs text-white/80">Solusi anti gagal untuk upload repository dan deploy website</p>

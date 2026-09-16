@@ -203,7 +203,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
               <Share2 className="w-5 h-5 text-amber-300" />
             </span>
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-extrabold font-['Space_Grotesk'] truncate">
+              <h2 className="text-base sm:text-lg font-extrabold font-['Montserrat'] tracking-tight truncate">
                 Generator Caption & Broadcast Promosi
               </h2>
               <p className="text-[11px] sm:text-xs text-[#d1d1d1] truncate">
@@ -272,7 +272,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
                 {/* Hook Selection (Instagram) */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-1.5">
+                    <label className="text-xs font-extrabold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                       Pilihan Gaya Hook:
                     </label>

@@ -52,10 +52,10 @@ export const ItineraryModal: React.FC<ItineraryModalProps> = ({
         {/* Header */}
         <div className="bg-[#275d1d] px-5 sm:px-6 py-4 border-b border-[#275d1d] flex items-center justify-between">
           <div>
-            <span className="text-[10px] sm:text-xs font-bold tracking-widest text-[#d1d1d1] uppercase font-['Space_Grotesk']">
+            <span className="text-[10px] sm:text-xs font-bold tracking-wider text-[#d1d1d1] uppercase font-['Montserrat']">
               Rundown & Arsip Media Sosial
             </span>
-            <h2 className="text-lg sm:text-xl font-bold font-['Space_Grotesk'] text-white">
+            <h2 className="text-lg sm:text-xl font-extrabold font-['Montserrat'] tracking-tight text-white">
               🗓️ Itinerary {trip.nama_gunung} ({trip.jalur})
             </h2>
           </div>
@@ -82,7 +82,7 @@ export const ItineraryModal: React.FC<ItineraryModalProps> = ({
           {/* Export Action Bar specifically for Itinerary */}
           <div className="bg-[#f5f5f5] border-2 border-[#275d1d]/30 rounded-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div>
-              <h4 className="font-bold text-[#275d1d] text-xs sm:text-sm flex items-center gap-1.5 font-['Space_Grotesk']">
+              <h4 className="font-extrabold text-[#275d1d] text-xs sm:text-sm flex items-center gap-1.5 font-['Montserrat'] tracking-tight">
                 <Image className="w-4 h-4 text-[#275d1d]" />
                 Export Poster Pamflet Itinerary
               </h4>

@@ -31,7 +31,7 @@ import {
   DEFAULT_CITO_SK,
   getDefaultCatatanPenting,
 } from './TripModal';
-import { calculateDuration, generateDefaultItinerary } from '../utils/formatters';
+import { calculateDuration, computeAutoEndDate, generateDefaultItinerary } from '../utils/formatters';
 import { saveTripToCloud } from '../firebase';
 import { saveStoredTrips, getStoredTrips, getAdminPhone, setMasYunoAuthenticated } from '../utils/storage';
 import { playIncomingDraftChime } from '../utils/audioNotify';
@@ -129,8 +129,10 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
 
   const handleStartDateChange = (val: string) => {
     setTanggalMulai(val);
-    if (val && tanggalSelesai) {
-      const newDurasi = calculateDuration(val, tanggalSelesai);
+    if (val) {
+      const autoEnd = computeAutoEndDate(val, tanggalSelesai);
+      setTanggalSelesai(autoEnd);
+      const newDurasi = calculateDuration(val, autoEnd);
       setDurasi(newDurasi);
     }
   };
@@ -158,14 +160,21 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
 
   const handleUpdateSchedule = (index: number, field: keyof TripSchedule, val: string) => {
     const updated = [...jadwalTambahan];
-    updated[index] = { ...updated[index], [field]: val };
-    if (field === 'tanggal_mulai' || field === 'tanggal_selesai') {
-      const s = field === 'tanggal_mulai' ? val : updated[index].tanggal_mulai;
-      const e = field === 'tanggal_selesai' ? val : updated[index].tanggal_selesai;
-      if (s && e) {
-        updated[index].durasi = calculateDuration(s, e);
+    const item = { ...updated[index], [field]: val };
+    if (field === 'tanggal_mulai') {
+      item.tanggal_mulai = val;
+      if (val) {
+        const autoEnd = computeAutoEndDate(val, item.tanggal_selesai);
+        item.tanggal_selesai = autoEnd;
+        item.durasi = calculateDuration(val, autoEnd);
+      }
+    } else if (field === 'tanggal_selesai') {
+      item.tanggal_selesai = val;
+      if (item.tanggal_mulai && val) {
+        item.durasi = calculateDuration(item.tanggal_mulai, val);
       }
     }
+    updated[index] = item;
     setJadwalTambahan(updated);
   };
 
@@ -567,6 +576,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                     <input
                       type="date"
                       value={tanggalSelesai}
+                      min={tanggalMulai || undefined}
                       onChange={(e) => handleEndDateChange(e.target.value)}
                       required
                       className="w-full bg-white border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
@@ -622,6 +632,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                       <input
                         type="date"
                         value={sch.tanggal_selesai}
+                        min={sch.tanggal_mulai || undefined}
                         onChange={(e) => handleUpdateSchedule(idx, 'tanggal_selesai', e.target.value)}
                         className="w-full bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs"
                       />

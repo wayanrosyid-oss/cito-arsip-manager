@@ -108,6 +108,46 @@ export function calculateDuration(startDateStr: string, endDateStr: string): str
   return `${totalDays} Hari ${totalNights} Malam`;
 }
 
+/**
+ * Menghitung tanggal selesai otomatis ketika tanggal mulai dipilih/diubah.
+ * - Jika currentEndDate kosong, atau lebih kecil/sama dengan startDate, atau berbeda bulan jauh:
+ *   otomatis set ke H+1 (durasi standar 2 Hari 1 Malam) di bulan yang sama.
+ * - Jika sudah ada durasi hari yang valid (misal H+1, H+2), pertahankan selisih hari tersebut
+ *   sehingga tanggal selesai otomatis bergeser ke bulan dan tanggal yang tepat tanpa perlu scroll.
+ */
+export function computeAutoEndDate(startDateStr: string, currentEndDateStr?: string): string {
+  if (!startDateStr) return currentEndDateStr || '';
+
+  const startParts = startDateStr.split('-').map(Number);
+  if (startParts.length !== 3 || isNaN(startParts[0])) return currentEndDateStr || '';
+
+  const [sYear, sMonth, sDay] = startParts;
+  const startDate = new Date(sYear, sMonth - 1, sDay);
+
+  let dayOffset = 1; // Default H+1 (2 Hari 1 Malam)
+
+  if (currentEndDateStr) {
+    const endParts = currentEndDateStr.split('-').map(Number);
+    if (endParts.length === 3 && !isNaN(endParts[0])) {
+      const [eYear, eMonth, eDay] = endParts;
+      const currentEndDate = new Date(eYear, eMonth - 1, eDay);
+      const diffDays = Math.round((currentEndDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Jika selisih hari valid dan realistis untuk open trip (1 sampai 7 hari), pertahankan durasinya!
+      if (diffDays >= 1 && diffDays <= 7) {
+        dayOffset = diffDays;
+      }
+    }
+  }
+
+  const targetDate = new Date(sYear, sMonth - 1, sDay + dayOffset);
+  const targetYear = targetDate.getFullYear();
+  const targetMonth = String(targetDate.getMonth() + 1).padStart(2, '0');
+  const targetDay = String(targetDate.getDate()).padStart(2, '0');
+
+  return `${targetYear}-${targetMonth}-${targetDay}`;
+}
+
 export function generateDefaultItinerary(
   mountainName: string,
   jalur: string,

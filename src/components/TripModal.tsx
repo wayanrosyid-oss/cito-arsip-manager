@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Plus, Trash2, Calendar, Clock, MapPin, Sparkles, AlertCircle } from 'lucide-react';
 import { Trip, TripStatus, MeetingPoint, TripSchedule } from '../types';
 import { POPULAR_MOUNTAINS } from '../data/mountains';
-import { calculateDuration, generateDefaultItinerary } from '../utils/formatters';
+import { calculateDuration, computeAutoEndDate, generateDefaultItinerary } from '../utils/formatters';
 import { ItineraryEditor } from './ItineraryEditor';
 
 // Official Default Lists for Cito Adventure Madiun
@@ -220,11 +220,13 @@ export const TripModal: React.FC<TripModalProps> = ({
     }
   };
 
-  // When dates change, auto-calculate duration
+  // When dates change, auto-calculate duration & automatically sync month/date
   const handleStartDateChange = (val: string) => {
     setTanggalMulai(val);
-    if (val && tanggalSelesai) {
-      setDurasi(calculateDuration(val, tanggalSelesai));
+    if (val) {
+      const autoEnd = computeAutoEndDate(val, tanggalSelesai);
+      setTanggalSelesai(autoEnd);
+      setDurasi(calculateDuration(val, autoEnd));
     }
   };
 
@@ -287,10 +289,14 @@ export const TripModal: React.FC<TripModalProps> = ({
     const item = { ...updated[index], [field]: val };
 
     if (field === 'tanggal_mulai') {
-      if (val && item.tanggal_selesai) {
-        item.durasi = calculateDuration(val, item.tanggal_selesai);
+      item.tanggal_mulai = val;
+      if (val) {
+        const autoEnd = computeAutoEndDate(val, item.tanggal_selesai);
+        item.tanggal_selesai = autoEnd;
+        item.durasi = calculateDuration(val, autoEnd);
       }
     } else if (field === 'tanggal_selesai') {
+      item.tanggal_selesai = val;
       if (item.tanggal_mulai && val) {
         item.durasi = calculateDuration(item.tanggal_mulai, val);
       }
@@ -570,6 +576,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                   <input
                     type="date"
                     value={tanggalSelesai}
+                    min={tanggalMulai || undefined}
                     onChange={(e) => handleEndDateChange(e.target.value)}
                     className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
                     required
@@ -635,6 +642,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                     <input
                       type="date"
                       value={jadwal.tanggal_selesai}
+                      min={jadwal.tanggal_mulai || undefined}
                       onChange={(e) => handleJadwalChange(idx, 'tanggal_selesai', e.target.value)}
                       className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
                       required

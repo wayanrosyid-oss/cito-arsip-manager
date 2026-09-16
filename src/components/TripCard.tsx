@@ -1,6 +1,7 @@
 import React from 'react';
 import { ChevronRight } from 'lucide-react';
 import { Trip } from '../types';
+import { formatDateRange } from '../utils/formatters';
 
 interface TripCardProps {
   trip: Trip;
@@ -28,6 +29,7 @@ export const TripCard: React.FC<TripCardProps> = ({
   };
 
   const jalurText = trip.jalur?.startsWith('Via ') ? trip.jalur : `Via ${trip.jalur || 'Jalur Terbuka'}`;
+  const formattedDate = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || '';
 
   return (
     <div
@@ -38,9 +40,9 @@ export const TripCard: React.FC<TripCardProps> = ({
           : 'bg-white/95 border border-slate-300 hover:border-slate-400 hover:bg-white shadow-2xs hover:shadow-xs opacity-70 hover:opacity-100'
       }`}
     >
-      {/* Row 1: Mountain Name & Height + Dari Tim Badge + Chevron Icon */}
+      {/* Row 1: Mountain Name & Height + Dari Tim Badge + Draft/Final Badge + Chevron Icon */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0 flex-wrap">
+        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
           <h3
             className={`text-sm sm:text-base font-['Montserrat'] truncate transition-colors ${
               isSelected
@@ -50,9 +52,24 @@ export const TripCard: React.FC<TripCardProps> = ({
           >
             {formatTitle()}
           </h3>
-          {(trip.from_team || trip.is_draft) && (
-            <span className="inline-flex items-center text-[10px] sm:text-xs font-bold px-2 py-0.5 rounded-full bg-[#f5a623] text-white shadow-2xs shrink-0">
+
+          {/* Badge Dari Tim */}
+          {trip.from_team && (
+            <span className="inline-flex items-center text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500 text-white shadow-2xs shrink-0">
               Dari Tim
+            </span>
+          )}
+
+          {/* Badge Status Draft vs Final */}
+          {trip.is_draft ? (
+            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-400 shadow-2xs shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+              Draft
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-400 shadow-2xs shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+              Final
             </span>
           )}
         </div>
@@ -65,10 +82,10 @@ export const TripCard: React.FC<TripCardProps> = ({
         />
       </div>
 
-      {/* Row 2: Jalur Pill Badge */}
-      <div className="mt-2.5 flex items-center gap-1.5 flex-wrap">
+      {/* Row 2: Jalur Pill Badge & Tanggal Trip */}
+      <div className="mt-2.5 flex items-center gap-2.5 flex-wrap">
         <span
-          className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full transition-colors ${
+          className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full transition-colors shrink-0 ${
             isSelected
               ? 'bg-[#1f4a17] text-white shadow-xs'
               : 'bg-slate-300/80 text-slate-600 group-hover:bg-slate-300 group-hover:text-slate-700'
@@ -76,6 +93,16 @@ export const TripCard: React.FC<TripCardProps> = ({
         >
           {jalurText}
         </span>
+
+        {formattedDate && (
+          <span
+            className={`text-xs sm:text-[13px] font-medium font-['Montserrat'] transition-colors ${
+              isSelected ? 'text-[#1f4a17] font-bold' : 'text-slate-600 group-hover:text-slate-800'
+            }`}
+          >
+            {formattedDate}
+          </span>
+        )}
       </div>
     </div>
   );

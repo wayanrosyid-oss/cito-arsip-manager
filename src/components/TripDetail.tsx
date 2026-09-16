@@ -155,23 +155,36 @@ export const TripDetail: React.FC<TripDetailProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2.5 flex-wrap">
+              {/* Badge Kesiapan: Draft vs Final */}
               {trip.is_draft ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide bg-amber-500 text-white shadow-xs animate-pulse">
-                  <span className="w-2 h-2 rounded-full bg-white" />
-                  ⏳ Draf Masuk dari Tim
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wide bg-amber-500 text-white shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                  🟡 Status: DRAFT (Belum Final)
                 </span>
               ) : (
-                <span
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide ${
-                    isBuka
-                      ? 'bg-[#275d1d] text-white'
-                      : 'bg-[#d1d1d1] text-[#275d1d] border border-[#275d1d]/40'
-                  }`}
-                >
-                  <span className={`w-2 h-2 rounded-full ${isBuka ? 'bg-white' : 'bg-[#275d1d]'}`} />
-                  Status: {trip.status}
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wide bg-emerald-700 text-white shadow-xs">
+                  <span className="w-2 h-2 rounded-full bg-emerald-300" />
+                  🟢 Status: FINAL (Siap Upload)
                 </span>
               )}
+
+              {/* Badge Dari Tim */}
+              {trip.from_team && (
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-950 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-full">
+                  👥 Dari Tim {trip.draf_oleh ? `(${trip.draf_oleh})` : ''}
+                </span>
+              )}
+
+              <span
+                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold tracking-wide ${
+                  isBuka
+                    ? 'bg-[#275d1d] text-white'
+                    : 'bg-[#d1d1d1] text-[#275d1d] border border-[#275d1d]/40'
+                }`}
+              >
+                <span className={`w-2 h-2 rounded-full ${isBuka ? 'bg-white' : 'bg-[#275d1d]'}`} />
+                Kuota: {trip.status}
+              </span>
               <span className="inline-flex items-center gap-1 text-xs font-bold text-[#275d1d] bg-[#d1d1d1] px-2.5 py-1 rounded border border-[#275d1d]/30">
                 <MapPin className="w-3.5 h-3.5 text-[#275d1d]" />
                 {trip.jalur}
@@ -187,17 +200,30 @@ export const TripDetail: React.FC<TripDetailProps> = ({
           </div>
 
           <div className="flex items-center gap-2 self-start sm:self-center flex-wrap">
-            {trip.is_draft && (
+            {trip.is_draft ? (
               <button
                 onClick={() => {
-                  const approved = { ...trip, is_draft: false, from_team: true, updated_at: Date.now() };
+                  const approved = { ...trip, is_draft: false, updated_at: Date.now() };
                   onSaveTrip(approved);
-                  onShowToast(`Trip ${trip.nama_gunung} resmi disetujui & dipublikasikan!`);
+                  onShowToast(`Trip ${trip.nama_gunung} resmi diubah ke FINAL (Siap Upload & Promosi)!`);
                 }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-md active:scale-95"
+                title="Klik untuk mengubah status trip menjadi Final (Siap Upload)"
               >
                 <CheckCircle className="w-4 h-4 text-white" />
-                <span>Setujui & Terbitkan</span>
+                <span>🟢 Terbitkan Jadi Final</span>
+              </button>
+            ) : (
+              <button
+                onClick={() => {
+                  const toDraft = { ...trip, is_draft: true, updated_at: Date.now() };
+                  onSaveTrip(toDraft);
+                  onShowToast(`Trip ${trip.nama_gunung} dikembalikan ke DRAFT (Belum Final).`);
+                }}
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                title="Klik jika ingin membatalkan status final dan mengedit ulang data ini"
+              >
+                <span>🟡 Ubah ke Draft</span>
               </button>
             )}
             <button

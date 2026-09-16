@@ -107,6 +107,7 @@ export const TripModal: React.FC<TripModalProps> = ({
   const [kontakWaJatim, setKontakWaJatim] = useState('+6282230444428');
   const [kontakWaJakarta, setKontakWaJakarta] = useState('+6289503689266');
   const [kontakIg, setKontakIg] = useState('@citoadventuremadiun');
+  const [isDraft, setIsDraft] = useState(false);
 
   // Available trails for currently selected mountain
   const currentMountain = POPULAR_MOUNTAINS[parseInt(selectedMountainIndex, 10)] || null;
@@ -139,6 +140,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       setKontakWaJatim(tripToEdit.kontak_wa_jatim || '+6282230444428');
       setKontakWaJakarta(tripToEdit.kontak_wa_jakarta || '+6289503689266');
       setKontakIg(tripToEdit.kontak_ig || '@citoadventuremadiun');
+      setIsDraft(tripToEdit.is_draft ?? false);
 
       // Check if matches known mountain
       const mIndex = POPULAR_MOUNTAINS.findIndex(
@@ -178,6 +180,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       setKontakWaJatim('+6282230444428');
       setKontakWaJakarta('+6289503689266');
       setKontakIg('@citoadventuremadiun');
+      setIsDraft(false);
     }
   }, [tripToEdit, isOpen]);
 
@@ -352,7 +355,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       background_url: tripToEdit?.background_url || '/default-bg.jpg',
       background_overlay_dim: tripToEdit?.background_overlay_dim ?? 0.2,
       logo_url: tripToEdit?.logo_url || '',
-      is_draft: tripToEdit?.is_draft ?? false,
+      is_draft: isDraft,
       from_team: tripToEdit?.from_team ?? false,
       draf_oleh: tripToEdit?.draf_oleh,
       draf_catatan: tripToEdit?.draf_catatan,
@@ -982,8 +985,77 @@ export const TripModal: React.FC<TripModalProps> = ({
             />
           </div>
 
+          {/* Section 9: Status Kesiapan Trip (Draft vs Final) */}
+          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+            <div className="flex items-center justify-between flex-wrap gap-2">
+              <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-[#275d1d]" />
+                9. Status Kesiapan Trip (Draft / Final)
+              </h3>
+              <span
+                className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border shadow-2xs ${
+                  isDraft
+                    ? 'bg-amber-100 text-amber-900 border-amber-400'
+                    : 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                }`}
+              >
+                {isDraft ? '🟡 Mode: Draft (Belum Final)' : '🟢 Mode: Final (Siap Upload)'}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {/* Opsi 1: Final */}
+              <div
+                onClick={() => setIsDraft(false)}
+                className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer select-none ${
+                  !isDraft
+                    ? 'bg-emerald-50/80 border-emerald-600 ring-2 ring-emerald-600/20 shadow-xs'
+                    : 'bg-white border-gray-300 hover:border-gray-400 opacity-70 hover:opacity-100'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                    !isDraft ? 'border-emerald-600 bg-emerald-600' : 'border-gray-400'
+                  }`}>
+                    {!isDraft && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <span className="text-xs sm:text-sm font-extrabold text-emerald-950 font-['Montserrat']">
+                    🟢 Final (Siap Upload)
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-600 mt-1.5 leading-relaxed pl-6">
+                  Jadwal, kuota, tarif & itinerary sudah fix. Siap dibuatkan pamflet dan di-broadcast ke medsos.
+                </p>
+              </div>
+
+              {/* Opsi 2: Draft */}
+              <div
+                onClick={() => setIsDraft(true)}
+                className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer select-none ${
+                  isDraft
+                    ? 'bg-amber-50/80 border-amber-500 ring-2 ring-amber-500/20 shadow-xs'
+                    : 'bg-white border-gray-300 hover:border-gray-400 opacity-70 hover:opacity-100'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                    isDraft ? 'border-amber-500 bg-amber-500' : 'border-gray-400'
+                  }`}>
+                    {isDraft && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <span className="text-xs sm:text-sm font-extrabold text-amber-950 font-['Montserrat']">
+                    🟡 Draft (Belum Final / Konsep)
+                  </span>
+                </div>
+                <p className="text-[11px] text-gray-600 mt-1.5 leading-relaxed pl-6">
+                  Data masih tentatif atau menunggu konfirmasi. Masuk daftar dengan label <strong>🟡 Draft</strong>.
+                </p>
+              </div>
+            </div>
+          </div>
+
           {/* Buttons Footer */}
-          <div className="pt-4 border-t border-[#275d1d]/20 flex items-center justify-end gap-2.5">
+          <div className="pt-4 border-t border-[#275d1d]/20 flex flex-wrap items-center justify-between gap-2.5">
             <button
               type="button"
               onClick={onClose}
@@ -991,12 +1063,41 @@ export const TripModal: React.FC<TripModalProps> = ({
             >
               Batal
             </button>
-            <button
-              type="submit"
-              className="px-5 py-2 text-xs sm:text-sm font-bold text-white bg-[#275d1d] hover:bg-[#1f4a17] rounded shadow transition-all cursor-pointer active:scale-95"
-            >
-              {tripToEdit ? 'Simpan Perubahan' : 'Simpan Trip Baru'}
-            </button>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              {/* Tombol Simpan Cepat sebagai Draft */}
+              <button
+                type="button"
+                onClick={(e) => {
+                  setIsDraft(true);
+                  // Trigger form submit via button click
+                  setTimeout(() => {
+                    const form = (e.target as HTMLElement).closest('form');
+                    if (form) form.requestSubmit();
+                  }, 50);
+                }}
+                className="px-3.5 py-2 text-xs sm:text-sm font-extrabold text-amber-950 bg-amber-200 hover:bg-amber-300 border border-amber-400 rounded shadow-xs transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+              >
+                <span>🟡</span>
+                <span>Simpan sebagai Draft</span>
+              </button>
+
+              {/* Tombol Simpan Utama (Final) */}
+              <button
+                type="submit"
+                onClick={() => {
+                  // Jika pengguna menekan tombol hijau utama ini, kita jadikan Final kecuali jika user sengaja memilih Draft
+                }}
+                className={`px-5 py-2 text-xs sm:text-sm font-extrabold text-white rounded shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 ${
+                  isDraft
+                    ? 'bg-amber-600 hover:bg-amber-700'
+                    : 'bg-[#275d1d] hover:bg-[#1f4a17]'
+                }`}
+              >
+                <span>{isDraft ? '🟡' : '🟢'}</span>
+                <span>{tripToEdit ? (isDraft ? 'Simpan Perubahan (Draft)' : 'Simpan Perubahan (Final)') : (isDraft ? 'Simpan Trip (Draft)' : 'Simpan Trip Final')}</span>
+              </button>
+            </div>
           </div>
         </form>
       </div>

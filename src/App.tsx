@@ -57,6 +57,7 @@ export default function App() {
   });
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
+  const [tripStatusFilter, setTripStatusFilter] = useState<'semua' | 'tim' | 'draft' | 'final'>('semua');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
   const [viewMode, setViewMode] = useState<'admin' | 'tim'>(() => {
     if (typeof window === 'undefined') return 'tim';
@@ -324,8 +325,16 @@ export default function App() {
 
   // Filter & Search
   const filteredTrips = trips.filter((t) => {
+    // 1. Status Filter Khusus Admin (Semua, Dari Tim, Draft, Final)
+    if (tripStatusFilter === 'tim' && !t.from_team) return false;
+    if (tripStatusFilter === 'draft' && !t.is_draft) return false;
+    if (tripStatusFilter === 'final' && t.is_draft) return false;
+
+    // 2. Filter Status Buka / Tutup
     const matchesFilter =
       filterStatus === 'Semua' ? true : t.status === filterStatus;
+
+    // 3. Search Query
     const query = searchQuery.toLowerCase().trim();
     const matchesSearch =
       query === '' ||
@@ -336,6 +345,8 @@ export default function App() {
   });
 
   const draftTrips = trips.filter((t) => t.is_draft);
+  const teamTrips = trips.filter((t) => t.from_team);
+  const finalTrips = trips.filter((t) => !t.is_draft);
   const activeTrip = trips.find((t) => t.id === selectedTripId) || filteredTrips[0] || null;
 
   const handleCopyTeamLink = () => {
@@ -614,11 +625,93 @@ export default function App() {
                 <h2 className="text-base font-extrabold font-['Montserrat'] tracking-tight text-[#275d1d]">
                   Daftar Trip
                 </h2>
-                {draftTrips.length > 0 && (
-                  <span className="text-[10px] font-extrabold bg-amber-500 text-white px-2.5 py-0.5 rounded-full animate-pulse">
-                    {draftTrips.length} Draf
-                  </span>
-                )}
+                <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
+                  {filteredTrips.length} dari {trips.length}
+                </span>
+              </div>
+
+              {/* Opsi Tombol Status Khusus Mode Admin (dari tim, draft, Final) */}
+              <div className="flex items-center gap-1.5 p-1 bg-[#f4f4f4] rounded-xl border border-[#275d1d]/20 overflow-x-auto no-scrollbar">
+                <button
+                  type="button"
+                  onClick={() => setTripStatusFilter('semua')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
+                    tripStatusFilter === 'semua'
+                      ? 'bg-[#275d1d] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
+                  }`}
+                >
+                  Semua ({trips.length})
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTripStatusFilter('tim')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                    tripStatusFilter === 'tim'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
+                  }`}
+                >
+                  <span>dari tim</span>
+                  {teamTrips.length > 0 && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                        tripStatusFilter === 'tim'
+                          ? 'bg-white/25 text-white'
+                          : 'bg-amber-500 text-white'
+                      }`}
+                    >
+                      {teamTrips.length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTripStatusFilter('draft')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                    tripStatusFilter === 'draft'
+                      ? 'bg-amber-500 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
+                  }`}
+                >
+                  <span>🟡 draft</span>
+                  {draftTrips.length > 0 && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                        tripStatusFilter === 'draft'
+                          ? 'bg-white/30 text-white'
+                          : 'bg-amber-200 text-amber-950'
+                      }`}
+                    >
+                      {draftTrips.length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setTripStatusFilter('final')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                    tripStatusFilter === 'final'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
+                  }`}
+                >
+                  <span>🟢 Final</span>
+                  {finalTrips.length > 0 && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                        tripStatusFilter === 'final'
+                          ? 'bg-white/25 text-white'
+                          : 'bg-emerald-100 text-emerald-900'
+                      }`}
+                    >
+                      {finalTrips.length}
+                    </span>
+                  )}
+                </button>
               </div>
 
               {/* Search Bar */}

@@ -187,120 +187,192 @@ function wrapText(
   return currentY + lineHeight;
 }
 
-// Draw Floating Bottom Booking Bar exactly matching user request:
-// Circular orange arrow icon on far left, then bold text "BOOKING NOW",
-// then WhatsApp icon with two-line text (label + phone number),
-// a thin vertical divider line, another WhatsApp icon with two-line text,
-// then Instagram icon with @username text — all elements vertically centered in a single horizontal row, evenly spaced, consistent font size.
+// Draw Floating Bottom Booking Bar — precise proportional spec version:
+// Circular orange arrow icon on far left, bold "BOOKING NOW", WhatsApp icons with two-line text,
+// Instagram icon with handle. All set in Poppins Bold/Black, ALL CAPS.
+// Automatically scaled to fit within a floating pill with safe margins on 1080px canvas so nothing clips.
 function drawBottomBookingBar(
   ctx: CanvasRenderingContext2D,
   canvasW: number,
   canvasH: number,
   trip: Trip
 ) {
-  const barW = Math.min(canvasW - 70, 1010);
-  const barH = 78;
+  const FONT_FAMILY = '"Poppins", "Montserrat", sans-serif';
+
+  // Floating pill layout bounds
+  const barMarginX = 42; // Clean margin from canvas left and right edges
+  const targetMaxBarW = canvasW - barMarginX * 2; // e.g. 996px on 1080px canvas
+  const barH = 72;
+  const radius = barH / 2;
+
+  // Data strings (ALL CAPS as spec requires)
+  const waJatim = (trip.kontak_wa_jatim || '+6282230444428').toUpperCase();
+  const waJakarta = (trip.kontak_wa_jakarta || '+6289503689266').toUpperCase();
+  const rawIg = (trip.kontak_ig || 'CITO ADVENTURE MADIUN').replace(/^@/, '').toUpperCase().replace(/\s+/g, '');
+  const cleanIgDisplay = `@${rawIg}`;
+
+  // Base specifications designed for comfortable fit
+  const BASE_BOOKING_PX = 21;
+  const BASE_LABEL_PX = 9.5;
+  const BASE_VALUE_PX = 17;
+  const BASE_ICON_SIZE = 28;
+  const BASE_ICON_GAP = 8;
+  const BASE_CIRCLE_R = 25;
+  const BASE_GAP_ARROW = 28;
+  const BASE_GAP_TEXT_WA = 28;
+  const BASE_GAP_WA_WA = 18;
+  const BASE_GAP_WA_IG = 18;
+  const leftPad = 14;
+  const rightPad = 22;
+
+  // Measure base dimensions
+  ctx.save();
+  ctx.font = `800 ${BASE_BOOKING_PX}px ${FONT_FAMILY}`;
+  const rawBookingW = ctx.measureText('BOOKING NOW').width;
+
+  ctx.font = `800 ${BASE_VALUE_PX}px ${FONT_FAMILY}`;
+  const rawWa1ValW = ctx.measureText(waJatim).width;
+  const rawWa2ValW = ctx.measureText(waJakarta).width;
+  const rawIgValW = ctx.measureText(cleanIgDisplay).width;
+
+  ctx.font = `700 ${BASE_LABEL_PX}px ${FONT_FAMILY}`;
+  const rawWa1LblW = ctx.measureText('JATIM & JATENG').width;
+  const rawWa2LblW = ctx.measureText('JAKARTA & SEKITAR').width;
+  ctx.restore();
+
+  const rawWa1TextW = Math.max(rawWa1ValW, rawWa1LblW);
+  const rawWa2TextW = Math.max(rawWa2ValW, rawWa2LblW);
+
+  const rawWa1BlockW = BASE_ICON_SIZE + BASE_ICON_GAP + rawWa1TextW;
+  const rawWa2BlockW = BASE_ICON_SIZE + BASE_ICON_GAP + rawWa2TextW;
+  const rawIgBlockW = BASE_ICON_SIZE + BASE_ICON_GAP + rawIgValW;
+
+  const rawTotalContentW =
+    leftPad +
+    BASE_CIRCLE_R * 2 +
+    BASE_GAP_ARROW +
+    rawBookingW +
+    BASE_GAP_TEXT_WA +
+    rawWa1BlockW +
+    BASE_GAP_WA_WA +
+    rawWa2BlockW +
+    BASE_GAP_WA_IG +
+    rawIgBlockW +
+    rightPad;
+
+  // Compute adaptive scale factor so the whole bar never clips and has comfortable breathing room
+  const scale = rawTotalContentW > targetMaxBarW ? targetMaxBarW / rawTotalContentW : 1;
+
+  // Scaled dimensions
+  const circleRadius = Math.round(BASE_CIRCLE_R * Math.max(scale, 0.85));
+  const iconSize = Math.round(BASE_ICON_SIZE * Math.max(scale, 0.85));
+  const iconTextGap = Math.round(BASE_ICON_GAP * scale);
+
+  const bookingPx = Math.round(BASE_BOOKING_PX * scale * 10) / 10;
+  const labelPx = Math.round(BASE_LABEL_PX * scale * 10) / 10;
+  const valuePx = Math.round(BASE_VALUE_PX * scale * 10) / 10;
+
+  const gapArrow = Math.round(BASE_GAP_ARROW * scale);
+  const gapTextWa = Math.round(BASE_GAP_TEXT_WA * scale);
+  const gapWaWa = Math.round(BASE_GAP_WA_WA * scale);
+  const gapWaIg = Math.round(BASE_GAP_WA_IG * scale);
+
+  const BOOKING_FONT = `800 ${bookingPx}px ${FONT_FAMILY}`;
+  const LABEL_FONT = `700 ${labelPx}px ${FONT_FAMILY}`;
+  const VALUE_FONT = `800 ${valuePx}px ${FONT_FAMILY}`;
+
+  // Remeasure exactly at scaled font size
+  ctx.save();
+  ctx.font = BOOKING_FONT;
+  const bookingW = ctx.measureText('BOOKING NOW').width;
+
+  ctx.font = VALUE_FONT;
+  const wa1ValueW = ctx.measureText(waJatim).width;
+  const wa2ValueW = ctx.measureText(waJakarta).width;
+  const igTextW = ctx.measureText(cleanIgDisplay).width;
+
+  ctx.font = LABEL_FONT;
+  const wa1LabelW = ctx.measureText('JATIM & JATENG').width;
+  const wa2LabelW = ctx.measureText('JAKARTA & SEKITAR').width;
+  ctx.restore();
+
+  const wa1TextW = Math.max(wa1ValueW, wa1LabelW);
+  const wa2TextW = Math.max(wa2ValueW, wa2LabelW);
+  const wa1BlockW = iconSize + iconTextGap + wa1TextW;
+  const wa2BlockW = iconSize + iconTextGap + wa2TextW;
+  const igBlockW = iconSize + iconTextGap + igTextW;
+
+  const actualContentW =
+    leftPad +
+    circleRadius * 2 +
+    gapArrow +
+    bookingW +
+    gapTextWa +
+    wa1BlockW +
+    gapWaWa +
+    wa2BlockW +
+    gapWaIg +
+    igBlockW +
+    rightPad;
+
+  const barW = Math.min(actualContentW, canvasW - 40);
   const barX = (canvasW - barW) / 2;
   const barY = canvasH - barH - 38;
-  const radius = barH / 2;
   const centerY = barY + barH / 2;
 
+  // Draw floating white pill with shadow
   ctx.save();
-  // Soft drop shadow for floating pill
-  ctx.shadowColor = 'rgba(0, 0, 0, 0.40)';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.38)';
   ctx.shadowBlur = 18;
   ctx.shadowOffsetY = 6;
-
-  // Solid white rounded pill
   ctx.fillStyle = '#FFFFFF';
   roundRect(ctx, barX, barY, barW, barH, radius, true, false);
   ctx.restore();
 
-  // 1. Circular Orange/Amber Arrow on far left
-  const circleRadius = 28;
-  const circleX = barX + 16 + circleRadius;
+  // Layout elements horizontally using running cursor
+  let cursorX = barX + leftPad;
 
+  // 1. Circular Amber Arrow on far left
+  const circleX = cursorX + circleRadius;
   ctx.save();
   ctx.fillStyle = '#F59E0B'; // Vibrant amber-orange
   ctx.beginPath();
   ctx.arc(circleX, centerY, circleRadius, 0, Math.PI * 2);
   ctx.fill();
 
-  // Crisp vector arrow pointing right
+  // Vector arrow pointing right
   ctx.fillStyle = '#000000';
+  const arrowScale = circleRadius / 28;
   const ax = circleX;
   const ay = centerY;
   ctx.beginPath();
-  ctx.moveTo(ax - 13, ay - 3.5);
-  ctx.lineTo(ax + 2, ay - 3.5);
-  ctx.lineTo(ax + 2, ay - 9);
-  ctx.lineTo(ax + 13, ay);
-  ctx.lineTo(ax + 2, ay + 9);
-  ctx.lineTo(ax + 2, ay + 3.5);
-  ctx.lineTo(ax - 13, ay + 3.5);
+  ctx.moveTo(ax - 13 * arrowScale, ay - 3.5 * arrowScale);
+  ctx.lineTo(ax + 2 * arrowScale, ay - 3.5 * arrowScale);
+  ctx.lineTo(ax + 2 * arrowScale, ay - 9 * arrowScale);
+  ctx.lineTo(ax + 13 * arrowScale, ay);
+  ctx.lineTo(ax + 2 * arrowScale, ay + 9 * arrowScale);
+  ctx.lineTo(ax + 2 * arrowScale, ay + 3.5 * arrowScale);
+  ctx.lineTo(ax - 13 * arrowScale, ay + 3.5 * arrowScale);
   ctx.closePath();
   ctx.fill();
   ctx.restore();
+  cursorX = circleX + circleRadius;
 
-  // 2. Bold text "BOOKING NOW"
-  const bookingTextX = circleX + circleRadius + 14;
+  // 2. Bold text "BOOKING NOW" — Poppins 800
+  cursorX += gapArrow;
+  const bookingTextX = cursorX;
   ctx.save();
   ctx.fillStyle = '#000000';
-  ctx.font = '900 15.5px "Montserrat", "Space Grotesk", sans-serif';
+  ctx.font = BOOKING_FONT;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillText('BOOKING NOW', bookingTextX, centerY);
-  const bookingW = ctx.measureText('BOOKING NOW').width;
   ctx.restore();
+  cursorX = bookingTextX + bookingW;
 
-  // Data strings
-  const waJatim = trip.kontak_wa_jatim || '+6282230444428';
-  const waJakarta = trip.kontak_wa_jakarta || '+6289503689266';
-  const rawIg = (trip.kontak_ig || 'CITO ADVENTURE MADIUN').replace(/^@/, '').toUpperCase();
-  const cleanIgDisplay = rawIg.startsWith('@') ? rawIg : `@${rawIg}`;
-
-  // Font definitions for consistent typography
-  const labelFont = '800 10px "Montserrat", sans-serif';
-  const valueFont = '900 13.5px "Montserrat", "Space Grotesk", sans-serif';
-
-  // Measure content widths for perfectly calculated even spacing
-  ctx.save();
-  ctx.font = valueFont;
-  const wa1PhoneW = ctx.measureText(waJatim).width;
-  const wa2PhoneW = ctx.measureText(waJakarta).width;
-  const igTextW = ctx.measureText(cleanIgDisplay).width;
-
-  ctx.font = labelFont;
-  const wa1LabelW = ctx.measureText('JATIM & JATENG').width;
-  const wa2LabelW = ctx.measureText('JAKARTA & SEKITAR').width;
-  ctx.restore();
-
-  const iconSize = 25;
-  const iconTextGap = 8;
-
-  const wa1TextW = Math.max(wa1PhoneW, wa1LabelW);
-  const wa1TotalW = iconSize + iconTextGap + wa1TextW;
-
-  const wa2TextW = Math.max(wa2PhoneW, wa2LabelW);
-  const wa2TotalW = iconSize + iconTextGap + wa2TextW;
-
-  const igTotalW = iconSize + iconTextGap + igTextW;
-
-  // Space allocation for horizontal row:
-  const startX = bookingTextX + bookingW;
-  const endX = barX + barW - 24;
-  const totalAvailableSpan = endX - startX;
-
-  // Total width of all 3 blocks
-  const blocksWidth = wa1TotalW + wa2TotalW + igTotalW;
-  // Symmetrical spacing around divider
-  const divSpace = 28;
-  // Major gaps (after booking now, and before IG)
-  const remainingSpace = Math.max(0, totalAvailableSpan - blocksWidth - (divSpace * 2));
-  const majorGap = remainingSpace / 2;
-
-  // 3. Section 1: WhatsApp Admin Jatim & Jateng (Icon + Two-Line Text)
-  const wa1BlockX = startX + majorGap;
+  // 3. Section 1: WhatsApp Admin Jatim & Jateng
+  cursorX += gapTextWa;
+  const wa1BlockX = cursorX;
   const wa1IconCenterX = wa1BlockX + iconSize / 2;
   const wa1TextX = wa1BlockX + iconSize + iconTextGap;
 
@@ -310,25 +382,16 @@ function drawBottomBookingBar(
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#000000';
-  ctx.font = labelFont;
-  ctx.fillText('JATIM & JATENG', wa1TextX, centerY - 8);
-  ctx.font = valueFont;
-  ctx.fillText(waJatim, wa1TextX, centerY + 8);
+  ctx.font = LABEL_FONT;
+  ctx.fillText('JATIM & JATENG', wa1TextX, centerY - 11);
+  ctx.font = VALUE_FONT;
+  ctx.fillText(waJatim, wa1TextX, centerY + 9);
   ctx.restore();
+  cursorX = wa1BlockX + wa1BlockW;
 
-  // 4. Thin Vertical Divider Line
-  const divX = wa1BlockX + wa1TotalW + divSpace;
-  ctx.save();
-  ctx.beginPath();
-  ctx.moveTo(divX, centerY - 18);
-  ctx.lineTo(divX, centerY + 18);
-  ctx.strokeStyle = '#000000';
-  ctx.lineWidth = 1.2;
-  ctx.stroke();
-  ctx.restore();
-
-  // 5. Section 2: WhatsApp Admin Jakarta & Sekitar (Icon + Two-Line Text)
-  const wa2BlockX = divX + divSpace;
+  // 4. Section 2: WhatsApp Admin Jakarta & Sekitar
+  cursorX += gapWaWa;
+  const wa2BlockX = cursorX;
   const wa2IconCenterX = wa2BlockX + iconSize / 2;
   const wa2TextX = wa2BlockX + iconSize + iconTextGap;
 
@@ -338,14 +401,16 @@ function drawBottomBookingBar(
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#000000';
-  ctx.font = labelFont;
-  ctx.fillText('JAKARTA & SEKITAR', wa2TextX, centerY - 8);
-  ctx.font = valueFont;
-  ctx.fillText(waJakarta, wa2TextX, centerY + 8);
+  ctx.font = LABEL_FONT;
+  ctx.fillText('JAKARTA & SEKITAR', wa2TextX, centerY - 11);
+  ctx.font = VALUE_FONT;
+  ctx.fillText(waJakarta, wa2TextX, centerY + 9);
   ctx.restore();
+  cursorX = wa2BlockX + wa2BlockW;
 
-  // 6. Section 3: Instagram Icon + @username text
-  const igBlockX = wa2BlockX + wa2TotalW + majorGap;
+  // 5. Section 3: Instagram Icon + @username text
+  cursorX += gapWaIg;
+  const igBlockX = cursorX;
   const igIconCenterX = igBlockX + iconSize / 2;
   const igTextX = igBlockX + iconSize + iconTextGap;
 
@@ -355,7 +420,7 @@ function drawBottomBookingBar(
   ctx.textAlign = 'left';
   ctx.textBaseline = 'middle';
   ctx.fillStyle = '#000000';
-  ctx.font = valueFont;
+  ctx.font = VALUE_FONT;
   ctx.fillText(cleanIgDisplay, igTextX, centerY);
   ctx.restore();
 }

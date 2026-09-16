@@ -1028,27 +1028,27 @@ export const TripModal: React.FC<TripModalProps> = ({
                 </p>
               </div>
 
-              {/* Opsi 2: Draft */}
+              {/* Opsi 2: Draft (Merah Tegas) */}
               <div
                 onClick={() => setIsDraft(true)}
                 className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer select-none ${
                   isDraft
-                    ? 'bg-amber-50/80 border-amber-500 ring-2 ring-amber-500/20 shadow-xs'
+                    ? 'bg-red-50/90 border-red-500 ring-2 ring-red-500/20 shadow-xs'
                     : 'bg-white border-gray-300 hover:border-gray-400 opacity-70 hover:opacity-100'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    isDraft ? 'border-amber-500 bg-amber-500' : 'border-gray-400'
+                    isDraft ? 'border-red-500 bg-red-600' : 'border-gray-400'
                   }`}>
                     {isDraft && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
-                  <span className="text-xs sm:text-sm font-extrabold text-amber-950 font-['Montserrat']">
-                    🟡 Draft (Belum Final / Konsep)
+                  <span className="text-xs sm:text-sm font-extrabold text-red-950 font-['Montserrat']">
+                    🔴 Draft (Belum Final / Konsep)
                   </span>
                 </div>
                 <p className="text-[11px] text-gray-600 mt-1.5 leading-relaxed pl-6">
-                  Data masih tentatif atau menunggu konfirmasi. Masuk daftar dengan label <strong>🟡 Draft</strong>.
+                  Data masih tentatif atau menunggu konfirmasi. Masuk daftar dengan label <strong>🔴 Draft</strong>.
                 </p>
               </div>
             </div>
@@ -1065,7 +1065,7 @@ export const TripModal: React.FC<TripModalProps> = ({
             </button>
 
             <div className="flex items-center gap-2 flex-wrap">
-              {/* Tombol Simpan Cepat sebagai Draft */}
+              {/* Tombol Simpan Cepat sebagai Draft (Merah) */}
               <button
                 type="button"
                 onClick={(e) => {
@@ -1076,9 +1076,9 @@ export const TripModal: React.FC<TripModalProps> = ({
                     if (form) form.requestSubmit();
                   }, 50);
                 }}
-                className="px-3.5 py-2 text-xs sm:text-sm font-extrabold text-amber-950 bg-amber-200 hover:bg-amber-300 border border-amber-400 rounded shadow-xs transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                className="px-3.5 py-2 text-xs sm:text-sm font-extrabold text-white bg-red-600 hover:bg-red-700 border border-red-700 rounded shadow-xs transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
               >
-                <span>🟡</span>
+                <span>🔴</span>
                 <span>Simpan sebagai Draft</span>
               </button>
 
@@ -1090,11 +1090,11 @@ export const TripModal: React.FC<TripModalProps> = ({
                 }}
                 className={`px-5 py-2 text-xs sm:text-sm font-extrabold text-white rounded shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 ${
                   isDraft
-                    ? 'bg-amber-600 hover:bg-amber-700'
+                    ? 'bg-red-700 hover:bg-red-800'
                     : 'bg-[#275d1d] hover:bg-[#1f4a17]'
                 }`}
               >
-                <span>{isDraft ? '🟡' : '🟢'}</span>
+                <span>{isDraft ? '🔴' : '🟢'}</span>
                 <span>{tripToEdit ? (isDraft ? 'Simpan Perubahan (Draft)' : 'Simpan Perubahan (Final)') : (isDraft ? 'Simpan Trip (Draft)' : 'Simpan Trip Final')}</span>
               </button>
             </div>

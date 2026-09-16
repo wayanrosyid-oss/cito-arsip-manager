@@ -53,23 +53,27 @@ export const TripCard: React.FC<TripCardProps> = ({
             {formatTitle()}
           </h3>
 
-          {/* Badge Dari Tim */}
-          {trip.from_team && (
-            <span className="inline-flex items-center text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500 text-white shadow-2xs shrink-0">
-              Dari Tim
+          {/* Badge Sumber Pembuat: Dari Tim vs Dari Admin */}
+          {trip.from_team ? (
+            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500 text-white shadow-2xs shrink-0">
+              👥 Dari Tim
+            </span>
+          ) : (
+            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#275d1d] text-white shadow-2xs shrink-0">
+              👑 Dari Admin
             </span>
           )}
 
-          {/* Badge Status Draft vs Final */}
+          {/* Badge Status: Draft (Merah Tegas) vs Final (Hijau) */}
           {trip.is_draft ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-400 shadow-2xs shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-              Draft
+            <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full bg-red-100 text-red-900 border border-red-500 shadow-2xs shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+              🔴 Draft
             </span>
           ) : (
             <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-400 shadow-2xs shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-              Final
+              🟢 Final
             </span>
           )}
         </div>

@@ -11,6 +11,8 @@ interface NavbarProps {
   tripCount: number;
   draftCount?: number;
   onScrollToDrafts?: () => void;
+  adminDraftCount?: number;
+  onScrollToAdminDrafts?: () => void;
   cloudStatus?: 'synced' | 'syncing' | 'offline';
   onOpenCloudSync?: () => void;
   onCopyTeamLink?: () => void;
@@ -26,6 +28,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   tripCount,
   draftCount = 0,
   onScrollToDrafts,
+  adminDraftCount = 0,
+  onScrollToAdminDrafts,
   cloudStatus = 'synced',
   onOpenCloudSync,
   onCopyTeamLink,
@@ -190,17 +194,30 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <PWAInstallButton />
 
-          {/* Draft Notification Badge in Navbar */}
+          {/* 1. Notifikasi Masukan dari Tim (Amber / Emas Streamer) */}
           {draftCount > 0 && (
             <button
               type="button"
               onClick={onScrollToDrafts}
               className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold bg-amber-400 hover:bg-amber-300 text-amber-950 shadow-md animate-bounce cursor-pointer transition-transform active:scale-95"
-              title={`${draftCount} Draf jadwal baru dari tim menunggu review`}
+              title={`${draftCount} Draf jadwal baru dari tim lapangan menunggu persetujuan`}
             >
               <Bell className="w-3.5 h-3.5 fill-amber-950" />
-              <span>{draftCount} Draf Tim Baru</span>
+              <span>👥 {draftCount} Draf Tim</span>
               <span className="w-2 h-2 rounded-full bg-red-600 animate-ping absolute -top-0.5 -right-0.5" />
+            </button>
+          )}
+
+          {/* 2. Notifikasi Draft Saya Sendiri (Merah Tegas) */}
+          {adminDraftCount > 0 && (
+            <button
+              type="button"
+              onClick={onScrollToAdminDrafts}
+              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-red-600 hover:bg-red-700 text-white shadow-md cursor-pointer transition-transform active:scale-95 border border-red-400"
+              title={`${adminDraftCount} Trip buatan saya masih berstatus Draft`}
+            >
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span>🔴 {adminDraftCount} Draft Saya</span>
             </button>
           )}
 

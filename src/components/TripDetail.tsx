@@ -155,11 +155,11 @@ export const TripDetail: React.FC<TripDetailProps> = ({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1.5">
             <div className="flex items-center gap-2.5 flex-wrap">
-              {/* Badge Kesiapan: Draft vs Final */}
+              {/* Badge Kesiapan: Draft (Merah Tegas) vs Final (Hijau) */}
               {trip.is_draft ? (
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wide bg-amber-500 text-white shadow-xs">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black tracking-wide bg-red-600 text-white border border-red-700 shadow-xs">
                   <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                  🟡 Status: DRAFT (Belum Final)
+                  🔴 Status: DRAFT (Belum Final)
                 </span>
               ) : (
                 <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-extrabold tracking-wide bg-emerald-700 text-white shadow-xs">
@@ -168,10 +168,14 @@ export const TripDetail: React.FC<TripDetailProps> = ({
                 </span>
               )}
 
-              {/* Badge Dari Tim */}
-              {trip.from_team && (
-                <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-950 bg-amber-100 border border-amber-300 px-2.5 py-1 rounded-full">
-                  👥 Dari Tim {trip.draf_oleh ? `(${trip.draf_oleh})` : ''}
+              {/* Badge Sumber Pembuat: Tim vs Admin */}
+              {trip.from_team ? (
+                <span className="inline-flex items-center gap-1 text-xs font-extrabold text-amber-950 bg-amber-100 border border-amber-400 px-2.5 py-1 rounded-full shadow-2xs">
+                  👥 Diajukan oleh Tim {trip.draf_oleh ? `(${trip.draf_oleh})` : ''}
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-xs font-extrabold text-white bg-[#275d1d] px-2.5 py-1 rounded-full shadow-2xs">
+                  👑 Dibuat oleh Admin (Mas Yuno)
                 </span>
               )}
 
@@ -203,9 +207,15 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             {trip.is_draft ? (
               <button
                 onClick={() => {
-                  const approved = { ...trip, is_draft: false, updated_at: Date.now() };
+                  const approved = {
+                    ...trip,
+                    is_draft: false,
+                    from_team: trip.from_team === true,
+                    updated_at: Date.now(),
+                  };
                   onSaveTrip(approved);
-                  onShowToast(`Trip ${trip.nama_gunung} resmi diubah ke FINAL (Siap Upload & Promosi)!`);
+                  const authorLabel = trip.from_team ? 'Draf Tim' : 'Draf Admin';
+                  onShowToast(`${authorLabel} ${trip.nama_gunung} resmi diterbitkan ke FINAL (Siap Promosi)!`);
                 }}
                 className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-md active:scale-95"
                 title="Klik untuk mengubah status trip menjadi Final (Siap Upload)"
@@ -216,14 +226,19 @@ export const TripDetail: React.FC<TripDetailProps> = ({
             ) : (
               <button
                 onClick={() => {
-                  const toDraft = { ...trip, is_draft: true, updated_at: Date.now() };
+                  const toDraft = {
+                    ...trip,
+                    is_draft: true,
+                    from_team: trip.from_team === true,
+                    updated_at: Date.now(),
+                  };
                   onSaveTrip(toDraft);
-                  onShowToast(`Trip ${trip.nama_gunung} dikembalikan ke DRAFT (Belum Final).`);
+                  onShowToast(`Trip ${trip.nama_gunung} dikembalikan ke DRAFT (Warna Merah).`);
                 }}
-                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-amber-100 hover:bg-amber-200 text-amber-950 border border-amber-300 text-xs font-bold transition-all cursor-pointer shadow-2xs"
-                title="Klik jika ingin membatalkan status final dan mengedit ulang data ini"
+                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-md bg-red-100 hover:bg-red-200 text-red-950 border border-red-400 text-xs font-bold transition-all cursor-pointer shadow-2xs"
+                title="Klik jika ingin membatalkan status final dan mengedit ulang data ini sebagai Draf"
               >
-                <span>🟡 Ubah ke Draft</span>
+                <span>🔴 Ubah ke Draft</span>
               </button>
             )}
             <button

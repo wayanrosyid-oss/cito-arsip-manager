@@ -57,7 +57,7 @@ export default function App() {
   });
   const [filterStatus, setFilterStatus] = useState<string>('Semua');
   const [searchQuery, setSearchQuery] = useState('');
-  const [tripStatusFilter, setTripStatusFilter] = useState<'semua' | 'tim' | 'draft' | 'final'>('semua');
+  const [tripStatusFilter, setTripStatusFilter] = useState<'semua' | 'admin' | 'tim' | 'draft' | 'final'>('semua');
   const [cloudStatus, setCloudStatus] = useState<'synced' | 'syncing' | 'offline'>('synced');
   const [viewMode, setViewMode] = useState<'admin' | 'tim'>(() => {
     if (typeof window === 'undefined') return 'tim';
@@ -170,17 +170,19 @@ export default function App() {
         // Combined safe dataset (sorted by departure date)
         const mergedTrips = sortTripsByDepartureDate([...validCloudTrips, ...localPendingTrips]);
 
-        // Detect newly incoming drafts from team (real-time alert)
-        const incomingDrafts = mergedTrips.filter((t) => t.is_draft && !knownDraftIdsRef.current.has(t.id));
-        if (incomingDrafts.length > 0) {
+        // Detect newly incoming drafts specifically submitted by the TEAM (real-time alert)
+        const incomingTeamDrafts = mergedTrips.filter(
+          (t) => t.is_draft && t.from_team && !knownDraftIdsRef.current.has(t.id)
+        );
+        if (incomingTeamDrafts.length > 0) {
           // Add to known drafts
-          incomingDrafts.forEach((t) => knownDraftIdsRef.current.add(t.id));
+          incomingTeamDrafts.forEach((t) => knownDraftIdsRef.current.add(t.id));
 
           // If not initial fetch, trigger sound and un-dismiss banner
           if (!isInitialFetch) {
             playIncomingDraftChime();
             setIsDraftBannerDismissed(false);
-            const latest = incomingDrafts[0];
+            const latest = incomingTeamDrafts[0];
             showToast(`🔔 Draf baru masuk dari tim: ${latest.nama_gunung} (${latest.jalur})!`);
           }
         }
@@ -237,14 +239,20 @@ export default function App() {
 
   const handleSaveTrip = (savedTrip: Trip) => {
     unrecordDeletedTripId(savedTrip.id);
+    // Mark as already known so local admin draft saves never trigger incoming team alert
+    knownDraftIdsRef.current.add(savedTrip.id);
+
     const exists = trips.some((t) => t.id === savedTrip.id);
     let updated: Trip[];
+    const authorTag = savedTrip.from_team ? '(Draf Tim)' : '(Dari Admin)';
     if (exists) {
       updated = trips.map((t) => (t.id === savedTrip.id ? savedTrip : t));
-      showToast(`Trip ${savedTrip.nama_gunung} berhasil diperbarui (Tersinkron ke Cloud)`);
+      const statusText = savedTrip.is_draft ? '🔴 Draft diperbarui' : '🟢 Trip diperbarui';
+      showToast(`${statusText} ${authorTag}: ${savedTrip.nama_gunung} (Tersinkron ke Cloud)`);
     } else {
       updated = [savedTrip, ...trips];
-      showToast(`Trip ${savedTrip.nama_gunung} berhasil ditambahkan (Tersinkron ke Cloud)`);
+      const statusText = savedTrip.is_draft ? '🔴 Draft baru tersimpan' : '🟢 Trip baru ditambahkan';
+      showToast(`${statusText} ${authorTag}: ${savedTrip.nama_gunung} (Tersinkron ke Cloud)`);
     }
     updated = sortTripsByDepartureDate(updated);
     setTrips(updated);
@@ -325,7 +333,8 @@ export default function App() {
 
   // Filter & Search
   const filteredTrips = trips.filter((t) => {
-    // 1. Status Filter Khusus Admin (Semua, Dari Tim, Draft, Final)
+    // 1. Status Filter Khusus Admin (Semua, Dari Admin, Dari Tim, Draft, Final)
+    if (tripStatusFilter === 'admin' && t.from_team) return false;
     if (tripStatusFilter === 'tim' && !t.from_team) return false;
     if (tripStatusFilter === 'draft' && !t.is_draft) return false;
     if (tripStatusFilter === 'final' && t.is_draft) return false;
@@ -344,7 +353,9 @@ export default function App() {
     return matchesFilter && matchesSearch;
   });
 
+  const adminTrips = trips.filter((t) => !t.from_team);
   const draftTrips = trips.filter((t) => t.is_draft);
+  const teamDraftTrips = trips.filter((t) => t.is_draft && t.from_team);
   const teamTrips = trips.filter((t) => t.from_team);
   const finalTrips = trips.filter((t) => !t.is_draft);
   const activeTrip = trips.find((t) => t.id === selectedTripId) || filteredTrips[0] || null;
@@ -504,11 +515,21 @@ export default function App() {
         onOpenAddModal={handleOpenAddModal}
         onOpenGithubGuide={() => setIsGithubGuideOpen(true)}
         tripCount={trips.length}
-        draftCount={draftTrips.length}
+        draftCount={teamDraftTrips.length}
         onScrollToDrafts={() => {
           setIsDraftBannerDismissed(false);
-          if (draftTrips.length > 0) {
-            setSelectedTripId(draftTrips[0].id);
+          setTripStatusFilter('tim');
+          if (teamDraftTrips.length > 0) {
+            setSelectedTripId(teamDraftTrips[0].id);
+            setMobileTab('detail');
+          }
+        }}
+        adminDraftCount={trips.filter((t) => !t.from_team && t.is_draft).length}
+        onScrollToAdminDrafts={() => {
+          setTripStatusFilter('draft');
+          const myDraft = trips.find((t) => !t.from_team && t.is_draft);
+          if (myDraft) {
+            setSelectedTripId(myDraft.id);
             setMobileTab('detail');
           }
         }}
@@ -523,8 +544,8 @@ export default function App() {
 
       {/* Main Content Layout */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 md:p-6 flex flex-col">
-        {/* Titik 2: Banner Notifikasi Cepat di Bagian Paling Atas Layar (Header Dashboard) */}
-        {draftTrips.length > 0 && !isDraftBannerDismissed && (
+        {/* Titik 2: Banner Notifikasi Cepat di Bagian Paling Atas Layar (Header Dashboard) Khusus Draf Tim */}
+        {teamDraftTrips.length > 0 && !isDraftBannerDismissed && (
           <div className="mb-4 bg-amber-50 border-2 border-amber-400 rounded-2xl p-3 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
@@ -532,13 +553,13 @@ export default function App() {
               </div>
               <div>
                 <div className="text-xs sm:text-sm font-extrabold text-amber-950 flex items-center gap-2 flex-wrap">
-                  <span>📥 Ada {draftTrips.length} Jadwal Baru Masuk dari Tim!</span>
+                  <span>📥 Ada {teamDraftTrips.length} Jadwal Baru Masuk dari Tim!</span>
                   <span className="text-[11px] font-bold text-amber-900 bg-amber-200 px-2.5 py-0.5 rounded-full">
-                    {draftTrips[0].nama_gunung} ({draftTrips[0].jalur})
+                    {teamDraftTrips[0].nama_gunung} ({teamDraftTrips[0].jalur})
                   </span>
                 </div>
                 <p className="text-[11px] text-amber-800 mt-0.5">
-                  Disusun oleh <strong>{draftTrips[0].draf_oleh || 'Tim CITO'}</strong>. Periksa rincian data lalu klik Setujui untuk membuat pamflet & caption.
+                  Disusun oleh <strong>{teamDraftTrips[0].draf_oleh || 'Tim CITO'}</strong>. Periksa rincian data lalu klik Setujui untuk membuat pamflet & caption.
                 </p>
               </div>
             </div>
@@ -546,7 +567,7 @@ export default function App() {
             <div className="flex items-center gap-2">
               <button
                 onClick={() => {
-                  setSelectedTripId(draftTrips[0].id);
+                  setSelectedTripId(teamDraftTrips[0].id);
                   setMobileTab('detail');
                 }}
                 className="px-3.5 py-2 bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer"
@@ -555,9 +576,14 @@ export default function App() {
               </button>
               <button
                 onClick={() => {
-                  const approved = { ...draftTrips[0], is_draft: false, from_team: true, updated_at: Date.now() };
+                  const approved = {
+                    ...teamDraftTrips[0],
+                    is_draft: false,
+                    from_team: teamDraftTrips[0].from_team === true,
+                    updated_at: Date.now(),
+                  };
                   handleSaveTrip(approved);
-                  showToast(`Trip ${draftTrips[0].nama_gunung} resmi disetujui & dipublikasikan!`);
+                  showToast(`Trip ${teamDraftTrips[0].nama_gunung} resmi disetujui & dipublikasikan!`);
                 }}
                 className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
               >
@@ -630,7 +656,7 @@ export default function App() {
                 </span>
               </div>
 
-              {/* Opsi Tombol Status Khusus Mode Admin (dari tim, draft, Final) */}
+              {/* Opsi Tombol Status Khusus Mode Admin (Semua, Dari Admin, Dari Tim, Draft Merah, Final) */}
               <div className="flex items-center gap-1.5 p-1 bg-[#f4f4f4] rounded-xl border border-[#275d1d]/20 overflow-x-auto no-scrollbar">
                 <button
                   type="button"
@@ -646,14 +672,37 @@ export default function App() {
 
                 <button
                   type="button"
+                  onClick={() => setTripStatusFilter('admin')}
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                    tripStatusFilter === 'admin'
+                      ? 'bg-[#275d1d] text-white shadow-xs'
+                      : 'text-[#275d1d] hover:text-[#1f4a17] hover:bg-slate-200/70'
+                  }`}
+                >
+                  <span>👑 Admin</span>
+                  {adminTrips.length > 0 && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                        tripStatusFilter === 'admin'
+                          ? 'bg-white/25 text-white'
+                          : 'bg-[#275d1d] text-white'
+                      }`}
+                    >
+                      {adminTrips.length}
+                    </span>
+                  )}
+                </button>
+
+                <button
+                  type="button"
                   onClick={() => setTripStatusFilter('tim')}
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'tim'
                       ? 'bg-amber-600 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
+                      : 'text-amber-800 hover:text-amber-950 hover:bg-amber-100/70'
                   }`}
                 >
-                  <span>dari tim</span>
+                  <span>👥 Tim</span>
                   {teamTrips.length > 0 && (
                     <span
                       className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
@@ -670,19 +719,19 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('draft')}
-                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-black transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'draft'
-                      ? 'bg-amber-500 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
+                      ? 'bg-red-600 text-white shadow-xs'
+                      : 'text-red-700 hover:text-red-900 hover:bg-red-100/70'
                   }`}
                 >
-                  <span>🟡 draft</span>
+                  <span>🔴 Draft</span>
                   {draftTrips.length > 0 && (
                     <span
-                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
                         tripStatusFilter === 'draft'
                           ? 'bg-white/30 text-white'
-                          : 'bg-amber-200 text-amber-950'
+                          : 'bg-red-500 text-white'
                       }`}
                     >
                       {draftTrips.length}
@@ -696,7 +745,7 @@ export default function App() {
                   className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'final'
                       ? 'bg-emerald-700 text-white shadow-xs'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-200/70'
+                      : 'text-emerald-800 hover:text-emerald-950 hover:bg-slate-200/70'
                   }`}
                 >
                   <span>🟢 Final</span>

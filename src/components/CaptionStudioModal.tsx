@@ -50,7 +50,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
   
   // Initial values loaded from localStorage or default
   const [hookStyle, setHookStyle] = useState<HookStyle>(() => {
-    return (localStorage.getItem(STORAGE_KEY_HOOK_STYLE) as HookStyle) || 'yuk_gasss';
+    return (localStorage.getItem(STORAGE_KEY_HOOK_STYLE) as HookStyle) || 'open_trip_resmi';
   });
 
   const [customHookTitle, setCustomHookTitle] = useState<string>(() => {
@@ -71,6 +71,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
 
   const [includeMepo, setIncludeMepo] = useState(true);
   const [includeFacilities, setIncludeFacilities] = useState(true);
+  const [includeExclude, setIncludeExclude] = useState(true);
   const [includeSK, setIncludeSK] = useState(true);
   const [includeItinerary, setIncludeItinerary] = useState(false);
   const [isCopied, setIsCopied] = useState(false);
@@ -99,6 +100,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
       customWaIntro: customWaIntro.trim() ? customWaIntro : undefined,
       includeMepo,
       includeFacilities,
+      includeExclude,
       includeSK,
       includeItinerary,
     };
@@ -434,6 +436,19 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
                     <label className="flex items-center gap-2 cursor-pointer select-none">
                       <input
                         type="checkbox"
+                        checked={includeExclude}
+                        onChange={(e) => {
+                          setIncludeExclude(e.target.checked);
+                          setCustomText(null);
+                        }}
+                        className="w-4 h-4 accent-[#275d1d] rounded"
+                      />
+                      <span>Sertakan Fasilitas Exclude</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
                         checked={includeSK}
                         onChange={(e) => {
                           setIncludeSK(e.target.checked);
@@ -576,6 +591,19 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
                         className="w-4 h-4 accent-[#275d1d] rounded"
                       />
                       <span>Sertakan Fasilitas Include</span>
+                    </label>
+
+                    <label className="flex items-center gap-2 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={includeExclude}
+                        onChange={(e) => {
+                          setIncludeExclude(e.target.checked);
+                          setCustomText(null);
+                        }}
+                        className="w-4 h-4 accent-[#275d1d] rounded"
+                      />
+                      <span>Sertakan Fasilitas Exclude</span>
                     </label>
 
                     <label className="flex items-center gap-2 cursor-pointer select-none">

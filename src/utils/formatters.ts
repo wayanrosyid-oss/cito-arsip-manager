@@ -178,6 +178,7 @@ export function generateMountainHashtags(mountainName: string, height: string): 
 }
 
 export type HookStyle =
+  | 'open_trip_resmi'
   | 'yuk_gasss'
   | 'solidaritas'
   | 'samudra_awan'
@@ -200,11 +201,19 @@ export interface CaptionCustomOptions {
   customWaIntro?: string;
   includeMepo?: boolean;
   includeFacilities?: boolean;
+  includeExclude?: boolean;
   includeSK?: boolean;
   includeItinerary?: boolean;
 }
 
 export const HOOK_OPTIONS: HookOptionItem[] = [
+  {
+    id: 'open_trip_resmi',
+    label: '🏔️ Resmi: "Open Trip Cito Adventure Madiun"',
+    hookTitle: 'OPEN TRIP {gunung} BERSAMA CITO ADVENTURE MADIUN 🏔️✨',
+    introTemplate:
+      'Siapkan ranselmu untuk petualangan seru ke puncak {gunung} {ketinggian} via {jalur}! Bersama Cito Adventure, nikmati perjalanan nyaman, seru, dan penuh kenangan tak terlupakan. ⛺🌿',
+  },
   {
     id: 'yuk_gasss',
     label: '🔥 Semangat: "Yuk Gasss!"',
@@ -395,11 +404,12 @@ export function generateInstagramFeedCaption(
   options: CaptionCustomOptions = {}
 ): string {
   const {
-    hookStyle = 'yuk_gasss',
+    hookStyle = 'open_trip_resmi',
     customHookTitle,
     customHookIntro,
     includeMepo = true,
     includeFacilities = true,
+    includeExclude = true,
     includeSK = true,
     includeItinerary = false,
   } = options;
@@ -463,7 +473,7 @@ export function generateInstagramFeedCaption(
     lines.push(...mepoLines);
   }
 
-  // 4. Fasilitas Unggulan
+  // 4. Fasilitas Unggulan Include
   if (includeFacilities) {
     lines.push('');
     lines.push('✨ FASILITAS INCLUDE LENGKAP:');
@@ -485,6 +495,18 @@ export function generateInstagramFeedCaption(
     });
   }
 
+  // 4b. Fasilitas Exclude (Tidak Termasuk)
+  if (includeExclude && trip.exclude && trip.exclude.length > 0) {
+    lines.push('');
+    lines.push('❌ FASILITAS EXCLUDE (TIDAK TERMASUK):');
+    trip.exclude.forEach((item) => {
+      lines.push(`  ✕ ${item}`);
+    });
+    if (trip.extra_porter && trip.extra_porter.trim()) {
+      lines.push(`  🎒 Extra Porter: ${trip.extra_porter.trim()}`);
+    }
+  }
+
   // 5. Rundown Singkat jika diaktifkan
   if (includeItinerary && trip.itinerary) {
     lines.push('');
@@ -492,13 +514,20 @@ export function generateInstagramFeedCaption(
     lines.push(trip.itinerary);
   }
 
-  // 6. Syarat & Ketentuan Singkat
+  // 6. Syarat & Ketentuan (S&K)
   if (includeSK) {
     lines.push('');
     lines.push('⚠️ SYARAT & KETENTUAN (S&K):');
-    lines.push('  • DP minimal Rp 200.000 / pax untuk amankan seat kamu');
-    lines.push('  • Pelunasan biaya trip maksimal H-5 keberangkatan');
-    lines.push('  • Peserta umum (sendiri tetap bisa gabung rombongan)');
+    const skList = trip.sk_berlaku && trip.sk_berlaku.length > 0
+      ? trip.sk_berlaku
+      : [
+          'DP minimal Rp 200.000 / pax untuk amankan seat kamu',
+          'Pelunasan biaya trip maksimal H-5 keberangkatan',
+          'Peserta umum (sendiri tetap bisa gabung rombongan)',
+        ];
+    skList.forEach((sk) => {
+      lines.push(`  • ${sk}`);
+    });
   }
 
   // 7. Call To Action & Kontak
@@ -531,6 +560,7 @@ export function generateWhatsAppBroadcastCaption(
     customWaIntro,
     includeMepo = true,
     includeFacilities = true,
+    includeExclude = true,
     includeSK = true,
   } = options;
 
@@ -587,18 +617,41 @@ export function generateWhatsAppBroadcastCaption(
   if (includeFacilities) {
     lines.push('');
     lines.push(`✅ *Fasilitas Include Lengkap:*`);
-    lines.push(`• Transportasi PP & Simaksi Resmi`);
-    lines.push(`• Ojek Basecamp - Pos 1 & Sarapan BC`);
-    lines.push(`• Tenda Kelompok, Alat Masak & Makan di Gunung`);
-    lines.push(`• Guide Bersertifikasi, Porter, Sweeper & HT Tim`);
-    lines.push(`• Dokumentasi Foto/Video & Tayang YouTube Cito Adventure`);
+    const incList = trip.include && trip.include.length > 0 ? trip.include : [
+      'Transportasi PP & Simaksi Resmi',
+      'Ojek Basecamp - Pos 1 & Sarapan BC',
+      'Tenda Kelompok, Alat Masak & Makan di Gunung',
+      'Guide Bersertifikasi, Porter, Sweeper & HT Tim',
+      'Dokumentasi Foto/Video & Tayang YouTube Cito Adventure',
+    ];
+    incList.forEach((item) => {
+      lines.push(`• ${item}`);
+    });
+  }
+
+  if (includeExclude && trip.exclude && trip.exclude.length > 0) {
+    lines.push('');
+    lines.push(`❌ *Exclude (Tidak Termasuk):*`);
+    trip.exclude.forEach((item) => {
+      lines.push(`• ${item}`);
+    });
+    if (trip.extra_porter && trip.extra_porter.trim()) {
+      lines.push(`🎒 *Extra Porter:* ${trip.extra_porter.trim()}`);
+    }
   }
 
   if (includeSK) {
     lines.push('');
-    lines.push(`📌 *Syarat Pendaftaran:*`);
-    lines.push(`- DP cukup Rp 200.000 untuk kunci seat`);
-    lines.push(`- Pelunasan maksimal H-5 sebelum berangkat`);
+    lines.push(`📌 *Syarat Pendaftaran (S&K):*`);
+    const skList = trip.sk_berlaku && trip.sk_berlaku.length > 0
+      ? trip.sk_berlaku
+      : [
+          'DP cukup Rp 200.000 untuk kunci seat',
+          'Pelunasan maksimal H-5 sebelum berangkat',
+        ];
+    skList.forEach((sk) => {
+      lines.push(`- ${sk}`);
+    });
   }
 
   // Generate dynamic WA links for both admins

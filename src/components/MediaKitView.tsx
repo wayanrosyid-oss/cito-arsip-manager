@@ -54,8 +54,10 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
   // 1. Generate Caption Promosi Utama (Gaya Caption Siap Copas Sesuai Format Baru)
   const promoCaptionText = React.useMemo(() => {
     return generateInstagramFeedCaption(trip, {
+      hookStyle: 'open_trip_resmi',
       includeMepo: true,
       includeFacilities: true,
+      includeExclude: true,
       includeSK: true,
       includeItinerary: false,
     });

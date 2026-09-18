@@ -158,11 +158,17 @@ export default function App() {
         const validCloudTrips = cloudTrips.filter((t) => !deletedIds.has(t.id));
         const cloudTripMap = new Map<string, Trip>(validCloudTrips.map((t) => [t.id, t]));
 
-        // SMART MERGE: Find any trips that exist locally but are NOT yet in Cloud
-        // (e.g. newly created on HP, or pending upload). NEVER delete them!
+        // SMART MERGE: Find any REAL user-created trips that exist locally but are NOT yet in Cloud
+        // (e.g. newly created on HP while offline). Never re-upload obsolete hardcoded dummy trips!
+        const DUMMY_IDS = new Set(['sindoro-watu-lunyu', 'sumbing-butuh', 'merbabu-suwanting']);
         const localPendingTrips: Trip[] = [];
         for (const localTrip of currentLocals) {
-          if (!deletedIds.has(localTrip.id) && !cloudTripMap.has(localTrip.id)) {
+          if (
+            !deletedIds.has(localTrip.id) &&
+            !cloudTripMap.has(localTrip.id) &&
+            // If Cloud already has data, ignore legacy dummy sample trips lingering in local storage
+            !(validCloudTrips.length > 0 && DUMMY_IDS.has(localTrip.id))
+          ) {
             localPendingTrips.push(localTrip);
           }
         }

@@ -13,10 +13,16 @@ import {
   Check,
   HelpCircle,
   ExternalLink,
+  Trash2,
 } from 'lucide-react';
 import { Trip } from '../types';
 import { uploadAllTripsToCloud, fetchAllCloudTrips, saveTripToCloud } from '../firebase';
-import { getDeletedTripIds, saveStoredTrips, sortTripsByDepartureDate } from '../utils/storage';
+import {
+  getDeletedTripIds,
+  saveStoredTrips,
+  sortTripsByDepartureDate,
+  clearAllDeletedTripIds,
+} from '../utils/storage';
 
 interface CloudSyncModalProps {
   isOpen: boolean;
@@ -123,6 +129,37 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
     }
   };
 
+  const handleResetAndFetchPureCloud = async () => {
+    if (
+      !confirm(
+        'Bersihkan cache lokal perangkat ini dan samakan persis dengan Cloud (Laptop)?\n\nSemua trip contoh bawaan di HP akan dibersihkan, dan daftar trip akan 100% identik dengan Cloud Firestore.'
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setIsDownloading(true);
+      setStatusMessage('Sedang membersihkan cache lokal & menyamakan dengan Cloud...');
+      clearAllDeletedTripIds();
+
+      const cloudTrips = await fetchAllCloudTrips();
+      if (cloudTrips.length > 0) {
+        const sorted = sortTripsByDepartureDate(cloudTrips);
+        onTripsUpdated(sorted);
+        saveStoredTrips(sorted);
+        setStatusMessage(`✓ Berhasil! Cache lokal dibersihkan. Sekarang perangkat ini 100% sinkron (${sorted.length} trip dari Cloud).`);
+      } else {
+        setStatusMessage('ℹ️ Database Cloud kosong. Unggah trip dari Laptop terlebih dahulu.');
+      }
+    } catch (err) {
+      console.error('Reset & cloud sync error:', err);
+      setStatusMessage('⚠️ Gagal mengambil data Cloud. Periksa koneksi internet.');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
+
   return (
     <div
       id="cloud-sync-modal-backdrop"
@@ -191,11 +228,11 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
             </div>
           )}
 
-          {/* Two Manual Action Buttons */}
+          {/* Action Buttons */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
             <button
               onClick={handleManualUpload}
-              disabled={isUploading}
+              disabled={isUploading || isDownloading}
               className="flex items-center justify-center gap-2 p-3 rounded-xl bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold transition-all shadow-sm cursor-pointer disabled:opacity-50"
             >
               {isUploading ? (
@@ -208,7 +245,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
 
             <button
               onClick={handleManualDownload}
-              disabled={isDownloading}
+              disabled={isDownloading || isUploading}
               className="flex items-center justify-center gap-2 p-3 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold transition-all border border-gray-300 cursor-pointer disabled:opacity-50"
             >
               {isDownloading ? (
@@ -217,6 +254,29 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
                 <DownloadCloud className="w-4 h-4 text-gray-600" />
               )}
               <span>Tarik Data Terbaru Cloud</span>
+            </button>
+          </div>
+
+          {/* Quick Fix Button: Samakan Persis dengan Cloud */}
+          <div className="p-3 bg-red-50 border border-red-200 rounded-xl space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="text-xs font-bold text-red-900 flex items-center gap-1.5">
+                  <RefreshCw className="w-3.5 h-3.5 text-red-600" />
+                  <span>Samakan Persis dengan Laptop / Cloud</span>
+                </p>
+                <p className="text-[11px] text-red-700/90 leading-tight mt-0.5">
+                  Jika di HP muncul trip dummy/sampel berlebih, klik tombol ini untuk membersihkan cache HP dan mengambil murni data trip asli dari Cloud.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={handleResetAndFetchPureCloud}
+              disabled={isDownloading || isUploading}
+              className="w-full py-2 px-3 rounded-lg bg-red-600 hover:bg-red-700 text-white text-xs font-bold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${isDownloading ? 'animate-spin' : ''}`} />
+              <span>Bersihkan Cache & Samakan Persis dengan Cloud</span>
             </button>
           </div>
 

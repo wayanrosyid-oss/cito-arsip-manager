@@ -237,19 +237,8 @@ export function getStoredTrips(): Trip[] {
       }
     }
 
-    // First-time setup only: prefill sample trips on fresh install
-    if (!isInitDone) {
-      try {
-        localStorage.setItem(INITIAL_SETUP_DONE_KEY, 'true');
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_TRIPS));
-      } catch {
-        // ignore quota
-      }
-      memoryTrips = INITIAL_TRIPS;
-      idbSet(STORAGE_KEY, INITIAL_TRIPS);
-      return INITIAL_TRIPS;
-    }
-
+    // If no trips in memory/localStorage, return empty array instead of populating 20+ dummy trips.
+    // Cloud Firestore will deliver the real trips automatically.
     memoryTrips = [];
     return [];
   } catch {
@@ -307,6 +296,14 @@ export function saveStoredTrips(trips: Trip[]): void {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(trips));
   } catch (err) {
     console.warn('localStorage quota reached for trips; securely saved in IndexedDB and memory instead.', err);
+  }
+}
+
+export function clearAllDeletedTripIds(): void {
+  try {
+    localStorage.removeItem(DELETED_TRIPS_KEY);
+  } catch {
+    // ignore
   }
 }
 

@@ -360,6 +360,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       kontak_ig: kontakIg.trim(),
       background_url: tripToEdit?.background_url || '/default-bg.jpg',
       background_overlay_dim: tripToEdit?.background_overlay_dim ?? 0.2,
+      slide6_photo_url: tripToEdit?.slide6_photo_url,
       logo_url: tripToEdit?.logo_url || '',
       is_draft: isDraft,
       from_team: tripToEdit?.from_team ?? false,

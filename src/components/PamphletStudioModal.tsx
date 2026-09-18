@@ -129,8 +129,17 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     try {
       const optimized = await optimizeBackgroundImage(file);
       setBgUrl(optimized);
-      setHasSavedBg(false);
-      onShowToast('Foto background berhasil dimuat!');
+      setHasSavedBg(true);
+      if (onSaveTrip) {
+        onSaveTrip({
+          ...trip,
+          background_url: optimized,
+          background_overlay_dim: dimRatio,
+          slide6_photo_url: slide6PhotoUrl || undefined,
+          updated_at: Date.now(),
+        });
+      }
+      onShowToast('✓ Foto background dimuat & tersimpan otomatis ke Cloud!');
     } catch (err) {
       console.error('Failed to optimize background image', err);
       onShowToast('Gagal memproses foto background');
@@ -152,8 +161,17 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
     try {
       const optimized = await optimizeBackgroundImage(file);
       setSlide6PhotoUrl(optimized);
-      setHasSavedBg(false);
-      onShowToast('Foto khusus Slide 6 berhasil diunggah!');
+      setHasSavedBg(true);
+      if (onSaveTrip) {
+        onSaveTrip({
+          ...trip,
+          background_url: bgUrl || '/default-bg.jpg',
+          background_overlay_dim: dimRatio,
+          slide6_photo_url: optimized,
+          updated_at: Date.now(),
+        });
+      }
+      onShowToast('✓ Foto khusus Slide 6 dimuat & tersimpan otomatis ke Cloud!');
     } catch (err) {
       console.error('Failed to optimize slide 6 image', err);
       onShowToast('Gagal memproses foto Slide 6');
@@ -164,7 +182,16 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
 
   const handleResetSlide6Photo = () => {
     setSlide6PhotoUrl('');
-    setHasSavedBg(false);
+    setHasSavedBg(true);
+    if (onSaveTrip) {
+      onSaveTrip({
+        ...trip,
+        background_url: bgUrl || '/default-bg.jpg',
+        background_overlay_dim: dimRatio,
+        slide6_photo_url: undefined,
+        updated_at: Date.now(),
+      });
+    }
     onShowToast('Foto Slide 6 direset (menggunakan foto background utama)');
   };
 
@@ -172,7 +199,16 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
   const handleResetBackground = () => {
     setBgUrl('/default-bg.jpg');
     setDimRatio(0.2);
-    setHasSavedBg(false);
+    setHasSavedBg(true);
+    if (onSaveTrip) {
+      onSaveTrip({
+        ...trip,
+        background_url: '/default-bg.jpg',
+        background_overlay_dim: 0.2,
+        slide6_photo_url: slide6PhotoUrl || undefined,
+        updated_at: Date.now(),
+      });
+    }
     onShowToast('Background direset ke Gunung Sindoro bawaan');
   };
 

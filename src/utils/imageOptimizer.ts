@@ -64,7 +64,7 @@ export async function optimizeBackgroundImage(file: File): Promise<string> {
     img.onload = () => {
       URL.revokeObjectURL(objectUrl);
       try {
-        const MAX_DIM = 1280; // High Definition scale, perfectly safe for Firestore 1MB limits & mobile storage
+        const MAX_DIM = 1000; // Ultra crisp scale for 1080p canvas while keeping payload compact (~80KB-130KB)
         let width = img.naturalWidth || img.width;
         let height = img.naturalHeight || img.height;
 
@@ -88,8 +88,8 @@ export async function optimizeBackgroundImage(file: File): Promise<string> {
         }
 
         ctx.drawImage(img, 0, 0, width, height);
-        // JPEG 0.80 provides crisp visuals while keeping payload ~120KB-250KB
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.80);
+        // JPEG 0.72 provides sharp photo visuals while ensuring ultra-fast cloud sync without timeouts
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.72);
         resolve(dataUrl);
       } catch (err) {
         readFileAsDataUrl(file).then(resolve).catch(() => reject(err));

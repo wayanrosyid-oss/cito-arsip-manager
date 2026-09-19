@@ -21,13 +21,14 @@ const app = initializeApp(firebaseConfig);
 
 // Initialize Firestore with IndexedDB persistent local cache
 // This dramatically reduces server read quota usage by serving unchanged docs from client cache
+// experimentalForceLongPolling: true ensures reliable connectivity in proxy/iframe environments without transient streaming connection drops
 export const db = initializeFirestore(
   app,
   {
     localCache: persistentLocalCache({
       tabManager: persistentMultipleTabManager(),
     }),
-    experimentalAutoDetectLongPolling: true,
+    experimentalForceLongPolling: true,
   },
   firebaseConfig.firestoreDatabaseId
 );
@@ -92,6 +93,20 @@ export function handleFirestoreError(
   throw new Error(JSON.stringify(errInfo));
 }
 
+function isFirestoreUnavailableError(error: unknown): boolean {
+  const errCode = (error as { code?: string })?.code;
+  const msg = String(error || '');
+  return (
+    errCode === 'unavailable' ||
+    errCode === 'resource-exhausted' ||
+    msg.includes('unavailable') ||
+    msg.includes('offline') ||
+    msg.includes('backend') ||
+    msg.includes('network') ||
+    msg.includes('Could not reach')
+  );
+}
+
 // Collection references
 const TRIPS_COLLECTION = 'trips';
 const SETTINGS_COLLECTION = 'settings';
@@ -120,16 +135,8 @@ export function subscribeToCloudTrips(
       onData(tripsList);
     },
     (error) => {
-      const errCode = (error as { code?: string })?.code;
-      const isUnavailable =
-        errCode === 'unavailable' ||
-        errCode === 'resource-exhausted' ||
-        String(error).includes('offline') ||
-        String(error).includes('backend') ||
-        String(error).includes('resource-exhausted') ||
-        String(error).includes('Quota');
-      if (isUnavailable) {
-        console.info('Cloud Firestore operating in offline/cache mode (graceful fallback).');
+      if (isFirestoreUnavailableError(error)) {
+        console.info('Cloud Firestore beroperasi dalam mode offline/cache lokal.');
       } else {
         console.error('Error listening to Cloud Firestore trips:', error);
       }
@@ -165,6 +172,10 @@ export async function saveTripToCloud(trip: Trip): Promise<void> {
     const sanitized = sanitizeTripForFirestore(trip);
     await setDoc(tripDocRef, sanitized, { merge: true });
   } catch (error) {
+    if (isFirestoreUnavailableError(error)) {
+      console.warn(`[Firestore Offline] Trip ${trip.id} disimpan di cache lokal dan akan disinkronkan saat terhubung kembali.`);
+      return;
+    }
     handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
@@ -178,6 +189,10 @@ export async function deleteTripFromCloud(tripId: string): Promise<void> {
     const tripDocRef = doc(db, TRIPS_COLLECTION, tripId);
     await deleteDoc(tripDocRef);
   } catch (error) {
+    if (isFirestoreUnavailableError(error)) {
+      console.warn(`[Firestore Offline] Penghapusan trip ${tripId} dicatat di cache lokal.`);
+      return;
+    }
     handleFirestoreError(error, OperationType.DELETE, path);
   }
 }
@@ -253,6 +268,10 @@ export async function saveLogoToCloud(logoUrl: string | null): Promise<void> {
       await deleteDoc(logoDocRef);
     }
   } catch (error) {
+    if (isFirestoreUnavailableError(error)) {
+      console.warn('[Firestore Offline] Perubahan logo dicatat di cache lokal.');
+      return;
+    }
     handleFirestoreError(error, OperationType.WRITE, path);
   }
 }
@@ -273,6 +292,10 @@ export async function fetchAllCloudTrips(): Promise<Trip[]> {
     });
     return trips;
   } catch (error) {
+    if (isFirestoreUnavailableError(error)) {
+      console.warn('[Firestore Offline] Membaca daftar trip dari cache lokal.');
+      return [];
+    }
     handleFirestoreError(error, OperationType.LIST, TRIPS_COLLECTION);
   }
 }

@@ -64,3 +64,19 @@ export interface MountainItem {
   province: string;
   trails: string[];
 }
+
+export interface TripDefaults {
+  min_peserta?: string;
+  min_peserta_jakarta?: string;
+  max_peserta?: string;
+  harga_mepo?: MeetingPoint[];
+  include?: string[];
+  exclude?: string[];
+  extra_porter?: string;
+  sk_berlaku?: string[];
+  catatan_penting?: string;
+  kontak_wa?: string;
+  kontak_wa_jatim?: string;
+  kontak_wa_jakarta?: string;
+  kontak_ig?: string;
+}

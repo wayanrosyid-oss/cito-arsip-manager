@@ -14,7 +14,7 @@ import {
   Unsubscribe,
 } from 'firebase/firestore';
 import firebaseConfig from '../firebase-applet-config.json';
-import { Trip } from './types';
+import { Trip, TripDefaults } from './types';
 
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
@@ -270,6 +270,63 @@ export async function saveLogoToCloud(logoUrl: string | null): Promise<void> {
   } catch (error) {
     if (isFirestoreUnavailableError(error)) {
       console.warn('[Firestore Offline] Perubahan logo dicatat di cache lokal.');
+      return;
+    }
+    handleFirestoreError(error, OperationType.WRITE, path);
+  }
+}
+
+const TRIP_DEFAULTS_DOC_ID = 'trip_defaults';
+
+/**
+ * Real-time listener for trip default settings in Cloud Firestore.
+ */
+export function subscribeToCloudTripDefaults(
+  onDefaults: (defaults: TripDefaults | null) => void
+): Unsubscribe {
+  const defaultsDocRef = doc(db, SETTINGS_COLLECTION, TRIP_DEFAULTS_DOC_ID);
+  return onSnapshot(
+    defaultsDocRef,
+    (snapshot) => {
+      if (snapshot.exists()) {
+        const data = snapshot.data();
+        if (typeof data?.value === 'string') {
+          try {
+            const parsed = JSON.parse(data.value);
+            onDefaults(parsed);
+            return;
+          } catch {
+            // ignore
+          }
+        }
+      }
+      onDefaults(null);
+    },
+    (error) => {
+      if (isFirestoreUnavailableError(error)) {
+        console.info('Cloud trip defaults operating in offline cache mode.');
+      } else {
+        console.warn('Cloud trip defaults snapshot error:', error);
+      }
+    }
+  );
+}
+
+/**
+ * Save trip defaults to Cloud Firestore.
+ */
+export async function saveTripDefaultsToCloud(defaults: TripDefaults): Promise<void> {
+  const path = `${SETTINGS_COLLECTION}/${TRIP_DEFAULTS_DOC_ID}`;
+  try {
+    const defaultsDocRef = doc(db, SETTINGS_COLLECTION, TRIP_DEFAULTS_DOC_ID);
+    await setDoc(defaultsDocRef, {
+      id: TRIP_DEFAULTS_DOC_ID,
+      value: JSON.stringify(defaults),
+      updatedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    if (isFirestoreUnavailableError(error)) {
+      console.warn('[Firestore Offline] Perubahan default trip dicatat di cache lokal.');
       return;
     }
     handleFirestoreError(error, OperationType.WRITE, path);

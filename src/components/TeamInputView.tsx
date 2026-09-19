@@ -31,6 +31,7 @@ import {
   DEFAULT_CITO_SK,
   getDefaultCatatanPenting,
 } from './TripModal';
+import { getStoredTripDefaults, DEFAULT_CITO_MEPO } from '../utils/tripDefaults';
 import { calculateDuration, computeAutoEndDate, generateDefaultItinerary } from '../utils/formatters';
 import { saveTripToCloud } from '../firebase';
 import { saveStoredTrips, getStoredTrips, getAdminPhone, setMasYunoAuthenticated } from '../utils/storage';
@@ -56,14 +57,10 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
   const [tanggalSelesai, setTanggalSelesai] = useState('');
   const [durasi, setDurasi] = useState('2 Hari 1 Malam');
   const [jadwalTambahan, setJadwalTambahan] = useState<TripSchedule[]>([]);
-  const [minPeserta, setMinPeserta] = useState('15');
-  const [minPesertaJakarta, setMinPesertaJakarta] = useState('15');
+  const [minPeserta, setMinPeserta] = useState('7');
+  const [minPesertaJakarta, setMinPesertaJakarta] = useState('7');
   const [maxPeserta, setMaxPeserta] = useState('30');
-  const [mepoList, setMepoList] = useState<MeetingPoint[]>([
-    { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-    { lokasi: 'Madiun', harga: 'IDR 700.000' },
-    { lokasi: 'Surabaya', harga: 'IDR 850.000' },
-  ]);
+  const [mepoList, setMepoList] = useState<MeetingPoint[]>(DEFAULT_CITO_MEPO);
   const [includeText, setIncludeText] = useState(DEFAULT_CITO_INCLUDE.join('\n'));
   const [excludeText, setExcludeText] = useState(DEFAULT_CITO_EXCLUDE.join('\n'));
   const [extraPorter, setExtraPorter] = useState('Jika di perlukan');
@@ -78,8 +75,28 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
 
   const currentMountain = POPULAR_MOUNTAINS[parseInt(selectedMountainIndex, 10)] || null;
 
-  // Initialize with default Sindoro data
+  // Initialize with default Sindoro data and latest stored defaults
   useEffect(() => {
+    const defaults = getStoredTripDefaults();
+    setMinPeserta(defaults.min_peserta || '7');
+    setMinPesertaJakarta(defaults.min_peserta_jakarta || '7');
+    setMaxPeserta(defaults.max_peserta || '30');
+    if (defaults.harga_mepo && defaults.harga_mepo.length > 0) {
+      setMepoList(defaults.harga_mepo);
+    }
+    if (defaults.include) {
+      setIncludeText(defaults.include.join('\n'));
+    }
+    if (defaults.exclude) {
+      setExcludeText(defaults.exclude.join('\n'));
+    }
+    if (defaults.extra_porter) {
+      setExtraPorter(defaults.extra_porter);
+    }
+    if (defaults.sk_berlaku) {
+      setSkText(defaults.sk_berlaku.join('\n'));
+    }
+
     const defaultMtn = POPULAR_MOUNTAINS[0];
     setNamaGunung(defaultMtn.name);
     setKetinggianMdpl(defaultMtn.height);

@@ -39,7 +39,9 @@ import {
   deleteTripFromCloud,
   seedInitialTripsToCloud,
   subscribeToCloudLogo,
+  subscribeToCloudTripDefaults,
 } from './firebase';
+import { syncCloudTripDefaultsToLocal } from './utils/tripDefaults';
 import { playIncomingDraftChime } from './utils/audioNotify';
 import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCircle, Link2, Trash2 } from 'lucide-react';
 
@@ -212,9 +214,15 @@ export default function App() {
       syncCloudLogoToLocal(cloudLogo);
     });
 
+    // 4. Real-time Trip Defaults synchronization across devices
+    const unsubscribeDefaults = subscribeToCloudTripDefaults((cloudDefaults) => {
+      syncCloudTripDefaultsToLocal(cloudDefaults);
+    });
+
     return () => {
       unsubscribeTrips();
       unsubscribeLogo();
+      unsubscribeDefaults();
     };
   }, []);
 

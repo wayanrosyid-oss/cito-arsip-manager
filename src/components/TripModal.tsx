@@ -5,65 +5,42 @@ import { POPULAR_MOUNTAINS } from '../data/mountains';
 import { calculateDuration, computeAutoEndDate, generateDefaultItinerary } from '../utils/formatters';
 import { ItineraryEditor } from './ItineraryEditor';
 
-// Official Default Lists for Cito Adventure Madiun
-export const DEFAULT_CITO_INCLUDE = [
-  'Transportasi PP sesuai mepo',
-  'Simaksi pendakian',
-  'Ojek Basecamp - Portal',
-  'Sarapan di basecamp',
-  'Tenda kelompok',
-  'Guide (bersertifikasi)',
-  'Porter Tim',
-  'Sweeper',
-  'Makan selama pendakian',
-  'Alat makan & masak',
-  'P3K standard',
-  'HT tim (alat komunikasi)',
-  'Dokumentasi',
-  'Bonus masuk YT Cito Adventure Madiun',
-];
+// Official Default Lists and Helpers for Cito Adventure Madiun
+import {
+  DEFAULT_CITO_INCLUDE,
+  DEFAULT_CITO_EXCLUDE,
+  DEFAULT_CITO_SK,
+  DEFAULT_CITO_CATATAN_PENTING,
+  DEFAULT_CITO_MEPO,
+  DEFAULT_CITO_EXTRA_PORTER,
+  DEFAULT_CITO_KONTAK_WA,
+  DEFAULT_CITO_KONTAK_WA_JAKARTA,
+  DEFAULT_CITO_KONTAK_IG,
+  getStoredTripDefaults,
+  saveTripDefaults,
+} from '../utils/tripDefaults';
 
-export const DEFAULT_CITO_EXCLUDE = [
-  'Perlengkapan pribadi',
-  'Surat sehat',
-  'Obat-obatan pribadi khusus',
-  'Logistik (camilan pribadi)',
-  'Perlengkapan pendakian yang tidak ada di daftar',
-  'Tip crew / guide / porter',
-];
-
-export const DEFAULT_CITO_SK = [
-  'Peserta Untuk Umum (Sendiri Bisa Join)',
-  'Apabila kuota tidak terpenuhi, akan ada biaya tambahan sesuai kesepakatan bersama',
-  'DP minimal Rp 200.000',
-  'Pelunasan Maksimal H-5',
-  'Pembatalan Oleh Peserta: DP Hangus',
-  'Trip Sesuai Jadwal (Diluar Jadwal Tersedia Private Trip)',
-];
-
-export const DEFAULT_CITO_CATATAN_PENTING =
-  'SEBELUM MENDAKI, SANGAT DISARANKAN UNTUK RUTIN BEROLAHRAGA SEPERTI JOGGING, HIKING RINGAN, ATAU LATIHAN KARDIO MINIMAL 1-2 MINGGU SEBELUMNYA. MULAILAH DARI LATIHAN RINGAN, TINGKATKAN INTENSITASNYA, DAN PASTIKAN KONDISI TUBUH BENAR-BENAR SIAP.';
-
-const DEFAULT_CATATAN_STORAGE_KEY = 'cito_default_catatan_penting_v1';
+export {
+  DEFAULT_CITO_INCLUDE,
+  DEFAULT_CITO_EXCLUDE,
+  DEFAULT_CITO_SK,
+  DEFAULT_CITO_CATATAN_PENTING,
+  DEFAULT_CITO_MEPO,
+  DEFAULT_CITO_EXTRA_PORTER,
+  DEFAULT_CITO_KONTAK_WA,
+  DEFAULT_CITO_KONTAK_WA_JAKARTA,
+  DEFAULT_CITO_KONTAK_IG,
+  getStoredTripDefaults,
+  saveTripDefaults,
+};
 
 export function getDefaultCatatanPenting(): string {
-  try {
-    const saved = localStorage.getItem(DEFAULT_CATATAN_STORAGE_KEY);
-    if (saved && saved.trim()) {
-      return saved;
-    }
-  } catch {
-    // fallback to standard
-  }
-  return DEFAULT_CITO_CATATAN_PENTING;
+  const d = getStoredTripDefaults();
+  return d.catatan_penting || DEFAULT_CITO_CATATAN_PENTING;
 }
 
 export function saveDefaultCatatanPenting(text: string): void {
-  try {
-    localStorage.setItem(DEFAULT_CATATAN_STORAGE_KEY, text);
-  } catch {
-    // ignore
-  }
+  saveTripDefaults({ catatan_penting: text });
 }
 
 interface TripModalProps {
@@ -89,25 +66,155 @@ export const TripModal: React.FC<TripModalProps> = ({
   const [tanggalSelesai, setTanggalSelesai] = useState('');
   const [durasi, setDurasi] = useState('2 Hari 1 Malam');
   const [jadwalTambahan, setJadwalTambahan] = useState<TripSchedule[]>([]);
-  const [minPeserta, setMinPeserta] = useState('15');
-  const [minPesertaJakarta, setMinPesertaJakarta] = useState('15');
+  const [minPeserta, setMinPeserta] = useState('7');
+  const [minPesertaJakarta, setMinPesertaJakarta] = useState('7');
   const [maxPeserta, setMaxPeserta] = useState('30');
-  const [mepoList, setMepoList] = useState<MeetingPoint[]>([
-    { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-    { lokasi: 'Madiun', harga: 'IDR 700.000' },
-    { lokasi: 'Surabaya', harga: 'IDR 850.000' },
-  ]);
+  const [mepoList, setMepoList] = useState<MeetingPoint[]>(DEFAULT_CITO_MEPO);
   const [includeText, setIncludeText] = useState('');
   const [excludeText, setExcludeText] = useState('');
   const [extraPorter, setExtraPorter] = useState('');
   const [skText, setSkText] = useState('');
   const [catatanPenting, setCatatanPenting] = useState('');
-  const [defaultCatatanSaved, setDefaultCatatanSaved] = useState(false);
   const [itinerary, setItinerary] = useState('');
   const [kontakWaJatim, setKontakWaJatim] = useState('+6282230444428');
   const [kontakWaJakarta, setKontakWaJakarta] = useState('+6289503689266');
   const [kontakIg, setKontakIg] = useState('@citoadventuremadiun');
   const [isDraft, setIsDraft] = useState(false);
+
+  // Status visual banner pop-up saat tombol "💾 Jadikan Default" ditekan
+  const [savedSection, setSavedSection] = useState<string | null>(null);
+
+  const triggerSaveFeedback = (sectionKey: string) => {
+    setSavedSection(sectionKey);
+    setTimeout(() => {
+      setSavedSection((prev) => (prev === sectionKey ? null : prev));
+    }, 2800);
+  };
+
+  // 1. Kuota Peserta Default Handlers
+  const handleSaveKuotaDefault = () => {
+    saveTripDefaults({
+      min_peserta: minPeserta.trim() || '7',
+      min_peserta_jakarta: minPesertaJakarta.trim() || '7',
+      max_peserta: maxPeserta.trim() || '30',
+    });
+    triggerSaveFeedback('kuota');
+  };
+
+  const handleApplyKuotaDefault = () => {
+    const d = getStoredTripDefaults();
+    setMinPeserta(d.min_peserta || '7');
+    setMinPesertaJakarta(d.min_peserta_jakarta || '7');
+    setMaxPeserta(d.max_peserta || '30');
+    triggerSaveFeedback('kuota_applied');
+  };
+
+  // 2. MEPO Default Handlers
+  const handleSaveMepoDefault = () => {
+    const validMepo = mepoList.filter((m) => m.lokasi.trim() !== '');
+    saveTripDefaults({
+      harga_mepo: validMepo.length > 0 ? validMepo : DEFAULT_CITO_MEPO,
+    });
+    triggerSaveFeedback('mepo');
+  };
+
+  const handleApplyMepoDefault = () => {
+    const d = getStoredTripDefaults();
+    setMepoList(d.harga_mepo && d.harga_mepo.length > 0 ? d.harga_mepo : DEFAULT_CITO_MEPO);
+    triggerSaveFeedback('mepo_applied');
+  };
+
+  // 3. Include Default Handlers
+  const handleSaveIncludeDefault = () => {
+    const lines = includeText.split('\n').map((s) => s.trim()).filter(Boolean);
+    saveTripDefaults({
+      include: lines.length > 0 ? lines : DEFAULT_CITO_INCLUDE,
+    });
+    triggerSaveFeedback('include');
+  };
+
+  const handleApplyIncludeDefault = () => {
+    const d = getStoredTripDefaults();
+    setIncludeText((d.include || DEFAULT_CITO_INCLUDE).join('\n'));
+    triggerSaveFeedback('include_applied');
+  };
+
+  // 4. Exclude Default Handlers
+  const handleSaveExcludeDefault = () => {
+    const lines = excludeText.split('\n').map((s) => s.trim()).filter(Boolean);
+    saveTripDefaults({
+      exclude: lines.length > 0 ? lines : DEFAULT_CITO_EXCLUDE,
+    });
+    triggerSaveFeedback('exclude');
+  };
+
+  const handleApplyExcludeDefault = () => {
+    const d = getStoredTripDefaults();
+    setExcludeText((d.exclude || DEFAULT_CITO_EXCLUDE).join('\n'));
+    triggerSaveFeedback('exclude_applied');
+  };
+
+  // 5. Extra Porter Default Handlers
+  const handleSavePorterDefault = () => {
+    saveTripDefaults({
+      extra_porter: extraPorter.trim() || 'Jika di perlukan',
+    });
+    triggerSaveFeedback('porter');
+  };
+
+  const handleApplyPorterDefault = () => {
+    const d = getStoredTripDefaults();
+    setExtraPorter(d.extra_porter || 'Jika di perlukan');
+    triggerSaveFeedback('porter_applied');
+  };
+
+  // 6. S&K Default Handlers
+  const handleSaveSkDefault = () => {
+    const lines = skText.split('\n').map((s) => s.trim()).filter(Boolean);
+    saveTripDefaults({
+      sk_berlaku: lines.length > 0 ? lines : DEFAULT_CITO_SK,
+    });
+    triggerSaveFeedback('sk');
+  };
+
+  const handleApplySkDefault = () => {
+    const d = getStoredTripDefaults();
+    setSkText((d.sk_berlaku || DEFAULT_CITO_SK).join('\n'));
+    triggerSaveFeedback('sk_applied');
+  };
+
+  // 7. Catatan Penting Default Handlers
+  const handleSaveCatatanDefault = () => {
+    saveTripDefaults({
+      catatan_penting: catatanPenting.trim() || DEFAULT_CITO_CATATAN_PENTING,
+    });
+    triggerSaveFeedback('catatan');
+  };
+
+  const handleApplyCatatanDefault = () => {
+    const d = getStoredTripDefaults();
+    setCatatanPenting(d.catatan_penting || DEFAULT_CITO_CATATAN_PENTING);
+    triggerSaveFeedback('catatan_applied');
+  };
+
+  // 8. Kontak Resmi Booking Default Handlers
+  const handleSaveKontakDefault = () => {
+    saveTripDefaults({
+      kontak_wa: kontakWaJatim.trim() || DEFAULT_CITO_KONTAK_WA,
+      kontak_wa_jatim: kontakWaJatim.trim() || DEFAULT_CITO_KONTAK_WA,
+      kontak_wa_jakarta: kontakWaJakarta.trim() || DEFAULT_CITO_KONTAK_WA_JAKARTA,
+      kontak_ig: kontakIg.trim() || DEFAULT_CITO_KONTAK_IG,
+    });
+    triggerSaveFeedback('kontak');
+  };
+
+  const handleApplyKontakDefault = () => {
+    const d = getStoredTripDefaults();
+    setKontakWaJatim(d.kontak_wa_jatim || d.kontak_wa || DEFAULT_CITO_KONTAK_WA);
+    setKontakWaJakarta(d.kontak_wa_jakarta || DEFAULT_CITO_KONTAK_WA_JAKARTA);
+    setKontakIg(d.kontak_ig || DEFAULT_CITO_KONTAK_IG);
+    triggerSaveFeedback('kontak_applied');
+  };
 
   // Available trails for currently selected mountain
   const currentMountain = POPULAR_MOUNTAINS[parseInt(selectedMountainIndex, 10)] || null;
@@ -124,7 +231,7 @@ export const TripModal: React.FC<TripModalProps> = ({
       setDurasi(tripToEdit.durasi);
       setJadwalTambahan(tripToEdit.jadwal_tambahan || []);
       setMinPeserta(tripToEdit.min_peserta);
-      setMinPesertaJakarta(tripToEdit.min_peserta_jakarta || tripToEdit.min_peserta || '15');
+      setMinPesertaJakarta(tripToEdit.min_peserta_jakarta || tripToEdit.min_peserta || '7');
       setMaxPeserta(tripToEdit.max_peserta);
       setMepoList(
         tripToEdit.harga_mepo && tripToEdit.harga_mepo.length > 0
@@ -152,7 +259,8 @@ export const TripModal: React.FC<TripModalProps> = ({
         setSelectedMountainIndex('custom');
       }
     } else {
-      // New Trip Default: Gunung Sindoro
+      // New Trip: Otomatis terisi nilai default terkini (Baku Cito / Mas Yuno)
+      const defaults = getStoredTripDefaults();
       const defaultMtn = POPULAR_MOUNTAINS[0];
       setSelectedMountainIndex('0');
       setNamaGunung(defaultMtn.name);
@@ -163,23 +271,23 @@ export const TripModal: React.FC<TripModalProps> = ({
       setTanggalSelesai('2026-09-11');
       setDurasi('2 Hari 1 Malam');
       setJadwalTambahan([]);
-      setMinPeserta('15');
-      setMinPesertaJakarta('15');
-      setMaxPeserta('30');
-      setMepoList([
-        { lokasi: 'Basecamp', harga: 'IDR 600.000' },
-        { lokasi: 'Madiun', harga: 'IDR 700.000' },
-        { lokasi: 'Surabaya', harga: 'IDR 850.000' }
-      ]);
-      setIncludeText(DEFAULT_CITO_INCLUDE.join('\n'));
-      setExcludeText(DEFAULT_CITO_EXCLUDE.join('\n'));
-      setExtraPorter('Jika di perlukan');
-      setSkText(DEFAULT_CITO_SK.join('\n'));
-      setCatatanPenting(getDefaultCatatanPenting());
+      setMinPeserta(defaults.min_peserta || '7');
+      setMinPesertaJakarta(defaults.min_peserta_jakarta || '7');
+      setMaxPeserta(defaults.max_peserta || '30');
+      setMepoList(
+        defaults.harga_mepo && defaults.harga_mepo.length > 0
+          ? defaults.harga_mepo
+          : DEFAULT_CITO_MEPO
+      );
+      setIncludeText((defaults.include || DEFAULT_CITO_INCLUDE).join('\n'));
+      setExcludeText((defaults.exclude || DEFAULT_CITO_EXCLUDE).join('\n'));
+      setExtraPorter(defaults.extra_porter || 'Jika di perlukan');
+      setSkText((defaults.sk_berlaku || DEFAULT_CITO_SK).join('\n'));
+      setCatatanPenting(defaults.catatan_penting || DEFAULT_CITO_CATATAN_PENTING);
       setItinerary(generateDefaultItinerary(defaultMtn.name, defaultMtn.trails[0], '2026-09-10', '2026-09-11'));
-      setKontakWaJatim('+6282230444428');
-      setKontakWaJakarta('+6289503689266');
-      setKontakIg('@citoadventuremadiun');
+      setKontakWaJatim(defaults.kontak_wa_jatim || '+6282230444428');
+      setKontakWaJakarta(defaults.kontak_wa_jakarta || '+6289503689266');
+      setKontakIg(defaults.kontak_ig || '@citoadventuremadiun');
       setIsDraft(false);
     }
   }, [tripToEdit, isOpen]);
@@ -678,9 +786,37 @@ export const TripModal: React.FC<TripModalProps> = ({
               <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 3. Kuota Peserta (Skema Baru)
               </h3>
-              <span className="text-[11px] font-bold text-[#275d1d] bg-[#275d1d]/10 px-2.5 py-0.5 rounded-full border border-[#275d1d]/20">
-                Tampilan: {minPeserta || '15'} – {minPesertaJakarta || '15'} / {maxPeserta || '30'} Pax
-              </span>
+              <div className="flex items-center gap-2 flex-wrap">
+                {savedSection === 'kuota' && (
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
+                    ✓ Disimpan sebagai Default!
+                  </span>
+                )}
+                {savedSection === 'kuota_applied' && (
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
+                    ✓ Default Diterapkan!
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSaveKuotaDefault}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2.5 py-1 rounded cursor-pointer transition-colors shadow-sm"
+                  title="Jadikan kuota saat ini sebagai default untuk semua trip baru"
+                >
+                  💾 Jadikan Default
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyKuotaDefault}
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-1 rounded cursor-pointer transition-colors"
+                  title="Terapkan kuota default"
+                >
+                  ↺ Pakai Default
+                </button>
+                <span className="text-[11px] font-bold text-[#275d1d] bg-[#275d1d]/10 px-2.5 py-0.5 rounded-full border border-[#275d1d]/20">
+                  Tampilan: {minPeserta || '7'} – {minPesertaJakarta || '7'} / {maxPeserta || '30'} Pax
+                </span>
+              </div>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
@@ -690,7 +826,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                   type="number"
                   value={minPeserta}
                   onChange={(e) => setMinPeserta(e.target.value)}
-                  placeholder="15"
+                  placeholder="7"
                   className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
                 />
                 <span className="text-[10px] text-gray-600 block mt-0.5">Patokan pamflet flyer</span>
@@ -701,7 +837,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                   type="number"
                   value={minPesertaJakarta}
                   onChange={(e) => setMinPesertaJakarta(e.target.value)}
-                  placeholder="15"
+                  placeholder="7"
                   className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
                 />
                 <span className="text-[10px] text-gray-600 block mt-0.5">Khusus mepo Jakarta</span>
@@ -728,18 +864,46 @@ export const TripModal: React.FC<TripModalProps> = ({
 
           {/* Section 4: Tarif Meeting Point (MEPO) */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-2">
               <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 4. Tarif per Meeting Point (MEPO)
               </h3>
-              <button
-                type="button"
-                onClick={handleAddMepo}
-                className="text-xs font-bold text-[#275d1d] hover:underline flex items-center gap-1 cursor-pointer"
-              >
-                <Plus className="w-3.5 h-3.5" />
-                Tambah Titik Kumpul
-              </button>
+              <div className="flex items-center gap-2 flex-wrap">
+                {savedSection === 'mepo' && (
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
+                    ✓ Disimpan sebagai Default!
+                  </span>
+                )}
+                {savedSection === 'mepo_applied' && (
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
+                    ✓ Default Diterapkan!
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSaveMepoDefault}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2.5 py-1 rounded cursor-pointer transition-colors shadow-sm"
+                  title="Simpan daftar titik kumpul & harga ini sebagai template default semua trip baru"
+                >
+                  💾 Jadikan Default
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyMepoDefault}
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-1 rounded cursor-pointer transition-colors"
+                  title="Gunakan daftar titik kumpul default"
+                >
+                  ↺ Pakai Default
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddMepo}
+                  className="text-xs font-bold text-[#275d1d] hover:underline flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  Tambah Titik Kumpul
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -791,18 +955,38 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 5: Include & Exclude */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div className="space-y-1.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-1.5">
                 <label className="block text-xs font-extrabold text-[#275d1d] uppercase font-['Montserrat']">
                   5. Fasilitas Include:
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setIncludeText(DEFAULT_CITO_INCLUDE.join('\n'))}
-                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
-                  title="Terapkan 14 item fasilitas baku Cito Adventure"
-                >
-                  ↺ Pakai Default Cito
-                </button>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {savedSection === 'include' && (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
+                      ✓ Disimpan!
+                    </span>
+                  )}
+                  {savedSection === 'include_applied' && (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
+                      ✓ Diterapkan!
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSaveIncludeDefault}
+                    className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                    title="Simpan daftar include ini sebagai default baru"
+                  >
+                    💾 Jadikan Default
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApplyIncludeDefault}
+                    className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    title="Terapkan fasilitas include default"
+                  >
+                    ↺ Pakai Default
+                  </button>
+                </div>
               </div>
               <textarea
                 rows={7}
@@ -813,18 +997,38 @@ export const TripModal: React.FC<TripModalProps> = ({
               />
             </div>
             <div className="space-y-1.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-1.5">
                 <label className="block text-xs font-extrabold text-gray-800 uppercase font-['Montserrat']">
                   Fasilitas Exclude:
                 </label>
-                <button
-                  type="button"
-                  onClick={() => setExcludeText(DEFAULT_CITO_EXCLUDE.join('\n'))}
-                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
-                  title="Terapkan 6 item exclude baku Cito Adventure"
-                >
-                  ↺ Pakai Default Cito
-                </button>
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {savedSection === 'exclude' && (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
+                      ✓ Disimpan!
+                    </span>
+                  )}
+                  {savedSection === 'exclude_applied' && (
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
+                      ✓ Diterapkan!
+                    </span>
+                  )}
+                  <button
+                    type="button"
+                    onClick={handleSaveExcludeDefault}
+                    className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                    title="Simpan daftar exclude ini sebagai default baru"
+                  >
+                    💾 Jadikan Default
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleApplyExcludeDefault}
+                    className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    title="Terapkan fasilitas exclude default"
+                  >
+                    ↺ Pakai Default
+                  </button>
+                </div>
               </div>
               <textarea
                 rows={7}
@@ -837,10 +1041,40 @@ export const TripModal: React.FC<TripModalProps> = ({
           </div>
 
           {/* Extra porter */}
-          <div>
-            <label className="block text-xs font-bold text-gray-800 mb-1">
-              Extra Porter Pribadi (Opsional):
-            </label>
+          <div className="bg-[#f5f5f5] p-3 rounded-lg border border-[#275d1d]/30">
+            <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1.5">
+              <label className="block text-xs font-bold text-gray-800">
+                Extra Porter Pribadi (Opsional):
+              </label>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {savedSection === 'porter' && (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
+                    ✓ Disimpan!
+                  </span>
+                )}
+                {savedSection === 'porter_applied' && (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
+                    ✓ Diterapkan!
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSavePorterDefault}
+                  className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                  title="Simpan teks porter ini sebagai default baru"
+                >
+                  💾 Jadikan Default
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyPorterDefault}
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                  title="Terapkan teks porter default"
+                >
+                  ↺ Pakai Default
+                </button>
+              </div>
+            </div>
             <input
               type="text"
               value={extraPorter}
@@ -852,18 +1086,38 @@ export const TripModal: React.FC<TripModalProps> = ({
 
           {/* Section 6: S&K & Catatan Penting */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between flex-wrap gap-1.5">
               <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 6. Syarat Ketentuan & Catatan Penting
               </h3>
-              <button
-                type="button"
-                onClick={() => setSkText(DEFAULT_CITO_SK.join('\n'))}
-                className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
-                title="Terapkan 6 butir syarat ketentuan baku Cito Adventure"
-              >
-                ↺ Pakai Default S&K
-              </button>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {savedSection === 'sk' && (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
+                    ✓ Disimpan!
+                  </span>
+                )}
+                {savedSection === 'sk_applied' && (
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
+                    ✓ Diterapkan!
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSaveSkDefault}
+                  className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                  title="Simpan butir S&K ini sebagai default baru"
+                >
+                  💾 Jadikan Default
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplySkDefault}
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                  title="Terapkan syarat & ketentuan default"
+                >
+                  ↺ Pakai Default S&K
+                </button>
+              </div>
             </div>
             <div>
               <label className="block text-xs font-bold text-gray-800 mb-1">S&K Berlaku (1 per baris):</label>
@@ -878,36 +1132,32 @@ export const TripModal: React.FC<TripModalProps> = ({
             <div>
               <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1.5">
                 <label className="block text-xs font-bold text-gray-800">Catatan Penting Pendakian:</label>
-                <div className="flex items-center gap-1.5">
-                  {defaultCatatanSaved && (
-                    <span className="text-[11px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded animate-pulse">
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {savedSection === 'catatan' && (
+                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
                       ✓ Disimpan sebagai Default!
+                    </span>
+                  )}
+                  {savedSection === 'catatan_applied' && (
+                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
+                      ✓ Default Diterapkan!
                     </span>
                   )}
                   <button
                     type="button"
-                    onClick={() => {
-                      saveDefaultCatatanPenting(catatanPenting);
-                      setDefaultCatatanSaved(true);
-                      setTimeout(() => setDefaultCatatanSaved(false), 3000);
-                    }}
-                    className="text-[11px] font-bold text-[#15803D] hover:text-green-900 bg-green-100 hover:bg-green-200 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    onClick={handleSaveCatatanDefault}
+                    className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
                     title="Simpan teks catatan penting ini sebagai template default permanen untuk semua trip baru"
                   >
-                    💾 Simpan Jadi Default Baru
+                    💾 Jadikan Default
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                      setCatatanPenting(DEFAULT_CITO_CATATAN_PENTING);
-                      saveDefaultCatatanPenting(DEFAULT_CITO_CATATAN_PENTING);
-                      setDefaultCatatanSaved(true);
-                      setTimeout(() => setDefaultCatatanSaved(false), 3000);
-                    }}
+                    onClick={handleApplyCatatanDefault}
                     className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
-                    title="Kembalikan ke template catatan penting resmi Cito Adventure"
+                    title="Kembalikan ke template catatan penting default"
                   >
-                    ↺ Reset Baku Cito
+                    ↺ Pakai Default
                   </button>
                 </div>
               </div>
@@ -919,7 +1169,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                 className="w-full bg-white border border-[#275d1d]/40 rounded-md p-2.5 text-xs text-gray-900 focus:border-[#275d1d] focus:outline-none"
               />
               <span className="text-[10px] text-gray-500 block mt-1">
-                💡 Teks ini muncul pada Slide 4 (Catatan Penting) dan caption promosi. Klik <strong>Simpan Jadi Default Baru</strong> jika ingin teks ini otomatis muncul di setiap trip baru.
+                💡 Teks ini muncul pada Slide 4 (Catatan Penting) dan caption promosi. Klik <strong>Jadikan Default</strong> jika ingin teks ini otomatis muncul di setiap trip baru.
               </span>
             </div>
           </div>
@@ -930,9 +1180,37 @@ export const TripModal: React.FC<TripModalProps> = ({
               <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 7. Kontak Resmi Pendaftaran (2 Admin Wilayah & Instagram)
               </h3>
-              <span className="text-[11px] font-bold text-[#15803D] bg-green-100 px-2 py-0.5 rounded-full border border-green-300">
-                ✓ Otomatis Aktif di Pamflet & Caption
-              </span>
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {savedSection === 'kontak' && (
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
+                    ✓ Disimpan sebagai Default!
+                  </span>
+                )}
+                {savedSection === 'kontak_applied' && (
+                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
+                    ✓ Default Diterapkan!
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={handleSaveKontakDefault}
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2.5 py-1 rounded cursor-pointer transition-colors shadow-sm"
+                  title="Simpan kontak 2 admin & Instagram ini sebagai default untuk semua trip baru"
+                >
+                  💾 Jadikan Default
+                </button>
+                <button
+                  type="button"
+                  onClick={handleApplyKontakDefault}
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-1 rounded cursor-pointer transition-colors"
+                  title="Kembalikan ke kontak default"
+                >
+                  ↺ Pakai Default
+                </button>
+                <span className="text-[11px] font-bold text-[#15803D] bg-green-100 px-2 py-0.5 rounded-full border border-green-300">
+                  ✓ Otomatis Aktif di Pamflet & Caption
+                </span>
+              </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>

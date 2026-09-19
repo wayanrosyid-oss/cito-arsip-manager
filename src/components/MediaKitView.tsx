@@ -237,6 +237,9 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                   <MapPin className="w-3.5 h-3.5" />
                   {trip.jalur}
                 </span>
+                <span className="inline-flex items-center gap-1 text-xs font-bold text-sky-400 bg-sky-950/40 px-3 py-1 rounded-full border border-sky-500/30">
+                  ✓ Data Resmi Mas Yuno
+                </span>
               </div>
 
               <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight font-['Montserrat'] leading-tight">

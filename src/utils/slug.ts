@@ -64,39 +64,50 @@ export function getTripSlug(trip: Trip, allTrips: Trip[] = []): string {
 
 /**
  * Menghasilkan URL lengkap Media Kit yang siap dibagikan ke WhatsApp tim
+ * Menyertakan slug ramah manusia dan ID dokumen presisi agar tidak akan pernah salah trip
  */
 export function getTripMediaKitUrl(trip: Trip, allTrips: Trip[] = []): string {
   const origin = typeof window !== 'undefined' ? window.location.origin : '';
   const pathname = typeof window !== 'undefined' ? window.location.pathname : '';
   const slug = getTripSlug(trip, allTrips);
-  return `${origin}${pathname}?kit=${slug}`;
+  return `${origin}${pathname}?kit=${slug}&id=${encodeURIComponent(trip.id)}`;
 }
 
 /**
  * Menemukan trip berdasarkan Slug ataupun ID asli (Mendukung Backward Compatibility)
+ * Memprioritaskan trip asli buatan pengguna terlebih dahulu sebelum contoh bawaan
  */
 export function findTripBySlugOrId(trips: Trip[], identifier: string): Trip | undefined {
   if (!identifier || !Array.isArray(trips) || trips.length === 0) return undefined;
   const decoded = decodeURIComponent(identifier).trim().toLowerCase();
 
-  // 1. Prioritas 1: Cocok persis dengan ID database (misal: trip-1789493123238)
-  const byId = trips.find((t) => t.id && t.id.toLowerCase() === decoded);
-  if (byId) return byId;
+  const DUMMY_IDS = new Set(['sindoro-watu-lunyu', 'sumbing-butuh', 'merbabu-suwanting']);
+  const realTrips = trips.filter((t) => !DUMMY_IDS.has(t.id));
+  const dummyTrips = trips.filter((t) => DUMMY_IDS.has(t.id));
 
-  // 2. Prioritas 2: Cocok persis dengan slug unik lengkap
-  const byUniqueSlug = trips.find((t) => getTripSlug(t, trips).toLowerCase() === decoded);
-  if (byUniqueSlug) return byUniqueSlug;
+  // Cari di realTrips terlebih dahulu, jika tidak ada baru cari di dummyTrips
+  for (const pool of [realTrips, dummyTrips]) {
+    if (pool.length === 0) continue;
 
-  // 3. Prioritas 3: Cocok dengan base slug (nama gunung + jalur)
-  const byBaseSlug = trips.find((t) => createTripSlug(t).toLowerCase() === decoded);
-  if (byBaseSlug) return byBaseSlug;
+    // 1. Prioritas 1: Cocok persis dengan ID database (misal: trip-1789493123238)
+    const byId = pool.find((t) => t.id && t.id.toLowerCase() === decoded);
+    if (byId) return byId;
 
-  // 4. Prioritas 4: Pencocokan parsial toleran (misal pengguna cuma ketik ?kit=sindoro)
-  const byPartial = trips.find((t) => {
-    const s = createTripSlug(t).toLowerCase();
-    return s.startsWith(decoded) || decoded.startsWith(s);
-  });
-  if (byPartial) return byPartial;
+    // 2. Prioritas 2: Cocok persis dengan slug unik lengkap
+    const byUniqueSlug = pool.find((t) => getTripSlug(t, trips).toLowerCase() === decoded);
+    if (byUniqueSlug) return byUniqueSlug;
+
+    // 3. Prioritas 3: Cocok dengan base slug (nama gunung + jalur)
+    const byBaseSlug = pool.find((t) => createTripSlug(t).toLowerCase() === decoded);
+    if (byBaseSlug) return byBaseSlug;
+
+    // 4. Prioritas 4: Pencocokan parsial toleran
+    const byPartial = pool.find((t) => {
+      const s = createTripSlug(t).toLowerCase();
+      return s.startsWith(decoded) || decoded.startsWith(s);
+    });
+    if (byPartial) return byPartial;
+  }
 
   return undefined;
 }

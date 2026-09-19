@@ -98,7 +98,7 @@ export default function App() {
   const [activeMediaKitTripId, setActiveMediaKitTripId] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null;
     const params = new URLSearchParams(window.location.search);
-    return params.get('kit') || params.get('mediakit') || null;
+    return params.get('id') || params.get('kit') || params.get('mediakit') || null;
   });
 
   // Batch delete & selection states
@@ -477,7 +477,7 @@ export default function App() {
   useEffect(() => {
     const evaluateAccess = () => {
       const params = new URLSearchParams(window.location.search);
-      const kitId = params.get('kit') || params.get('mediakit');
+      const kitId = params.get('id') || params.get('kit') || params.get('mediakit');
       if (kitId) {
         setActiveMediaKitTripId(kitId);
       } else {
@@ -538,23 +538,35 @@ export default function App() {
     setPreviewMediaKitTrip(trip);
   };
 
-  // Dedicated Media Kit View Route (When accessed via direct link ?kit=slug)
+  // Dedicated Media Kit View Route (When accessed via direct link ?kit=slug or ?id=xxx)
   if (activeMediaKitTripId) {
-    const allTripsPool = trips.length > 0 ? trips : getStoredTrips();
-    const targetTrip = findTripBySlugOrId(allTripsPool, activeMediaKitTripId);
+    // Prioritaskan trip dari trips (Cloud sync). Jangan gunakan dummy sample trips jika Cloud masih syncing!
+    const targetTrip =
+      findTripBySlugOrId(trips, activeMediaKitTripId) ||
+      (cloudStatus !== 'syncing' ? findTripBySlugOrId(getStoredTrips(), activeMediaKitTripId) : undefined);
+
+    // Jika belum ditemukan dan Cloud masih proses sinkronisasi, tampilkan loading agar tim tidak disuguhi data dummy/salah!
+    if (!targetTrip && (cloudStatus === 'syncing' || trips.length === 0)) {
+      return (
+        <div className="min-h-screen bg-[#0a0e14] flex flex-col items-center justify-center text-slate-300 p-6 space-y-4 text-center">
+          <div className="w-12 h-12 border-3 border-[#e5a93c] border-t-transparent rounded-full animate-spin" />
+          <div className="space-y-1.5">
+            <p className="text-base font-bold text-white font-['Montserrat'] tracking-tight">
+              Memuat Media Kit Resmi Cito Adventure...
+            </p>
+            <p className="text-xs text-slate-400 max-w-xs">
+              Menghubungkan ke Cloud Firestore untuk mengambil foto pamflet dan teks caption resmi terbaru
+            </p>
+          </div>
+        </div>
+      );
+    }
 
     if (targetTrip) {
       return (
         <MediaKitView
           trip={targetTrip}
         />
-      );
-    } else if (trips.length === 0) {
-      return (
-        <div className="min-h-screen bg-[#0a0e14] flex flex-col items-center justify-center text-slate-300 p-6 space-y-4 text-center">
-          <div className="w-10 h-10 border-3 border-[#e5a93c] border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-bold text-white">Memuat Media Kit Trip Cito Adventure...</p>
-        </div>
       );
     } else {
       return (
@@ -564,8 +576,14 @@ export default function App() {
           </div>
           <h2 className="text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">Trip Tidak Ditemukan</h2>
           <p className="text-xs sm:text-sm text-slate-400 max-w-sm leading-relaxed">
-            Media kit untuk rute <span className="text-[#e5a93c] font-bold font-mono">"{activeMediaKitTripId}"</span> tidak ditemukan atau telah diperbarui.
+            Media kit untuk rute <span className="text-[#e5a93c] font-bold font-mono">"{activeMediaKitTripId}"</span> tidak ditemukan atau telah diperbarui oleh Mas Yuno.
           </p>
+          <a
+            href="/"
+            className="mt-3 px-4 py-2 bg-[#275d1d] hover:bg-[#347827] text-white text-xs font-bold rounded-xl transition-all shadow-md cursor-pointer"
+          >
+            ← Buka Beranda Jadwal Trip
+          </a>
         </div>
       );
     }

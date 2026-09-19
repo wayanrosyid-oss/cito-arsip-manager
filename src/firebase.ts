@@ -2,8 +2,9 @@ import { initializeApp } from 'firebase/app';
 import { getAuth, signInAnonymously } from 'firebase/auth';
 import {
   initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
   doc,
-  getDoc,
   collection,
   onSnapshot,
   setDoc,
@@ -18,10 +19,14 @@ import { Trip } from './types';
 // Initialize Firebase App
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firestore with resilient connection options (auto-detect long polling for iframe/proxy environments)
+// Initialize Firestore with IndexedDB persistent local cache
+// This dramatically reduces server read quota usage by serving unchanged docs from client cache
 export const db = initializeFirestore(
   app,
   {
+    localCache: persistentLocalCache({
+      tabManager: persistentMultipleTabManager(),
+    }),
     experimentalAutoDetectLongPolling: true,
   },
   firebaseConfig.firestoreDatabaseId
@@ -87,17 +92,6 @@ export function handleFirestoreError(
   throw new Error(JSON.stringify(errInfo));
 }
 
-// Resilient connection check that gracefully falls back without throwing timeout errors
-async function testConnection() {
-  try {
-    await getDoc(doc(db, 'test', 'connection'));
-  } catch (error) {
-    // Gracefully acknowledge transient offline or network latency without crashing
-    console.info('Firestore initial connectivity notice: operating in offline-first mode.');
-  }
-}
-testConnection();
-
 // Collection references
 const TRIPS_COLLECTION = 'trips';
 const SETTINGS_COLLECTION = 'settings';
@@ -105,7 +99,7 @@ const LOGO_DOC_ID = 'brand_logo';
 
 /**
  * Real-time listener for all trips from Firestore.
- * Automatically handles offline fallbacks and error mapping.
+ * Automatically handles offline fallbacks, quota limits, and error mapping.
  */
 export function subscribeToCloudTrips(
   onData: (trips: Trip[]) => void,
@@ -129,10 +123,13 @@ export function subscribeToCloudTrips(
       const errCode = (error as { code?: string })?.code;
       const isUnavailable =
         errCode === 'unavailable' ||
+        errCode === 'resource-exhausted' ||
         String(error).includes('offline') ||
-        String(error).includes('backend');
+        String(error).includes('backend') ||
+        String(error).includes('resource-exhausted') ||
+        String(error).includes('Quota');
       if (isUnavailable) {
-        console.info('Cloud Firestore operating in offline cache mode. Awaiting reconnection.');
+        console.info('Cloud Firestore operating in offline/cache mode (graceful fallback).');
       } else {
         console.error('Error listening to Cloud Firestore trips:', error);
       }

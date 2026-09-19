@@ -10,12 +10,18 @@ interface TripCardProps {
   onDelete?: (trip: Trip) => void;
   onOpenItinerary?: (trip: Trip) => void;
   isSelected?: boolean;
+  isSelectMode?: boolean;
+  isSelectedForDelete?: boolean;
+  onToggleSelect?: (tripId: string) => void;
 }
 
 export const TripCard: React.FC<TripCardProps> = ({
   trip,
   onSelect,
   isSelected,
+  isSelectMode = false,
+  isSelectedForDelete = false,
+  onToggleSelect,
 }) => {
   // Format title like: "Gunung Sumbing 3371 Mdpl"
   const formatTitle = () => {
@@ -31,21 +37,50 @@ export const TripCard: React.FC<TripCardProps> = ({
   const jalurText = trip.jalur?.startsWith('Via ') ? trip.jalur : `Via ${trip.jalur || 'Jalur Terbuka'}`;
   const formattedDate = formatDateRange(trip.tanggal_mulai, trip.tanggal_selesai) || '';
 
+  const handleClick = () => {
+    if (isSelectMode && onToggleSelect) {
+      onToggleSelect(trip.id);
+    } else {
+      onSelect(trip);
+    }
+  };
+
   return (
     <div
-      onClick={() => onSelect(trip)}
+      onClick={handleClick}
       className={`group relative rounded-2xl p-3.5 sm:p-4 transition-all duration-200 cursor-pointer ${
-        isSelected
+        isSelectMode
+          ? isSelectedForDelete
+            ? 'bg-red-50/90 border-2 border-red-500 shadow-md ring-2 ring-red-400/50'
+            : 'bg-white/90 border-2 border-dashed border-slate-300 hover:border-red-400 hover:bg-white shadow-2xs'
+          : isSelected
           ? 'bg-white border-2 border-[#275d1d] shadow-md ring-1 ring-[#275d1d]/30 scale-[1.01]'
           : 'bg-white/95 border border-slate-300 hover:border-slate-400 hover:bg-white shadow-2xs hover:shadow-xs opacity-70 hover:opacity-100'
       }`}
     >
-      {/* Row 1: Mountain Name & Height + Dari Tim Badge + Draft/Final Badge + Chevron Icon */}
+      {/* Row 1: Checkbox (if in select mode) + Mountain Name & Height + Dari Tim Badge + Draft/Final Badge + Chevron/Status */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-1.5 min-w-0 flex-wrap">
+        <div className="flex items-center gap-2 min-w-0 flex-wrap flex-1">
+          {/* Checkbox in select mode */}
+          {isSelectMode && (
+            <div
+              className={`w-5 h-5 rounded-md flex items-center justify-center transition-all shrink-0 ${
+                isSelectedForDelete
+                  ? 'bg-red-600 text-white border-2 border-red-700 shadow-xs'
+                  : 'bg-white border-2 border-slate-400 group-hover:border-red-500'
+              }`}
+            >
+              {isSelectedForDelete ? (
+                <span className="text-xs font-black leading-none">✓</span>
+              ) : null}
+            </div>
+          )}
+
           <h3
             className={`text-sm sm:text-base font-['Montserrat'] truncate transition-colors ${
-              isSelected
+              isSelectedForDelete
+                ? 'text-red-950 font-extrabold tracking-tight'
+                : isSelected
                 ? 'text-[#1f4a17] font-extrabold tracking-tight'
                 : 'text-slate-500 font-semibold group-hover:text-slate-700'
             }`}

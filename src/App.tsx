@@ -11,6 +11,7 @@ import { TripModal } from './components/TripModal';
 import { ItineraryModal } from './components/ItineraryModal';
 import { GitHubGuideModal } from './components/GitHubGuideModal';
 import { DeleteConfirmModal } from './components/DeleteConfirmModal';
+import { BatchDeleteModal } from './components/BatchDeleteModal';
 import { CloudSyncModal } from './components/CloudSyncModal';
 import { OfflineIndicator } from './components/OfflineIndicator';
 import { Toast } from './components/Toast';
@@ -40,7 +41,7 @@ import {
   subscribeToCloudLogo,
 } from './firebase';
 import { playIncomingDraftChime } from './utils/audioNotify';
-import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCircle, Link2 } from 'lucide-react';
+import { Search, Plus, Filter, Mountain, ArrowLeft, RotateCcw, Bell, X, CheckCircle, Link2, Trash2 } from 'lucide-react';
 
 export default function App() {
   const [trips, setTrips] = useState<Trip[]>([]);
@@ -82,6 +83,8 @@ export default function App() {
   });
   const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
   const knownDraftIdsRef = useRef<Set<string>>(new Set());
+  const initialSyncAttemptedRef = useRef(false);
+  const uploadedLocalIdsRef = useRef<Set<string>>(new Set());
 
   // Modals state
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
@@ -99,6 +102,12 @@ export default function App() {
     const params = new URLSearchParams(window.location.search);
     return params.get('kit') || params.get('mediakit') || null;
   });
+
+  // Batch delete & selection states
+  const [isSelectMode, setIsSelectMode] = useState(false);
+  const [selectedTripIds, setSelectedTripIds] = useState<Set<string>>(new Set());
+  const [isBatchDeleteModalOpen, setIsBatchDeleteModalOpen] = useState(false);
+  const [isBatchDeleting, setIsBatchDeleting] = useState(false);
 
   // Toast notification
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -202,20 +211,21 @@ export default function App() {
           return mergedTrips[0]?.id || null;
         });
 
-        // Auto-upload any local trips that are not yet in Cloud
-        if (localPendingTrips.length > 0) {
-          console.info(`[Cloud Sync] Auto-uploading ${localPendingTrips.length} local trip(s) to Cloud Database...`);
-          for (const pending of localPendingTrips) {
-            saveTripToCloud(pending).catch((err) => {
-              console.warn(`[Cloud Sync] Auto upload failed for trip ${pending.id}:`, err);
+        // Guarded one-time upload of offline pending trips to prevent write/read feedback loops
+        if (!initialSyncAttemptedRef.current) {
+          initialSyncAttemptedRef.current = true;
+          const unuploadedPendingTrips = localPendingTrips.filter(
+            (t) => !uploadedLocalIdsRef.current.has(t.id)
+          );
+          if (unuploadedPendingTrips.length > 0 && validCloudTrips.length > 0) {
+            unuploadedPendingTrips.forEach((t) => uploadedLocalIdsRef.current.add(t.id));
+            console.info(`[Cloud Sync] One-time background sync for ${unuploadedPendingTrips.length} offline trip(s)...`);
+            unuploadedPendingTrips.forEach((pending) => {
+              saveTripToCloud(pending).catch((err) => {
+                console.warn(`[Cloud Sync] Upload failed for trip ${pending.id}:`, err);
+              });
             });
           }
-        } else if (isInitialFetch && validCloudTrips.length === 0 && currentLocals.length > 0) {
-          // If Cloud Firestore is totally empty on initial connection, upload existing trips
-          setCloudStatus('syncing');
-          seedInitialTripsToCloud(currentLocals).finally(() => {
-            setCloudStatus('synced');
-          });
         }
         isInitialFetch = false;
       },
@@ -306,6 +316,97 @@ export default function App() {
   const handleRequestDelete = (trip: Trip) => {
     setTripToDelete(trip);
     setIsDeleteModalOpen(true);
+  };
+
+  const DEFAULT_SAMPLE_IDS = new Set(['sindoro-watu-lunyu', 'sumbing-butuh', 'merbabu-suwanting']);
+
+  const handleToggleSelectTrip = (id: string) => {
+    setSelectedTripIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const handleSelectAllFiltered = () => {
+    const allSelected =
+      filteredTrips.length > 0 && filteredTrips.every((t) => selectedTripIds.has(t.id));
+    if (allSelected) {
+      setSelectedTripIds((prev) => {
+        const next = new Set(prev);
+        filteredTrips.forEach((t) => next.delete(t.id));
+        return next;
+      });
+    } else {
+      setSelectedTripIds((prev) => {
+        const next = new Set(prev);
+        filteredTrips.forEach((t) => next.add(t.id));
+        return next;
+      });
+    }
+  };
+
+  const handleSelectPreset = (preset: 'default' | 'draft' | 'final') => {
+    setSelectedTripIds((prev) => {
+      const next = new Set(prev);
+      if (preset === 'default') {
+        trips.forEach((t) => {
+          if (DEFAULT_SAMPLE_IDS.has(t.id)) next.add(t.id);
+        });
+      } else if (preset === 'draft') {
+        trips.forEach((t) => {
+          if (t.is_draft) next.add(t.id);
+        });
+      } else if (preset === 'final') {
+        trips.forEach((t) => {
+          if (!t.is_draft) next.add(t.id);
+        });
+      }
+      return next;
+    });
+  };
+
+  const handleConfirmBatchDelete = async () => {
+    if (selectedTripIds.size === 0) return;
+    setIsBatchDeleting(true);
+    const idsToDelete: string[] = Array.from(selectedTripIds);
+
+    // 1. Record in deleted IDs so cloud sync never resurrects them
+    idsToDelete.forEach((id: string) => recordDeletedTripId(id));
+
+    // 2. Update local state and storage
+    const updated = trips.filter((t) => !selectedTripIds.has(t.id));
+    setTrips(updated);
+    saveStoredTrips(updated);
+
+    // 3. Reset active selected trip if it was deleted
+    if (selectedTripId && selectedTripIds.has(selectedTripId)) {
+      setSelectedTripId(updated[0]?.id || null);
+      if (updated.length === 0) {
+        setMobileTab('list');
+      }
+    }
+
+    // 4. Background deletion from Cloud Firestore
+    setCloudStatus('syncing');
+    Promise.allSettled(idsToDelete.map((id: string) => deleteTripFromCloud(id)))
+      .then(() => {
+        setCloudStatus('synced');
+      })
+      .catch((err) => {
+        console.warn('Batch delete cloud sync notice:', err);
+        setCloudStatus('offline');
+      });
+
+    showToast(`✓ Berhasil menghapus ${idsToDelete.length} trip terpilih!`);
+    setSelectedTripIds(new Set());
+    setIsSelectMode(false);
+    setIsBatchDeleteModalOpen(false);
+    setIsBatchDeleting(false);
   };
 
   const handleRestoreDefaultTrips = () => {
@@ -780,16 +881,105 @@ export default function App() {
                   className="w-full bg-[#f4f4f4] border border-[#275d1d]/30 rounded-lg pl-9 pr-3 py-2 text-xs sm:text-sm text-[#1a2e16] placeholder-gray-500 focus:outline-none focus:border-[#275d1d]"
                 />
               </div>
+
+              {/* Batch Select & Delete Toolbar right under Search Bar */}
+              <div className="pt-0.5">
+                {!isSelectMode ? (
+                  <button
+                    type="button"
+                    onClick={() => setIsSelectMode(true)}
+                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-50/90 hover:bg-red-100 text-red-700 hover:text-red-900 border border-red-200 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
+                  >
+                    <Trash2 className="w-3.5 h-3.5 text-red-600 group-hover:scale-110 transition-transform" />
+                    <span>Pilih & Hapus Trip...</span>
+                  </button>
+                ) : (
+                  <div className="bg-red-50/90 border border-red-200 rounded-xl p-2.5 space-y-2.5 shadow-xs">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                        <span className="text-xs font-black text-red-950">
+                          {selectedTripIds.size} trip dipilih
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setIsSelectMode(false);
+                            setSelectedTripIds(new Set());
+                          }}
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200/80 transition-colors cursor-pointer"
+                        >
+                          Batal
+                        </button>
+                        <button
+                          type="button"
+                          disabled={selectedTripIds.size === 0}
+                          onClick={() => setIsBatchDeleteModalOpen(true)}
+                          className="px-3 py-1 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white rounded-lg text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-xs transition-all disabled:cursor-not-allowed"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Hapus ({selectedTripIds.size})</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Quick Selection Presets */}
+                    <div className="flex items-center gap-1 flex-wrap text-[11px]">
+                      <button
+                        type="button"
+                        onClick={handleSelectAllFiltered}
+                        className="px-2 py-0.5 rounded-md bg-white border border-red-200 font-bold text-slate-700 hover:bg-red-100 hover:text-red-900 cursor-pointer shadow-2xs transition-colors"
+                      >
+                        {selectedTripIds.size === filteredTrips.length && filteredTrips.length > 0
+                          ? 'Batal Pilih'
+                          : `Pilih Semua (${filteredTrips.length})`}
+                      </button>
+
+                      {trips.some((t) => DEFAULT_SAMPLE_IDS.has(t.id)) && (
+                        <button
+                          type="button"
+                          onClick={() => handleSelectPreset('default')}
+                          className="px-2 py-0.5 rounded-md bg-white border border-amber-300 font-bold text-amber-800 hover:bg-amber-100 cursor-pointer shadow-2xs transition-colors"
+                        >
+                          Pilih Contoh Bawaan
+                        </button>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelectPreset('draft')}
+                        className="px-2 py-0.5 rounded-md bg-white border border-red-300 font-bold text-red-700 hover:bg-red-100 cursor-pointer shadow-2xs transition-colors"
+                      >
+                        Pilih Draf
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSelectPreset('final')}
+                        className="px-2 py-0.5 rounded-md bg-white border border-emerald-300 font-bold text-emerald-800 hover:bg-emerald-100 cursor-pointer shadow-2xs transition-colors"
+                      >
+                        Pilih Final
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
 
-            {/* Trip Cards List */}
-            <div className="space-y-2.5 max-h-[calc(100vh-250px)] overflow-y-auto pr-1">
+            {/* Trip Cards List - Static vertical flow without internal scrollbar */}
+            <div className="space-y-2.5">
               {filteredTrips.length > 0 ? (
                 filteredTrips.map((trip) => (
                   <TripCard
                     key={trip.id}
                     trip={trip}
                     isSelected={activeTrip?.id === trip.id}
+                    isSelectMode={isSelectMode}
+                    isSelectedForDelete={selectedTripIds.has(trip.id)}
+                    onToggleSelect={handleToggleSelectTrip}
                     onSelect={(t) => {
                       handleSelectTrip(t.id, 'detail');
                     }}
@@ -926,6 +1116,14 @@ export default function App() {
           setTripToDelete(null);
         }}
         onConfirm={handleDeleteTrip}
+      />
+
+      <BatchDeleteModal
+        isOpen={isBatchDeleteModalOpen}
+        selectedTrips={trips.filter((t) => selectedTripIds.has(t.id))}
+        onClose={() => setIsBatchDeleteModalOpen(false)}
+        onConfirm={handleConfirmBatchDelete}
+        isDeleting={isBatchDeleting}
       />
 
       <CloudSyncModal

@@ -83,8 +83,6 @@ export default function App() {
   });
   const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
   const knownDraftIdsRef = useRef<Set<string>>(new Set());
-  const initialSyncAttemptedRef = useRef(false);
-  const uploadedLocalIdsRef = useRef<Set<string>>(new Set());
 
   // Modals state
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
@@ -155,45 +153,34 @@ export default function App() {
     const initialDrafts = localTrips.filter((t) => t.is_draft);
     initialDrafts.forEach((t) => knownDraftIdsRef.current.add(t.id));
 
-    // 2. Real-time Cloud Firestore subscription with Offline-First SMART MERGE
+    // 2. Real-time Cloud Firestore subscription: Cloud is the Single Source of Truth
     let isInitialFetch = true;
     const unsubscribeTrips = subscribeToCloudTrips(
       (cloudTrips) => {
         setCloudStatus('synced');
         const deletedIds = getDeletedTripIds();
-        const currentLocals = getStoredTrips();
 
         // Filter out any cloud trips that were explicitly deleted on this device
         const validCloudTrips = cloudTrips.filter((t) => !deletedIds.has(t.id));
-        const cloudTripMap = new Map<string, Trip>(validCloudTrips.map((t) => [t.id, t]));
 
-        // SMART MERGE: Find any REAL user-created trips that exist locally but are NOT yet in Cloud
-        // (e.g. newly created on HP while offline). Never re-upload obsolete hardcoded dummy trips!
-        const DUMMY_IDS = new Set(['sindoro-watu-lunyu', 'sumbing-butuh', 'merbabu-suwanting']);
-        const localPendingTrips: Trip[] = [];
-        for (const localTrip of currentLocals) {
-          if (
-            !deletedIds.has(localTrip.id) &&
-            !cloudTripMap.has(localTrip.id) &&
-            // If Cloud already has data, ignore legacy dummy sample trips lingering in local storage
-            !(validCloudTrips.length > 0 && DUMMY_IDS.has(localTrip.id))
-          ) {
-            localPendingTrips.push(localTrip);
-          }
+        let finalTrips: Trip[];
+        if (validCloudTrips.length > 0) {
+          // Cloud has data -> Cloud is authoritative!
+          finalTrips = sortTripsByDepartureDate(validCloudTrips);
+        } else {
+          // Cloud is empty -> fallback to current local storage (if any)
+          const currentLocals = getStoredTrips().filter((t) => !deletedIds.has(t.id));
+          finalTrips = sortTripsByDepartureDate(currentLocals);
         }
 
-        // Combined safe dataset (sorted by departure date)
-        const mergedTrips = sortTripsByDepartureDate([...validCloudTrips, ...localPendingTrips]);
-
         // Detect newly incoming drafts specifically submitted by the TEAM (real-time alert)
-        const incomingTeamDrafts = mergedTrips.filter(
+        const incomingTeamDrafts = finalTrips.filter(
           (t) => t.is_draft && t.from_team && !knownDraftIdsRef.current.has(t.id)
         );
         if (incomingTeamDrafts.length > 0) {
-          // Add to known drafts
           incomingTeamDrafts.forEach((t) => knownDraftIdsRef.current.add(t.id));
 
-          // If not initial fetch, trigger sound and un-dismiss banner
+          // If not initial fetch, trigger sound and notification
           if (!isInitialFetch) {
             playIncomingDraftChime();
             setIsDraftBannerDismissed(false);
@@ -202,31 +189,16 @@ export default function App() {
           }
         }
 
-        setTrips(mergedTrips);
-        saveStoredTrips(mergedTrips);
+        // Synchronize state and local cache with Cloud data (ZERO automatic background writes!)
+        setTrips(finalTrips);
+        saveStoredTrips(finalTrips);
         setSelectedTripId((prev) => {
-          if (prev && mergedTrips.some((t) => t.id === prev)) {
+          if (prev && finalTrips.some((t) => t.id === prev)) {
             return prev;
           }
-          return mergedTrips[0]?.id || null;
+          return finalTrips[0]?.id || null;
         });
 
-        // Guarded one-time upload of offline pending trips to prevent write/read feedback loops
-        if (!initialSyncAttemptedRef.current) {
-          initialSyncAttemptedRef.current = true;
-          const unuploadedPendingTrips = localPendingTrips.filter(
-            (t) => !uploadedLocalIdsRef.current.has(t.id)
-          );
-          if (unuploadedPendingTrips.length > 0 && validCloudTrips.length > 0) {
-            unuploadedPendingTrips.forEach((t) => uploadedLocalIdsRef.current.add(t.id));
-            console.info(`[Cloud Sync] One-time background sync for ${unuploadedPendingTrips.length} offline trip(s)...`);
-            unuploadedPendingTrips.forEach((pending) => {
-              saveTripToCloud(pending).catch((err) => {
-                console.warn(`[Cloud Sync] Upload failed for trip ${pending.id}:`, err);
-              });
-            });
-          }
-        }
         isInitialFetch = false;
       },
       (error) => {

@@ -71,5 +71,14 @@
     background-color: #fafbf8;
     border: 1px solid #eaede6;
   }
+
+  /* Clean scrollbar suppression for touch-friendly horizontal swipe strips */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
 }
 

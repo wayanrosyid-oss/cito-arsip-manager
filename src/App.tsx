@@ -729,7 +729,7 @@ export default function App() {
         )}
 
         {/* Mobile Navigation Pills */}
-        <div className="flex md:hidden items-center justify-between gap-1 mb-4 bg-stone-100 p-1 rounded-xl border border-stone-200">
+        <div className="flex md:hidden items-center justify-between gap-1 mb-3.5 bg-stone-100 p-1 rounded-xl border border-stone-200 shadow-xs">
           <button
             onClick={() => {
               setMobileTab('list');
@@ -739,7 +739,7 @@ export default function App() {
                 window.history.replaceState({}, '', url.toString());
               }
             }}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
               mobileTab === 'list'
                 ? 'bg-white text-stone-900 shadow-xs'
                 : 'text-stone-600 hover:text-stone-900'
@@ -754,7 +754,7 @@ export default function App() {
               }
             }}
             disabled={!activeTrip}
-            className={`flex-1 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-colors ${
               mobileTab === 'detail'
                 ? 'bg-white text-stone-900 shadow-xs'
                 : 'text-stone-600 hover:text-stone-900 disabled:opacity-40'
@@ -784,11 +784,11 @@ export default function App() {
               </div>
 
               {/* Status Filter Segmented Control */}
-              <div className="flex items-center gap-1 p-0.5 bg-stone-100 rounded-lg border border-stone-200 overflow-x-auto no-scrollbar">
+              <div className="flex items-center gap-1.5 p-1 bg-stone-100/90 rounded-xl border border-stone-200 overflow-x-auto no-scrollbar scroll-smooth">
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('semua')}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors shrink-0 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 whitespace-nowrap cursor-pointer ${
                     tripStatusFilter === 'semua'
                       ? 'bg-white text-stone-900 shadow-xs'
                       : 'text-stone-600 hover:text-stone-900'
@@ -800,7 +800,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('admin')}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'admin'
                       ? 'bg-white text-stone-900 shadow-xs'
                       : 'text-stone-600 hover:text-stone-900'
@@ -817,7 +817,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('tim')}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'tim'
                       ? 'bg-white text-amber-900 shadow-xs'
                       : 'text-stone-600 hover:text-stone-900'
@@ -834,7 +834,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('draft')}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'draft'
                       ? 'bg-white text-rose-800 shadow-xs'
                       : 'text-stone-600 hover:text-rose-700'
@@ -851,7 +851,7 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('final')}
-                  className={`px-2.5 py-1 rounded text-xs font-medium transition-colors shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors shrink-0 whitespace-nowrap flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'final'
                       ? 'bg-white text-emerald-800 shadow-xs'
                       : 'text-stone-600 hover:text-emerald-800'

@@ -253,12 +253,12 @@ export const ExpeditionTruckLoader: React.FC<ExpeditionTruckLoaderProps> = ({
       `}</style>
 
       {label && (
-        <p className="mt-3 text-xs sm:text-sm font-bold font-['Montserrat'] text-slate-800 tracking-tight">
+        <p className="mt-3 text-xs sm:text-sm font-semibold text-stone-800 tracking-tight">
           {label}
         </p>
       )}
       {sublabel && (
-        <p className="text-[11px] text-slate-500 max-w-xs mt-0.5 leading-snug">
+        <p className="text-xs text-stone-500 max-w-xs mt-0.5 leading-snug">
           {sublabel}
         </p>
       )}

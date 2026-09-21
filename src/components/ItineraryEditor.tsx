@@ -235,9 +235,9 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
           <button
             type="button"
             onClick={() => handleSwitchTab('table')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-98 ${
               activeTab === 'table'
-                ? 'bg-[#275d1d] text-white shadow-sm'
+                ? 'bg-[#275d1d] text-white border border-[#1f4a17]'
                 : 'text-gray-800 hover:text-black'
             }`}
           >
@@ -247,9 +247,9 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
           <button
             type="button"
             onClick={() => handleSwitchTab('text')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer shadow-xs active:scale-98 ${
               activeTab === 'text'
-                ? 'bg-[#275d1d] text-white shadow-sm'
+                ? 'bg-[#275d1d] text-white border border-[#1f4a17]'
                 : 'text-gray-800 hover:text-black'
             }`}
           >
@@ -262,7 +262,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
           <button
             type="button"
             onClick={handleResetToDefaultTemplate}
-            className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded bg-white text-[#275d1d] hover:bg-gray-100 border border-[#275d1d] transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-white text-[#275d1d] hover:bg-stone-50 border border-[#275d1d]/60 shadow-xs active:scale-98 transition-colors cursor-pointer"
             title="Muat ulang contoh format H-1 otomatis sesuai tanggal trip"
           >
             <Sparkles className="w-3.5 h-3.5" />
@@ -271,7 +271,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
           <button
             type="button"
             onClick={handleCopyText}
-            className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded bg-[#d1d1d1] text-gray-900 hover:bg-[#c4c4c4] border border-[#275d1d]/30 transition-colors cursor-pointer"
+            className="flex items-center gap-1 text-[11px] font-bold px-2.5 py-1.5 rounded-lg bg-[#d1d1d1] text-gray-900 hover:bg-[#c4c4c4] border border-[#275d1d]/30 shadow-xs active:scale-98 transition-colors cursor-pointer"
           >
             {copied ? <Check className="w-3.5 h-3.5 text-[#275d1d]" /> : <Copy className="w-3.5 h-3.5" />}
             <span>{copied ? 'Tersalin' : 'Salin'}</span>
@@ -346,7 +346,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
                       type="button"
                       onClick={() => handleRemoveDay(day.id)}
                       title="Hapus Hari ini"
-                      className="p-1 text-gray-600 hover:text-rose-600 hover:bg-rose-100 rounded transition-colors cursor-pointer"
+                      className="p-1 text-gray-600 hover:text-rose-600 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4" />
                     </button>
@@ -414,7 +414,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
                           <button
                             type="button"
                             onClick={() => handleRemoveItem(day.id, item.id)}
-                            className="p-1 text-gray-500 hover:text-rose-600 hover:bg-rose-100 rounded transition-colors cursor-pointer"
+                            className="p-1 text-gray-500 hover:text-rose-600 hover:bg-rose-100 rounded-lg transition-colors cursor-pointer"
                             title="Hapus baris kegiatan"
                           >
                             <Trash2 className="w-3.5 h-3.5" />
@@ -429,7 +429,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
                     <button
                       type="button"
                       onClick={() => handleAddItem(day.id)}
-                      className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded bg-white hover:bg-gray-100 text-[#275d1d] border border-[#275d1d] transition-colors cursor-pointer shadow-2xs"
+                      className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-lg bg-white hover:bg-stone-50 text-[#275d1d] border border-[#275d1d]/60 shadow-xs active:scale-98 transition-colors cursor-pointer"
                     >
                       <Plus className="w-3 h-3" />
                       <span>Tambah Jam / Kegiatan</span>
@@ -448,7 +448,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
             <button
               type="button"
               onClick={handleAddDay}
-              className="w-full py-2.5 px-4 rounded-xl border-2 border-dashed border-[#275d1d] hover:bg-[#275d1d]/10 bg-white text-xs font-bold text-[#275d1d] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-2xs"
+              className="w-full py-2.5 px-4 rounded-lg border-2 border-dashed border-[#275d1d]/50 hover:bg-[#275d1d]/10 bg-white text-xs font-bold text-[#275d1d] flex items-center justify-center gap-2 transition-all cursor-pointer shadow-xs active:scale-98"
             >
               <Plus className="w-4 h-4" />
               <span>Tambah Hari Berikutnya</span>

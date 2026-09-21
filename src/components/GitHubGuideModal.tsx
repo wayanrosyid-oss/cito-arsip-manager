@@ -33,19 +33,19 @@ export const GitHubGuideModal: React.FC<GitHubGuideModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-xs overflow-y-auto">
       <div className="bg-white border-2 border-[#275d1d] text-gray-900 w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden my-6 flex flex-col max-h-[90vh]">
         {/* Modal Header */}
-        <div className="bg-[#275d1d] px-6 py-4 border-b border-[#275d1d] flex items-center justify-between shrink-0">
+        <div className="bg-[#183e15] px-6 py-4 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5">
-            <Github className="w-6 h-6 text-white" />
+            <Github className="w-5 h-5 text-white" />
             <div>
-              <h3 className="font-bold text-base sm:text-lg font-['Montserrat'] tracking-tight text-white leading-tight">
-                Panduan Lengkap Deploy ke GitHub & Online
+              <h3 className="font-semibold text-base sm:text-lg tracking-tight text-white leading-tight">
+                Panduan Deploy ke GitHub & Online
               </h3>
-              <p className="text-xs text-white/80 mt-0.5 leading-normal">Solusi anti gagal untuk upload repository dan deploy website</p>
+              <p className="text-xs text-white/70 mt-0.5 leading-normal">Langkah upload repository dan deploy website</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:bg-black/20 p-1.5 rounded transition-colors cursor-pointer"
+            className="text-white/80 hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -106,7 +106,7 @@ export const GitHubGuideModal: React.FC<GitHubGuideModalProps> = ({
                 downloadProjectZip();
                 onShowToast('Mulai mengunduh file ZIP proyek...');
               }}
-              className="px-3.5 py-1.5 bg-[#275d1d] hover:bg-[#1f4a17] text-white font-bold text-xs rounded transition-all flex items-center gap-1.5 cursor-pointer shrink-0 shadow"
+              className="px-3.5 py-1.5 bg-[#275d1d] hover:bg-[#1f4a17] text-white font-bold text-xs rounded-lg border border-[#1f4a17] shadow-xs active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer shrink-0"
             >
               <DownloadCloud className="w-3.5 h-3.5" />
               <span>Download ZIP</span>
@@ -128,7 +128,7 @@ export const GitHubGuideModal: React.FC<GitHubGuideModalProps> = ({
                   <span className="font-bold text-xs text-[#275d1d]">Langkah 1: Ekstrak file & Buka Terminal di folder tersebut</span>
                   <button
                     onClick={() => handleCopy('git init\ngit add .\ngit commit -m "feat: initial commit cito adventure trip archive"', 'step1')}
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors"
+                    className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300/80 shadow-xs font-semibold transition-colors cursor-pointer"
                   >
                     {copiedId === 'step1' ? <Check className="w-3.5 h-3.5 text-[#275d1d]" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedId === 'step1' ? 'Tersalin' : 'Salin'}</span>
@@ -147,7 +147,7 @@ git commit -m "feat: initial commit cito adventure trip archive"`}
                   <span className="font-bold text-xs text-[#275d1d]">Langkah 2: Hubungkan & Push ke GitHub</span>
                   <button
                     onClick={() => handleCopy('git branch -M main\ngit remote add origin https://github.com/USERNAME/NAMA-REPO.git\ngit push -u origin main', 'step2')}
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-gray-200 hover:bg-gray-300 text-gray-800 transition-colors"
+                    className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300/80 shadow-xs font-semibold transition-colors cursor-pointer"
                   >
                     {copiedId === 'step2' ? <Check className="w-3.5 h-3.5 text-[#275d1d]" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedId === 'step2' ? 'Tersalin' : 'Salin'}</span>
@@ -235,7 +235,7 @@ git push -u origin main`}
                   <span className="font-bold text-xs text-red-800">1. Error: "Updates were rejected because the remote contains work..."</span>
                   <button
                     onClick={() => handleCopy('git pull origin main --rebase\ngit push -u origin main', 'err1')}
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-red-100 hover:bg-red-200 text-red-900"
+                    className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-900 border border-red-300 shadow-xs font-semibold cursor-pointer"
                   >
                     {copiedId === 'err1' ? <Check className="w-3 h-3 text-red-800" /> : <Copy className="w-3 h-3" />}
                     <span>{copiedId === 'err1' ? 'Tersalin' : 'Salin Perbaikan'}</span>
@@ -259,7 +259,7 @@ git push -u origin main`}
                   <span className="font-bold text-xs text-red-800">2. Error: "remote origin already exists"</span>
                   <button
                     onClick={() => handleCopy('git remote set-url origin https://github.com/USERNAME/NAMA-REPO.git', 'err2')}
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-red-100 hover:bg-red-200 text-red-900"
+                    className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-900 border border-red-300 shadow-xs font-semibold cursor-pointer"
                   >
                     {copiedId === 'err2' ? <Check className="w-3 h-3 text-red-800" /> : <Copy className="w-3 h-3" />}
                     <span>{copiedId === 'err2' ? 'Tersalin' : 'Salin Perbaikan'}</span>
@@ -279,7 +279,7 @@ git push -u origin main`}
                   <span className="font-bold text-xs text-red-800">3. Error: "src refspec main does not match any"</span>
                   <button
                     onClick={() => handleCopy('git add .\ngit commit -m "initial commit"\ngit branch -M main\ngit push -u origin main', 'err3')}
-                    className="flex items-center gap-1 text-xs px-2 py-0.5 rounded bg-red-100 hover:bg-red-200 text-red-900"
+                    className="flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg bg-red-100 hover:bg-red-200 text-red-900 border border-red-300 shadow-xs font-semibold cursor-pointer"
                   >
                     {copiedId === 'err3' ? <Check className="w-3 h-3 text-red-800" /> : <Copy className="w-3 h-3" />}
                     <span>{copiedId === 'err3' ? 'Tersalin' : 'Salin Perbaikan'}</span>
@@ -306,7 +306,7 @@ git push -u origin main`}
           </span>
           <button
             onClick={onClose}
-            className="px-4 py-1.5 rounded text-xs font-bold bg-[#275d1d] hover:bg-[#1f4a17] text-white transition-colors cursor-pointer shadow-xs"
+            className="px-4 py-1.5 rounded-lg text-xs font-bold bg-[#275d1d] hover:bg-[#1f4a17] text-white border border-[#1f4a17] shadow-xs active:scale-98 transition-colors cursor-pointer"
           >
             Tutup
           </button>

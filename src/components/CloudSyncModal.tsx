@@ -173,21 +173,21 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
         className="bg-white rounded-xl max-w-lg w-full shadow-lg overflow-hidden flex flex-col my-auto border border-stone-200 animate-in fade-in zoom-in-95 duration-150"
       >
         {/* Header */}
-        <div className="bg-[#1c4318] text-white p-4 sm:p-5 flex items-center justify-between border-b border-[#142f11]">
+        <div className="bg-[#183e15] text-white p-4 sm:p-5 flex items-center justify-between">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-white border border-white/15">
+            <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center text-white">
               <Cloud className="w-5 h-5 text-emerald-300" />
             </div>
             <div>
-              <h2 className="text-base sm:text-lg font-bold font-['Montserrat']">Sinkronisasi Cloud</h2>
-              <p className="text-[11px] text-white/80">
-                Penyimpanan real-time HP & Laptop Cito Adventure
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight">Sinkronisasi Cloud</h2>
+              <p className="text-xs text-white/70">
+                Penyimpanan real-time HP & Laptop
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-lg text-white/80 hover:text-white hover:bg-white/10 flex items-center justify-center transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -233,7 +233,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
             <button
               onClick={handleManualUpload}
               disabled={isUploading || isDownloading}
-              className="flex items-center justify-center gap-2 p-3 rounded-lg bg-[#1c4318] hover:bg-[#142f11] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-2 p-3 rounded-lg bg-[#1c4318] hover:bg-[#142f11] text-white text-xs font-semibold border border-[#142f11] transition-all shadow-xs cursor-pointer active:scale-98 disabled:opacity-50"
             >
               {isUploading ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -246,7 +246,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
             <button
               onClick={handleManualDownload}
               disabled={isDownloading || isUploading}
-              className="flex items-center justify-center gap-2 p-3 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold transition-all border border-stone-300 cursor-pointer disabled:opacity-50"
+              className="flex items-center justify-center gap-2 p-3 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold transition-all border border-stone-300 shadow-xs cursor-pointer active:scale-98 disabled:opacity-50"
             >
               {isDownloading ? (
                 <RefreshCw className="w-4 h-4 animate-spin" />
@@ -271,7 +271,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
             <button
               onClick={handleResetAndFetchPureCloud}
               disabled={isDownloading || isUploading}
-              className="w-full py-2 px-3 rounded-lg bg-stone-800 hover:bg-stone-900 text-white text-xs font-semibold transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-50"
+              className="w-full py-2 px-3 rounded-lg bg-stone-800 hover:bg-stone-900 text-white text-xs font-semibold border border-stone-900 transition-all shadow-xs flex items-center justify-center gap-1.5 cursor-pointer active:scale-98 disabled:opacity-50"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${isDownloading ? 'animate-spin' : ''}`} />
               <span>Bersihkan Cache & Sinkron Ulang</span>
@@ -333,7 +333,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
               />
               <button
                 onClick={handleCopyLink}
-                className="flex items-center gap-1 bg-[#1c4318] hover:bg-[#142f11] text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors cursor-pointer shrink-0"
+                className="flex items-center gap-1 bg-[#1c4318] hover:bg-[#142f11] text-white px-2.5 py-1.5 rounded-lg text-xs font-semibold border border-[#142f11] shadow-xs active:scale-98 transition-colors cursor-pointer shrink-0"
               >
                 {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? 'Tersalin' : 'Salin'}</span>
@@ -346,7 +346,7 @@ export const CloudSyncModal: React.FC<CloudSyncModalProps> = ({
         <div className="bg-stone-50 p-3 sm:p-4 border-t border-stone-200 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold transition-colors cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-stone-200 hover:bg-stone-300 text-stone-800 text-xs font-semibold border border-stone-300/80 shadow-xs active:scale-98 transition-colors cursor-pointer"
           >
             Tutup
           </button>

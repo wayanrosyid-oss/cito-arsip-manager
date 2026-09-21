@@ -51,7 +51,7 @@ export const TripCard: React.FC<TripCardProps> = ({
       className={`group relative rounded-xl p-3.5 sm:p-4 cursor-pointer ${
         isSelectMode
           ? isSelectedForDelete
-            ? 'bg-rose-50/90 border border-rose-300 shadow-[0_2px_10px_rgba(244,63,94,0.12)]'
+            ? 'bg-rose-50/90 border border-rose-300 shadow-xs'
             : 'bg-white border border-dashed border-stone-300/80 hover:border-rose-300 field-card-interactive'
           : isSelected
           ? 'field-card-active'
@@ -77,12 +77,12 @@ export const TripCard: React.FC<TripCardProps> = ({
           )}
 
           <h3
-            className={`text-sm sm:text-base font-semibold font-['Montserrat'] tracking-tight truncate transition-colors leading-snug ${
+            className={`text-sm sm:text-base font-semibold tracking-tight truncate transition-colors leading-snug ${
               isSelectedForDelete
                 ? 'text-rose-950'
                 : isSelected
-                ? 'text-[#1c4318]'
-                : 'text-stone-900 group-hover:text-[#1c4318]'
+                ? 'text-[#183e15]'
+                : 'text-stone-900 group-hover:text-[#183e15]'
             }`}
           >
             {formatTitle()}
@@ -90,23 +90,23 @@ export const TripCard: React.FC<TripCardProps> = ({
 
           {/* Badge Sumber Pembuat: Dari Tim vs Dari Admin */}
           {trip.from_team ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/50 shrink-0">
-              👥 Tim
+            <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded bg-amber-50 text-amber-900 border border-amber-200/60 shrink-0">
+              Tim
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#f4f5f1] text-stone-700 border border-stone-200/40 shrink-0">
-              👑 Admin
+            <span className="inline-flex items-center text-[11px] font-medium px-2 py-0.5 rounded bg-stone-100 text-stone-700 border border-stone-200/50 shrink-0">
+              Admin
             </span>
           )}
 
           {/* Badge Status: Draft vs Final */}
           {trip.is_draft ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 border border-rose-200/50 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded bg-rose-50 text-rose-800 border border-rose-200/60 shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
               Draft
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/50 shrink-0">
+            <span className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded bg-emerald-50 text-emerald-800 border border-emerald-200/60 shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
               Final
             </span>
@@ -115,7 +115,7 @@ export const TripCard: React.FC<TripCardProps> = ({
         <ChevronRight
           className={`w-5 h-5 transition-all shrink-0 ${
             isSelected
-              ? 'text-[#1c4318] translate-x-0.5'
+              ? 'text-[#183e15] translate-x-0.5'
               : 'text-stone-300 group-hover:text-stone-600 group-hover:translate-x-0.5'
           }`}
         />
@@ -124,10 +124,10 @@ export const TripCard: React.FC<TripCardProps> = ({
       {/* Row 2: Jalur Pill Badge & Tanggal Trip */}
       <div className="mt-2.5 flex items-center gap-2.5 flex-wrap">
         <span
-          className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-md transition-colors shrink-0 ${
+          className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded transition-colors shrink-0 ${
             isSelected
-              ? 'bg-[#1c4318] text-white shadow-xs'
-              : 'bg-[#f4f5f1] text-stone-700 border border-stone-200/40 group-hover:bg-[#e9ebe5]'
+              ? 'bg-[#183e15] text-white'
+              : 'bg-stone-100 text-stone-700 border border-stone-200/50 group-hover:bg-stone-200/60'
           }`}
         >
           {jalurText}
@@ -135,8 +135,8 @@ export const TripCard: React.FC<TripCardProps> = ({
 
         {formattedDate && (
           <span
-            className={`text-xs sm:text-[13px] font-normal transition-colors ${
-              isSelected ? 'text-[#1c4318] font-medium' : 'text-stone-600 group-hover:text-stone-800'
+            className={`text-xs sm:text-[13px] transition-colors ${
+              isSelected ? 'text-[#183e15] font-medium' : 'text-stone-600 group-hover:text-stone-800'
             }`}
           >
             {formattedDate}

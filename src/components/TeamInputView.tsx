@@ -331,19 +331,19 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
               <Mountain className="w-6 h-6 text-white" />
             </div>
             <div>
-              <div className="text-[10px] sm:text-xs font-bold tracking-widest uppercase text-emerald-200 font-['Montserrat']">
+              <div className="text-xs font-medium text-emerald-200">
                 Lembar Kerja Lapangan
               </div>
-              <h1 className="text-base sm:text-lg font-bold font-['Montserrat'] leading-snug">
+              <h1 className="text-base sm:text-lg font-semibold leading-snug">
                 Input Jadwal Trip – Tim CITO Adventure
               </h1>
             </div>
           </div>
 
-          {/* Lencana Khusus Tim Lapangan (Murni label teks statis, tidak ada tombol/popup) */}
+          {/* Lencana Khusus Tim Lapangan */}
           <div className="flex items-center gap-2">
             <div
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900/70 border border-emerald-400/40 text-emerald-200 text-xs font-bold tracking-wide shadow-xs select-none"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-900/70 border border-emerald-400/40 text-emerald-200 text-xs font-medium shadow-xs select-none"
             >
               <ShieldCheck className="w-4 h-4 text-emerald-300 shrink-0" />
               <span>Khusus Tim Lapangan</span>
@@ -356,37 +356,37 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
       <div className="max-w-4xl w-full mx-auto p-3 sm:p-6 flex-1">
         {submittedTrip ? (
           /* SUCCESS STATE CARD */
-          <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-6 sm:p-8 text-center space-y-5 shadow-xl animate-in zoom-in-95 duration-300">
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-700 rounded-full flex items-center justify-center mx-auto shadow-inner">
-              <CheckCircle className="w-10 h-10" />
+          <div className="bg-white border border-stone-200 rounded-2xl p-6 sm:p-8 text-center space-y-5 shadow-xs animate-in zoom-in-95 duration-300">
+            <div className="w-16 h-16 bg-emerald-50 text-emerald-700 rounded-full flex items-center justify-center mx-auto border border-emerald-200">
+              <CheckCircle className="w-8 h-8" />
             </div>
 
             <div className="space-y-1.5">
-              <div className="text-xs font-bold uppercase tracking-widest text-[#275d1d]">
-                Berhasil Tersimpan Langsung
+              <div className="text-xs font-semibold text-[#183e15]">
+                Tersimpan di Database
               </div>
-              <h2 className="text-xl sm:text-2xl font-bold font-['Montserrat'] text-[#275d1d] tracking-tight leading-snug">
-                Draf Jadwal Berhasil Dikirim ke Mas Yuno!
+              <h2 className="text-xl sm:text-2xl font-semibold text-stone-900 tracking-tight leading-snug">
+                Draf Jadwal Berhasil Dikirim ke Mas Yuno
               </h2>
-              <p className="text-xs sm:text-sm text-gray-700 max-w-md mx-auto">
-                Data jadwal <strong>{submittedTrip.nama_gunung}</strong> ({submittedTrip.jalur}) telah tersimpan langsung di database cloud dan siap ditinjau Mas Yuno.
+              <p className="text-xs sm:text-sm text-stone-600 max-w-md mx-auto">
+                Data jadwal <strong>{submittedTrip.nama_gunung}</strong> ({submittedTrip.jalur}) telah tersimpan dan siap ditinjau Mas Yuno.
               </p>
             </div>
 
             {/* Trip Brief Card */}
-            <div className="bg-[#f4f4f4] border border-[#275d1d]/30 rounded-xl p-4 text-left text-xs space-y-1.5 max-w-md mx-auto">
-              <div className="font-bold text-[#275d1d] text-sm">
-                🏔️ {submittedTrip.nama_gunung} {submittedTrip.ketinggian_mdpl}
+            <div className="bg-stone-50 border border-stone-200 rounded-xl p-4 text-left text-xs space-y-1.5 max-w-md mx-auto">
+              <div className="font-semibold text-stone-900 text-sm">
+                {submittedTrip.nama_gunung} {submittedTrip.ketinggian_mdpl}
               </div>
-              <div className="text-gray-700">📍 Jalur: {submittedTrip.jalur}</div>
-              <div className="text-gray-700">
-                🗓️ Tanggal: {submittedTrip.tanggal_mulai} s/d {submittedTrip.tanggal_selesai} ({submittedTrip.durasi})
+              <div className="text-stone-700">Jalur: {submittedTrip.jalur}</div>
+              <div className="text-stone-700">
+                Tanggal: {submittedTrip.tanggal_mulai} s/d {submittedTrip.tanggal_selesai} ({submittedTrip.durasi})
               </div>
-              <div className="text-gray-700">
-                👥 Kuota: {submittedTrip.min_peserta}–{submittedTrip.min_peserta_jakarta || submittedTrip.min_peserta} / {submittedTrip.max_peserta} Pax
+              <div className="text-stone-700">
+                Kuota: {submittedTrip.min_peserta}–{submittedTrip.min_peserta_jakarta || submittedTrip.min_peserta} / {submittedTrip.max_peserta} Pax
               </div>
-              <div className="text-gray-500 text-[11px] pt-1">
-                Diinput oleh: <strong>{submittedTrip.draf_oleh}</strong>
+              <div className="text-stone-500 text-[11px] pt-1">
+                Diinput oleh: <strong className="text-stone-700">{submittedTrip.draf_oleh}</strong>
               </div>
             </div>
 
@@ -402,36 +402,36 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
               <button
                 type="button"
                 onClick={handleNotifyWhatsApp}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
               >
                 <MessageCircle className="w-4 h-4" />
-                <span>Kirim Notifikasi WhatsApp ke Mas Yuno</span>
+                <span>Kirim Notifikasi WhatsApp</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleResetForm}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs sm:text-sm font-bold shadow-md transition-all cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-[#183e15] hover:bg-[#122f10] text-white text-xs sm:text-sm font-semibold transition-colors cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
-                <span>Input Jadwal Trip Lainnya</span>
+                <span>Input Jadwal Lain</span>
               </button>
             </div>
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4">
-            {/* Intro Notice matching User Greeting */}
-            <div className="bg-emerald-50 border-2 border-emerald-400 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-emerald-950 flex items-start gap-2.5 shadow-xs">
+            {/* Intro Notice */}
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-3.5 sm:p-4 text-xs sm:text-sm text-emerald-950 flex items-start gap-2.5">
               <Info className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
               <div>
-                <strong>HOEEE TIM...!</strong> Silakan isi formulir jadwal di bawah ini. Setelah Anda menekan tombol <em>"Kirim Draf ke Mas Yuno"</em> di bagian bawah, data akan otomatis masuk ke aplikasi utama untuk diolah menjadi poster pamflet dan caption medsos.
+                <strong>Formulir Jadwal Tim Lapangan:</strong> Silakan lengkapi form di bawah ini. Setelah Anda menekan tombol <em>"Kirim Draf ke Mas Yuno"</em>, data akan otomatis masuk ke sistem untuk dibuatkan poster pamflet dan materi promosi.
               </div>
             </div>
 
             {/* Section 0: Identitas Penginput */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
-              <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                <Users className="w-4 h-4 text-[#275d1d]" />
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3">
+              <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-stone-600" />
                 Nama Tim Penyusun Jadwal
               </h3>
               <div>
@@ -439,30 +439,30 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                   type="text"
                   value={namaPenginput}
                   onChange={(e) => setNamaPenginput(e.target.value)}
-                  placeholder="Contoh: wong caruban / Bagian Jadwal"
-                  className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                  placeholder="Contoh: Tim Caruban / Bagian Jadwal"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-stone-400"
                 />
-                <span className="text-[10px] text-gray-500 mt-1 block">
-                  *Nama Anda akan tercantum di draf agar Mas Yuno mengetahui siapa yang menyusun jadwal ini.
+                <span className="text-[11px] text-stone-500 mt-1 block">
+                  Nama Anda akan tercantum di draf agar Mas Yuno mengetahui siapa yang menyusun jadwal ini.
                 </span>
               </div>
             </div>
 
             {/* Section 1: Identitas Gunung & Jalur Pendakian */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs">
-              <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                <MapPin className="w-4 h-4 text-[#275d1d]" />
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3.5">
+              <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                <MapPin className="w-4 h-4 text-stone-600" />
                 1. Identitas Gunung & Jalur Pendakian
               </h3>
 
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">
+                <label className="block text-xs font-medium text-stone-700 mb-1">
                   Pilih Gunung Populer Indonesia (Lengkap MDPL):
                 </label>
                 <select
                   value={selectedMountainIndex}
                   onChange={handleMountainChange}
-                  className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm text-gray-900 font-bold focus:border-[#275d1d] focus:outline-none"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-stone-900 font-medium focus:border-stone-400 focus:outline-none"
                 >
                   {POPULAR_MOUNTAINS.map((mtn, idx) => (
                     <option key={mtn.name} value={idx.toString()}>
@@ -549,45 +549,45 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
             </div>
 
             {/* Section 2: Tanggal Pelaksanaan & Durasi Otomatis */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3.5 shadow-xs">
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3.5">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                  <Calendar className="w-4 h-4 text-[#275d1d]" />
+                <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                  <Calendar className="w-4 h-4 text-stone-600" />
                   2. Tanggal Pelaksanaan & Durasi Otomatis
                 </h3>
                 <button
                   type="button"
                   onClick={handleAddSchedule}
-                  className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-[#275d1d] hover:bg-[#1f4a17] px-3 py-1.5 rounded-lg shadow-xs transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-[#183e15] hover:bg-[#122f10] px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Tambah Tanggal</span>
+                  <span>Tambah Tanggal</span>
                 </button>
               </div>
 
               {/* Jadwal 1 */}
-              <div className="p-3.5 bg-[#f4f4f4] border border-[#275d1d]/30 rounded-xl space-y-3">
+              <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-3">
                 <div className="flex items-center justify-between">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#275d1d] text-white">
-                    📅 Jadwal 1
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#183e15] text-white">
+                    Jadwal 1
                   </span>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
-                      Tanggal Mulai Pendakian:
+                    <label className="block text-xs font-medium text-stone-700 mb-1">
+                      Tanggal Mulai:
                     </label>
                     <input
                       type="date"
                       value={tanggalMulai}
                       onChange={(e) => handleStartDateChange(e.target.value)}
                       required
-                      className="w-full bg-white border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
+                      className="w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-stone-900 font-medium focus:border-stone-400 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-[11px] font-bold text-gray-700 mb-1">
+                    <label className="block text-xs font-medium text-stone-700 mb-1">
                       Tanggal Selesai:
                     </label>
                     <input
@@ -596,21 +596,21 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                       min={tanggalMulai || undefined}
                       onChange={(e) => handleEndDateChange(e.target.value)}
                       required
-                      className="w-full bg-white border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
+                      className="w-full bg-white border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-stone-900 font-medium focus:border-stone-400 focus:outline-none"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-bold text-gray-700 mb-1 flex items-center gap-1">
-                    <Clock className="w-3.5 h-3.5 text-[#275d1d]" />
-                    Durasi Pendakian (Otomatis Menghitung Hari/Malam):
+                  <label className="block text-xs font-medium text-stone-700 mb-1 flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5 text-stone-600" />
+                    Durasi Pendakian (Otomatis):
                   </label>
                   <input
                     type="text"
                     value={durasi}
                     onChange={(e) => setDurasi(e.target.value)}
-                    className="w-full bg-white border border-[#275d1d] rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-[#275d1d] focus:outline-none"
+                    className="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-stone-900 focus:outline-none"
                   />
                 </div>
               </div>
@@ -619,16 +619,16 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
               {jadwalTambahan.map((sch, idx) => (
                 <div
                   key={sch.id || idx}
-                  className="p-3.5 bg-[#f4f4f4] border-2 border-dashed border-[#275d1d]/40 rounded-xl space-y-3"
+                  className="p-3.5 bg-stone-50 border border-stone-200 rounded-xl space-y-3"
                 >
                   <div className="flex items-center justify-between">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#e8efe6] text-[#275d1d] border border-[#275d1d]/40">
-                      📅 Jadwal {idx + 2}
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-stone-200 text-stone-800">
+                      Jadwal {idx + 2}
                     </span>
                     <button
                       type="button"
                       onClick={() => handleRemoveSchedule(idx)}
-                      className="text-rose-600 hover:text-rose-800 text-xs font-bold cursor-pointer flex items-center gap-1"
+                      className="text-rose-600 hover:text-rose-800 text-xs font-medium cursor-pointer flex items-center gap-1"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                       <span>Hapus</span>
@@ -636,112 +636,112 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-700 mb-1">Mulai:</label>
+                      <label className="block text-[11px] font-medium text-stone-700 mb-1">Mulai:</label>
                       <input
                         type="date"
                         value={sch.tanggal_mulai}
                         onChange={(e) => handleUpdateSchedule(idx, 'tanggal_mulai', e.target.value)}
-                        className="w-full bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs"
+                        className="w-full bg-white border border-stone-200 rounded px-2.5 py-1.5 text-xs text-stone-900"
                       />
                     </div>
                     <div>
-                      <label className="block text-[10px] font-bold text-gray-700 mb-1">Selesai:</label>
+                      <label className="block text-[11px] font-medium text-stone-700 mb-1">Selesai:</label>
                       <input
                         type="date"
                         value={sch.tanggal_selesai}
                         min={sch.tanggal_mulai || undefined}
                         onChange={(e) => handleUpdateSchedule(idx, 'tanggal_selesai', e.target.value)}
-                        className="w-full bg-white border border-gray-300 rounded px-2.5 py-1.5 text-xs"
+                        className="w-full bg-white border border-stone-200 rounded px-2.5 py-1.5 text-xs text-stone-900"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-[10px] font-bold text-gray-700 mb-1">Durasi:</label>
+                    <label className="block text-[11px] font-medium text-stone-700 mb-1">Durasi:</label>
                     <input
                       type="text"
                       value={sch.durasi || durasi}
                       onChange={(e) => handleUpdateSchedule(idx, 'durasi', e.target.value)}
-                      className="w-full bg-white border border-[#275d1d]/40 rounded px-2.5 py-1 text-xs font-bold text-[#275d1d]"
+                      className="w-full bg-white border border-stone-300 rounded px-2.5 py-1 text-xs font-medium text-stone-900"
                     />
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Section 3: Kuota Peserta (SKEMA BARU) */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+            {/* Section 3: Kuota Peserta */}
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                  <Users className="w-4 h-4 text-[#275d1d]" />
-                  3. Kuota Peserta (Skema Baru)
+                <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                  <Users className="w-4 h-4 text-stone-600" />
+                  3. Kuota Peserta
                 </h3>
-                <span className="text-[11px] font-bold text-[#275d1d] bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
-                  Tampilan: {minPeserta || '15'} – {minPesertaJakarta || '15'} / {maxPeserta || '30'} Pax
+                <span className="text-xs font-medium text-stone-700 bg-stone-100 px-2.5 py-0.5 rounded border border-stone-200">
+                  {minPeserta || '15'} – {minPesertaJakarta || '15'} / {maxPeserta || '30'} Pax
                 </span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 mb-1">
-                    Min. Madiun / Jawa (pax):
+                  <label className="block text-xs font-medium text-stone-700 mb-1">
+                    Min. Jawa (pax):
                   </label>
                   <input
                     type="number"
                     value={minPeserta}
                     onChange={(e) => setMinPeserta(e.target.value)}
                     placeholder="15"
-                    className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-400"
                   />
-                  <span className="text-[10px] text-gray-500 block mt-0.5">Patokan pamflet flyer</span>
+                  <span className="text-[11px] text-stone-500 block mt-0.5">Patokan pamflet</span>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 mb-1">
-                    Min. Khusus Jakarta (pax):
+                  <label className="block text-xs font-medium text-stone-700 mb-1">
+                    Min. Jakarta (pax):
                   </label>
                   <input
                     type="number"
                     value={minPesertaJakarta}
                     onChange={(e) => setMinPesertaJakarta(e.target.value)}
                     placeholder="15"
-                    className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-400"
                   />
-                  <span className="text-[10px] text-gray-500 block mt-0.5">Khusus mepo Jakarta</span>
+                  <span className="text-[11px] text-stone-500 block mt-0.5">Mepo Jakarta</span>
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-800 mb-1">
-                    Maksimal Total (pax):
+                  <label className="block text-xs font-medium text-stone-700 mb-1">
+                    Maksimal (pax):
                   </label>
                   <input
                     type="number"
                     value={maxPeserta}
                     onChange={(e) => setMaxPeserta(e.target.value)}
                     placeholder="30"
-                    className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-bold text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                    className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-400"
                   />
-                  <span className="text-[10px] text-gray-500 block mt-0.5">Batas maksimal kuota</span>
+                  <span className="text-[11px] text-stone-500 block mt-0.5">Batas maksimal</span>
                 </div>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-[11px] text-emerald-900 font-semibold flex items-center gap-1.5">
-                <AlertCircle className="w-4 h-4 shrink-0 text-[#275d1d]" />
-                <span>(Jika peserta kurang akan ada penyesuaian harga)</span>
+              <div className="p-2.5 rounded-lg bg-stone-100 border border-stone-200 text-xs text-stone-700 flex items-center gap-1.5">
+                <AlertCircle className="w-4 h-4 shrink-0 text-stone-600" />
+                <span>Jika peserta kurang, akan ada penyesuaian harga</span>
               </div>
             </div>
 
             {/* Section 4: Harga Titik Kumpul (Meeting Point / MEPO) */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                  <DollarSign className="w-4 h-4 text-[#275d1d]" />
-                  4. Harga Titik Kumpul (Meeting Point / MEPO)
+                <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                  <DollarSign className="w-4 h-4 text-stone-600" />
+                  4. Harga Titik Kumpul (MEPO)
                 </h3>
                 <button
                   type="button"
                   onClick={handleAddMepo}
-                  className="inline-flex items-center gap-1 text-xs font-bold text-white bg-[#275d1d] hover:bg-[#1f4a17] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-[#183e15] hover:bg-[#122f10] px-2.5 py-1 rounded-lg transition-colors cursor-pointer"
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span>+ Tambah MEPO</span>
+                  <span>Tambah MEPO</span>
                 </button>
               </div>
 
@@ -754,7 +754,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                         value={mepo.lokasi}
                         onChange={(e) => handleMepoChange(idx, 'lokasi', e.target.value)}
                         placeholder="Lokasi (mis. Basecamp, Madiun, Surabaya)"
-                        className="flex-1 min-w-0 bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                        className="flex-1 min-w-0 bg-stone-50 border border-stone-200 rounded-lg px-2.5 sm:px-3 py-2 text-xs sm:text-sm font-medium text-stone-900 focus:outline-none focus:border-stone-400"
                       />
                       <input
                         type="text"
@@ -762,13 +762,13 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                         onChange={(e) => handleMepoChange(idx, 'harga', e.target.value)}
                         placeholder="IDR 600.000 / fleksibel"
                         title={mepo.harga}
-                        className="w-28 sm:w-44 shrink-0 min-w-0 bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm font-bold text-[#275d1d] focus:outline-none focus:border-[#275d1d]"
+                        className="w-28 sm:w-44 shrink-0 min-w-0 bg-stone-50 border border-stone-200 rounded-lg px-2 sm:px-3 py-2 text-xs sm:text-sm font-semibold text-stone-900 focus:outline-none focus:border-stone-400"
                       />
                       {mepoList.length > 1 && (
                         <button
                           type="button"
                           onClick={() => handleRemoveMepo(idx)}
-                          className="shrink-0 p-2 text-rose-600 hover:bg-rose-50 rounded-lg transition-colors cursor-pointer"
+                          className="shrink-0 p-2 text-stone-400 hover:text-rose-600 rounded-lg transition-colors cursor-pointer"
                           title="Hapus baris ini"
                         >
                           <Trash2 className="w-4 h-4" />
@@ -780,10 +780,10 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                       <button
                         type="button"
                         onClick={() => handleMepoChange(idx, 'harga', '(Menyesuaikan jumlah peserta)')}
-                        className="text-[10px] text-[#275d1d] hover:text-[#1a3814] hover:underline font-semibold flex items-center gap-1 cursor-pointer bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200"
+                        className="text-[11px] text-stone-700 hover:text-stone-900 font-medium flex items-center gap-1 cursor-pointer bg-stone-100 hover:bg-stone-200 px-2 py-0.5 rounded border border-stone-200"
                         title="Klik untuk otomatis mengisi '(Menyesuaikan jumlah peserta)'"
                       >
-                        ⚡ (Menyesuaikan jumlah peserta)
+                        (Menyesuaikan jumlah peserta)
                       </button>
                     </div>
                   </div>
@@ -792,16 +792,16 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
             </div>
 
             {/* Section 5: Fasilitas Include */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                  <PackageCheck className="w-4 h-4 text-[#275d1d]" />
+                <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                  <PackageCheck className="w-4 h-4 text-stone-600" />
                   5. Fasilitas Include
                 </h3>
                 <button
                   type="button"
                   onClick={() => setIncludeText(DEFAULT_CITO_INCLUDE.join('\n'))}
-                  className="text-[11px] font-bold text-[#275d1d] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-medium text-stone-600 hover:text-stone-900 flex items-center gap-1 cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Reset Default Include</span>
@@ -812,25 +812,25 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 value={includeText}
                 onChange={(e) => setIncludeText(e.target.value)}
                 rows={7}
-                className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg p-3 text-xs sm:text-sm text-gray-900 font-sans focus:outline-none focus:border-[#275d1d] leading-relaxed"
+                className="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs sm:text-sm text-stone-900 font-sans focus:outline-none focus:border-stone-400 leading-relaxed"
                 placeholder="Tulis 1 fasilitas include per baris..."
               />
-              <span className="text-[10px] text-gray-500 block">
-                *Pisahkan setiap item fasilitas include dengan baris baru (Enter).
+              <span className="text-[11px] text-stone-500 block">
+                Pisahkan setiap item fasilitas include dengan baris baru (Enter).
               </span>
             </div>
 
             {/* Section 6: Fasilitas Exclude */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                  <PackageX className="w-4 h-4 text-[#275d1d]" />
+                <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                  <PackageX className="w-4 h-4 text-stone-600" />
                   6. Fasilitas Exclude
                 </h3>
                 <button
                   type="button"
                   onClick={() => setExcludeText(DEFAULT_CITO_EXCLUDE.join('\n'))}
-                  className="text-[11px] font-bold text-[#275d1d] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-medium text-stone-600 hover:text-stone-900 flex items-center gap-1 cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Reset Default Exclude</span>
@@ -841,15 +841,15 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 value={excludeText}
                 onChange={(e) => setExcludeText(e.target.value)}
                 rows={5}
-                className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg p-3 text-xs sm:text-sm text-gray-900 font-sans focus:outline-none focus:border-[#275d1d] leading-relaxed"
+                className="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs sm:text-sm text-stone-900 font-sans focus:outline-none focus:border-stone-400 leading-relaxed"
                 placeholder="Tulis 1 fasilitas exclude per baris..."
               />
             </div>
 
             {/* Section 7: Extra Porter Pribadi (Opsional) */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
-              <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                <UserCheck className="w-4 h-4 text-[#275d1d]" />
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3">
+              <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                <UserCheck className="w-4 h-4 text-stone-600" />
                 7. Extra Porter Pribadi (Opsional)
               </h3>
               <div>
@@ -858,25 +858,25 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                   value={extraPorter}
                   onChange={(e) => setExtraPorter(e.target.value)}
                   placeholder="Jika di perlukan/tulis harga porter"
-                  className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg px-3 py-2 text-xs sm:text-sm font-medium text-gray-900 focus:outline-none focus:border-[#275d1d]"
+                  className="w-full bg-stone-50 border border-stone-200 rounded-lg px-3 py-2 text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-stone-400"
                 />
-                <span className="text-[10px] text-gray-500 mt-1 block">
-                  *Default: "Jika di perlukan". Bisa diganti dengan nominal harga porter jika sudah ada kesepakatan.
+                <span className="text-[11px] text-stone-500 mt-1 block">
+                  Default: "Jika di perlukan". Bisa diganti dengan nominal harga porter jika sudah ada kesepakatan.
                 </span>
               </div>
             </div>
 
             {/* Section 8: Syarat Ketentuan & Catatan Penting */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                  <ShieldCheck className="w-4 h-4 text-[#275d1d]" />
+                <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                  <ShieldCheck className="w-4 h-4 text-stone-600" />
                   8. Syarat Ketentuan & Catatan Penting
                 </h3>
                 <button
                   type="button"
                   onClick={() => setSkText(DEFAULT_CITO_SK.join('\n'))}
-                  className="text-[11px] font-bold text-[#275d1d] hover:underline flex items-center gap-1 cursor-pointer"
+                  className="text-xs font-medium text-stone-600 hover:text-stone-900 flex items-center gap-1 cursor-pointer"
                 >
                   <RotateCcw className="w-3 h-3" />
                   <span>Reset Default S&K</span>
@@ -887,21 +887,21 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 value={skText}
                 onChange={(e) => setSkText(e.target.value)}
                 rows={5}
-                className="w-full bg-[#f4f4f4] border border-[#275d1d]/40 rounded-lg p-3 text-xs sm:text-sm text-gray-900 font-sans focus:outline-none focus:border-[#275d1d] leading-relaxed"
+                className="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs sm:text-sm text-stone-900 font-sans focus:outline-none focus:border-stone-400 leading-relaxed"
                 placeholder="Tulis 1 poin syarat & ketentuan per baris..."
               />
             </div>
 
-            {/* Section 9: Itinerary / Rundown Kegiatan (Kolom & Tabel Input Builder) */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-3 shadow-xs">
-              <div className="flex items-center justify-between flex-wrap gap-2 pb-1 border-b border-[#275d1d]/20">
+            {/* Section 9: Itinerary / Rundown Kegiatan */}
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-3">
+              <div className="flex items-center justify-between flex-wrap gap-2 pb-1 border-b border-stone-200/60">
                 <div>
-                  <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                    <FileText className="w-4 h-4 text-[#275d1d]" />
+                  <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                    <FileText className="w-4 h-4 text-stone-600" />
                     9. Itinerary / Rundown Kegiatan
                   </h3>
-                  <span className="text-[10px] text-gray-600 block mt-0.5">
-                    Pilih jam dengan mudah menggunakan dropdown interval 15 menit, isi hari, tanggal, & keterangan.
+                  <span className="text-xs text-stone-500 block mt-0.5">
+                    Pilih jam, tanggal, dan keterangan kegiatan per pos atau etape.
                   </span>
                 </div>
               </div>
@@ -918,9 +918,9 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
             </div>
 
             {/* Section 10: Catatan Khusus dari Tim (Opsional) */}
-            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 sm:p-5 space-y-2 shadow-xs">
-              <h3 className="text-xs font-semibold text-[#275d1d] uppercase tracking-wider font-['Montserrat'] flex items-center gap-1.5">
-                <Info className="w-4 h-4 text-[#275d1d]" />
+            <div className="field-card rounded-2xl p-4 sm:p-5 space-y-2">
+              <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
+                <Info className="w-4 h-4 text-stone-600" />
                 10. Catatan Khusus dari Tim (Opsional)
               </h3>
               <textarea
@@ -928,7 +928,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
                 onChange={(e) => setCatatanTim(e.target.value)}
                 placeholder="Misal: 'Mas Yuno, untuk jalur ini kuota simaksi terbatas, mohon segera upload pamfletnya ya.'"
                 rows={2}
-                className="w-full bg-[#f4f4f4] border border-[#275d1d]/30 rounded-lg p-3 text-xs text-gray-900 focus:outline-none focus:border-[#275d1d] leading-relaxed"
+                className="w-full bg-stone-50 border border-stone-200 rounded-lg p-3 text-xs sm:text-sm text-stone-900 focus:outline-none focus:border-stone-400 leading-relaxed"
               />
             </div>
 
@@ -937,7 +937,7 @@ export const TeamInputView: React.FC<TeamInputViewProps> = ({
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full py-3.5 px-6 rounded-2xl bg-[#275d1d] hover:bg-[#1f4a17] text-white font-semibold text-sm sm:text-base font-['Montserrat'] shadow-lg flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-98 disabled:opacity-50"
+                className="w-full py-3 px-6 rounded-lg bg-[#183e15] hover:bg-[#122f10] text-white font-semibold text-sm border border-[#122f10] shadow-xs flex items-center justify-center gap-2 transition-colors cursor-pointer active:scale-98 disabled:opacity-50"
               >
                 {isSubmitting ? (
                   <>

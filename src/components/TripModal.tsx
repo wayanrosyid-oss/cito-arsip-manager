@@ -485,32 +485,32 @@ export const TripModal: React.FC<TripModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/60 p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
-      <div className="bg-white border-2 border-[#275d1d] text-gray-900 w-full max-w-3xl rounded-xl shadow-2xl overflow-hidden my-4 sm:my-8 animate-in fade-in zoom-in-95 duration-200">
+    <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-3 sm:p-4 backdrop-blur-xs overflow-y-auto">
+      <div className="bg-white border border-stone-200 text-stone-900 w-full max-w-3xl rounded-2xl shadow-xl overflow-hidden my-4 sm:my-8 animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="bg-[#275d1d] px-5 sm:px-6 py-4 border-b border-[#275d1d] flex items-center justify-between">
+        <div className="bg-[#183e15] px-5 sm:px-6 py-4 flex items-center justify-between">
           <div>
-            <span className="text-[10px] sm:text-xs font-bold tracking-wider text-[#d1d1d1] uppercase font-['Montserrat']">
-              Formulir Trip Cito Adventure
+            <span className="text-xs font-medium text-emerald-200">
+              Formulir Data Trip
             </span>
-            <h2 className="text-lg sm:text-xl font-bold font-['Montserrat'] tracking-tight text-white leading-tight">
+            <h2 className="text-lg font-semibold tracking-tight text-white leading-tight">
               {tripToEdit ? 'Edit Data Trip' : 'Tambah Open Trip Baru'}
             </h2>
           </div>
           <button
             onClick={onClose}
-            className="text-white hover:bg-black/20 p-1.5 rounded-md transition-colors cursor-pointer"
+            className="text-white/80 hover:text-white hover:bg-white/10 p-1.5 rounded-lg transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5 max-h-[80vh] overflow-y-auto">
+        <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-4 max-h-[80vh] overflow-y-auto">
           {/* Section 1: Gunung & Jalur */}
-          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-            <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-2">
-              <MapPin className="w-3.5 h-3.5" />
+          <div className="space-y-3 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
+            <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+              <MapPin className="w-4 h-4 text-stone-600" />
               1. Identitas Gunung & Jalur Pendakian
             </h3>
 
@@ -543,10 +543,10 @@ export const TripModal: React.FC<TripModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setStatus('Buka')}
-                    className={`py-2 px-3 rounded text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-98 ${
                       status === 'Buka'
-                        ? 'bg-[#275d1d] text-white shadow-sm ring-2 ring-[#275d1d]'
-                        : 'bg-[#d1d1d1] text-gray-800 hover:bg-[#c4c4c4]'
+                        ? 'bg-[#275d1d] text-white border border-[#1f4a17]'
+                        : 'bg-stone-200 text-stone-800 hover:bg-stone-300 border border-stone-300/80'
                     }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-white" />
@@ -555,10 +555,10 @@ export const TripModal: React.FC<TripModalProps> = ({
                   <button
                     type="button"
                     onClick={() => setStatus('Tutup')}
-                    className={`py-2 px-3 rounded text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    className={`py-2 px-3 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-98 ${
                       status === 'Tutup'
-                        ? 'bg-rose-700 text-white shadow-sm ring-2 ring-rose-700'
-                        : 'bg-[#d1d1d1] text-gray-800 hover:bg-[#c4c4c4]'
+                        ? 'bg-rose-700 text-white border border-rose-800'
+                        : 'bg-stone-200 text-stone-800 hover:bg-stone-300 border border-stone-300/80'
                     }`}
                   >
                     <span className="w-2 h-2 rounded-full bg-white" />
@@ -640,27 +640,27 @@ export const TripModal: React.FC<TripModalProps> = ({
           </div>
 
           {/* Section 2: Tanggal & Durasi (Mendukung Multi Tanggal) */}
-          <div className="space-y-3.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+          <div className="space-y-3.5 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-2">
-                <Calendar className="w-3.5 h-3.5" />
-                2. Tanggal Pelaksanaan & Durasi Otomatis
+              <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-stone-600" />
+                2. Tanggal Pelaksanaan & Durasi
               </h3>
               <button
                 type="button"
                 onClick={handleAddJadwal}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold bg-[#275d1d] hover:bg-[#1f4a17] text-white rounded-md transition-all cursor-pointer shadow-xs active:scale-95"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#183e15] hover:bg-[#122f10] text-white rounded-lg transition-colors cursor-pointer"
               >
                 <Plus className="w-3.5 h-3.5" />
-                <span>+ Tambah Tanggal</span>
+                <span>Tambah Tanggal</span>
               </button>
             </div>
 
             {/* Jadwal 1 */}
-            <div className="bg-white p-3.5 rounded-lg border border-[#275d1d]/30 space-y-3 shadow-2xs">
+            <div className="bg-white p-3.5 rounded-lg border border-stone-200 space-y-3">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#275d1d] text-white">
-                  📅 Jadwal 1
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[11px] font-semibold bg-stone-100 text-stone-800 border border-stone-200">
+                  Jadwal 1
                 </span>
               </div>
 
@@ -723,7 +723,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                   <button
                     type="button"
                     onClick={() => handleRemoveJadwal(idx)}
-                    className="inline-flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:text-white hover:bg-red-600 border border-red-200 rounded transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1 px-2 py-1 text-xs text-red-600 hover:text-white hover:bg-red-600 border border-red-200 rounded-lg shadow-xs active:scale-98 transition-colors cursor-pointer"
                     title="Hapus tanggal ini"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -781,39 +781,39 @@ export const TripModal: React.FC<TripModalProps> = ({
           </div>
 
           {/* Section 3: Kuota Peserta & Notifikasi (SKEMA BARU) */}
-          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+          <div className="space-y-3 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
-                3. Kuota Peserta (Skema Baru)
+              <h3 className="text-sm font-semibold text-stone-900">
+                3. Kuota Peserta
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
                 {savedSection === 'kuota' && (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
-                    ✓ Disimpan sebagai Default!
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                    Disimpan sebagai Default
                   </span>
                 )}
                 {savedSection === 'kuota_applied' && (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
-                    ✓ Default Diterapkan!
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                    Default Diterapkan
                   </span>
                 )}
                 <button
                   type="button"
                   onClick={handleSaveKuotaDefault}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2.5 py-1 rounded cursor-pointer transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2.5 py-1 rounded-lg cursor-pointer transition-colors"
                   title="Jadikan kuota saat ini sebagai default untuk semua trip baru"
                 >
-                  💾 Jadikan Default
+                  Jadikan Default
                 </button>
                 <button
                   type="button"
                   onClick={handleApplyKuotaDefault}
-                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-1 rounded cursor-pointer transition-colors"
+                  className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-1 rounded-lg cursor-pointer transition-colors"
                   title="Terapkan kuota default"
                 >
-                  ↺ Pakai Default
+                  Pakai Default
                 </button>
-                <span className="text-[11px] font-bold text-[#275d1d] bg-[#275d1d]/10 px-2.5 py-0.5 rounded-full border border-[#275d1d]/20">
+                <span className="text-[11px] font-medium text-stone-700 bg-stone-100 px-2.5 py-0.5 rounded-md border border-stone-200">
                   Tampilan: {minPeserta || '7'} – {minPesertaJakarta || '7'} / {maxPeserta || '30'} Pax
                 </span>
               </div>
@@ -821,68 +821,68 @@ export const TripModal: React.FC<TripModalProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">Min. Madiun / Jawa (pax):</label>
+                <label className="block text-xs font-medium text-stone-700 mb-1">Min. Madiun / Jawa (pax):</label>
                 <input
                   type="number"
                   value={minPeserta}
                   onChange={(e) => setMinPeserta(e.target.value)}
                   placeholder="7"
-                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                  className="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs sm:text-sm text-stone-900 focus:border-stone-500 focus:outline-none"
                 />
-                <span className="text-[10px] text-gray-600 block mt-0.5">Patokan pamflet flyer</span>
+                <span className="text-[10px] text-stone-500 block mt-0.5">Patokan pamflet flyer</span>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">Min. Khusus Jakarta (pax):</label>
+                <label className="block text-xs font-medium text-stone-700 mb-1">Min. Khusus Jakarta (pax):</label>
                 <input
                   type="number"
                   value={minPesertaJakarta}
                   onChange={(e) => setMinPesertaJakarta(e.target.value)}
                   placeholder="7"
-                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                  className="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs sm:text-sm text-stone-900 focus:border-stone-500 focus:outline-none"
                 />
-                <span className="text-[10px] text-gray-600 block mt-0.5">Khusus mepo Jakarta</span>
+                <span className="text-[10px] text-stone-500 block mt-0.5">Khusus mepo Jakarta</span>
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">Maksimal Total (pax):</label>
+                <label className="block text-xs font-medium text-stone-700 mb-1">Maksimal Total (pax):</label>
                 <input
                   type="number"
                   value={maxPeserta}
                   onChange={(e) => setMaxPeserta(e.target.value)}
                   placeholder="30"
-                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs sm:text-sm text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                  className="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs sm:text-sm text-stone-900 focus:border-stone-500 focus:outline-none"
                 />
-                <span className="text-[10px] text-gray-600 block mt-0.5">Batas maksimal kuota</span>
+                <span className="text-[10px] text-stone-500 block mt-0.5">Batas maksimal kuota</span>
               </div>
             </div>
 
             {/* Notifikasi Wajib di Bawah Peserta */}
-            <div className="flex items-center gap-2 p-2.5 rounded bg-[#275d1d]/10 border border-[#275d1d]/30 text-[#1b3a16] text-xs font-semibold">
-              <AlertCircle className="w-4 h-4 shrink-0 text-[#275d1d]" />
+            <div className="flex items-center gap-2 p-2.5 rounded-lg bg-stone-100 border border-stone-200 text-stone-700 text-xs font-medium">
+              <AlertCircle className="w-4 h-4 shrink-0 text-stone-500" />
               <span>(Jika peserta kurang akan ada penyesuaian harga)</span>
             </div>
           </div>
 
           {/* Section 4: Tarif Meeting Point (MEPO) */}
-          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+          <div className="space-y-3 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
+              <h3 className="text-sm font-semibold text-stone-900">
                 4. Tarif per Meeting Point (MEPO)
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
                 {savedSection === 'mepo' && (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
-                    ✓ Disimpan sebagai Default!
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                    Disimpan sebagai Default
                   </span>
                 )}
                 {savedSection === 'mepo_applied' && (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
-                    ✓ Default Diterapkan!
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                    Default Diterapkan
                   </span>
                 )}
                 <button
                   type="button"
                   onClick={handleSaveMepoDefault}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2.5 py-1 rounded cursor-pointer transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2.5 py-1 rounded-lg cursor-pointer transition-colors shadow-xs active:scale-98"
                   title="Simpan daftar titik kumpul & harga ini sebagai template default semua trip baru"
                 >
                   💾 Jadikan Default
@@ -890,7 +890,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                 <button
                   type="button"
                   onClick={handleApplyMepoDefault}
-                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-1 rounded cursor-pointer transition-colors"
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 border border-[#275d1d]/20 px-2 py-1 rounded-lg cursor-pointer transition-colors shadow-xs active:scale-98"
                   title="Gunakan daftar titik kumpul default"
                 >
                   ↺ Pakai Default
@@ -929,7 +929,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                       <button
                         type="button"
                         onClick={() => handleRemoveMepo(idx)}
-                        className="shrink-0 p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-100 rounded cursor-pointer"
+                        className="shrink-0 p-1.5 text-rose-600 hover:text-rose-800 hover:bg-rose-100 rounded-lg cursor-pointer"
                         title="Hapus baris ini"
                       >
                         <Trash2 className="w-4 h-4" />
@@ -941,7 +941,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                     <button
                       type="button"
                       onClick={() => handleMepoChange(idx, 'harga', '(Menyesuaikan jumlah peserta)')}
-                      className="text-[10px] text-[#275d1d] hover:text-[#1a3814] hover:underline font-semibold flex items-center gap-1 cursor-pointer bg-white px-2 py-0.5 rounded border border-[#275d1d]/30"
+                      className="text-[10px] text-[#275d1d] hover:text-[#1a3814] hover:underline font-semibold flex items-center gap-1 cursor-pointer bg-white px-2 py-0.5 rounded-lg border border-[#275d1d]/30 shadow-xs active:scale-98"
                       title="Klik untuk otomatis mengisi '(Menyesuaikan jumlah peserta)'"
                     >
                       ⚡ (Menyesuaikan jumlah peserta)
@@ -954,37 +954,37 @@ export const TripModal: React.FC<TripModalProps> = ({
 
           {/* Section 5: Include & Exclude */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-            <div className="space-y-1.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+            <div className="space-y-1.5 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
               <div className="flex items-center justify-between flex-wrap gap-1.5">
-                <label className="block text-xs font-semibold text-[#275d1d] uppercase font-['Montserrat']">
+                <label className="block text-xs font-semibold text-stone-900">
                   5. Fasilitas Include:
                 </label>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {savedSection === 'include' && (
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
-                      ✓ Disimpan!
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
+                      Disimpan
                     </span>
                   )}
                   {savedSection === 'include_applied' && (
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
-                      ✓ Diterapkan!
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
+                      Diterapkan
                     </span>
                   )}
                   <button
                     type="button"
                     onClick={handleSaveIncludeDefault}
-                    className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                    className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                     title="Simpan daftar include ini sebagai default baru"
                   >
-                    💾 Jadikan Default
+                    Jadikan Default
                   </button>
                   <button
                     type="button"
                     onClick={handleApplyIncludeDefault}
-                    className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                     title="Terapkan fasilitas include default"
                   >
-                    ↺ Pakai Default
+                    Pakai Default
                   </button>
                 </div>
               </div>
@@ -993,37 +993,37 @@ export const TripModal: React.FC<TripModalProps> = ({
                 value={includeText}
                 onChange={(e) => setIncludeText(e.target.value)}
                 placeholder="Transportasi PP&#10;Simaksi resmi&#10;Tenda & matras&#10;Makan 3x"
-                className="w-full bg-white border border-[#275d1d]/40 rounded-md p-2.5 text-xs text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                className="w-full bg-white border border-stone-300 rounded-lg p-2.5 text-xs text-stone-900 focus:border-stone-500 focus:outline-none"
               />
             </div>
-            <div className="space-y-1.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+            <div className="space-y-1.5 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
               <div className="flex items-center justify-between flex-wrap gap-1.5">
-                <label className="block text-xs font-semibold text-gray-800 uppercase font-['Montserrat']">
+                <label className="block text-xs font-semibold text-stone-900">
                   Fasilitas Exclude:
                 </label>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {savedSection === 'exclude' && (
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
-                      ✓ Disimpan!
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
+                      Disimpan
                     </span>
                   )}
                   {savedSection === 'exclude_applied' && (
-                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
-                      ✓ Diterapkan!
+                    <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
+                      Diterapkan
                     </span>
                   )}
                   <button
                     type="button"
                     onClick={handleSaveExcludeDefault}
-                    className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                    className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                     title="Simpan daftar exclude ini sebagai default baru"
                   >
-                    💾 Jadikan Default
+                    Jadikan Default
                   </button>
                   <button
                     type="button"
                     onClick={handleApplyExcludeDefault}
-                    className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 border border-[#275d1d]/20 px-2 py-0.5 rounded-lg cursor-pointer transition-colors shadow-xs active:scale-98"
                     title="Terapkan fasilitas exclude default"
                   >
                     ↺ Pakai Default
@@ -1060,7 +1060,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                 <button
                   type="button"
                   onClick={handleSavePorterDefault}
-                  className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                  className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded-lg cursor-pointer transition-colors shadow-xs active:scale-98"
                   title="Simpan teks porter ini sebagai default baru"
                 >
                   💾 Jadikan Default
@@ -1068,7 +1068,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                 <button
                   type="button"
                   onClick={handleApplyPorterDefault}
-                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 border border-[#275d1d]/20 px-2 py-0.5 rounded-lg cursor-pointer transition-colors shadow-xs active:scale-98"
                   title="Terapkan teks porter default"
                 >
                   ↺ Pakai Default
@@ -1085,79 +1085,79 @@ export const TripModal: React.FC<TripModalProps> = ({
           </div>
 
           {/* Section 6: S&K & Catatan Penting */}
-          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+          <div className="space-y-3 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
             <div className="flex items-center justify-between flex-wrap gap-1.5">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
+              <h3 className="text-sm font-semibold text-stone-900">
                 6. Syarat Ketentuan & Catatan Penting
               </h3>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {savedSection === 'sk' && (
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
-                    ✓ Disimpan!
+                  <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
+                    Disimpan
                   </span>
                 )}
                 {savedSection === 'sk_applied' && (
-                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded animate-pulse">
-                    ✓ Diterapkan!
+                  <span className="text-[10px] font-semibold text-emerald-800 bg-emerald-100 px-1.5 py-0.5 rounded">
+                    Diterapkan
                   </span>
                 )}
                 <button
                   type="button"
                   onClick={handleSaveSkDefault}
-                  className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                  className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                   title="Simpan butir S&K ini sebagai default baru"
                 >
-                  💾 Jadikan Default
+                  Jadikan Default
                 </button>
                 <button
                   type="button"
                   onClick={handleApplySkDefault}
-                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                  className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                   title="Terapkan syarat & ketentuan default"
                 >
-                  ↺ Pakai Default S&K
+                  Pakai Default S&K
                 </button>
               </div>
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-800 mb-1">S&K Berlaku (1 per baris):</label>
+              <label className="block text-xs font-medium text-stone-700 mb-1">S&K Berlaku (1 per baris):</label>
               <textarea
                 rows={5}
                 value={skText}
                 onChange={(e) => setSkText(e.target.value)}
                 placeholder="Terbuka untuk umum&#10;DP minimal Rp 200.000"
-                className="w-full bg-white border border-[#275d1d]/40 rounded-md p-2.5 text-xs text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                className="w-full bg-white border border-stone-300 rounded-lg p-2.5 text-xs text-stone-900 focus:border-stone-500 focus:outline-none"
               />
             </div>
             <div>
               <div className="flex items-center justify-between mb-1.5 flex-wrap gap-1.5">
-                <label className="block text-xs font-bold text-gray-800">Catatan Penting Pendakian:</label>
+                <label className="block text-xs font-medium text-stone-700">Catatan Penting Pendakian:</label>
                 <div className="flex items-center gap-1.5 flex-wrap">
                   {savedSection === 'catatan' && (
-                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
-                      ✓ Disimpan sebagai Default!
+                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                      Disimpan sebagai Default
                     </span>
                   )}
                   {savedSection === 'catatan_applied' && (
-                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
-                      ✓ Default Diterapkan!
+                    <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                      Default Diterapkan
                     </span>
                   )}
                   <button
                     type="button"
                     onClick={handleSaveCatatanDefault}
-                    className="text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2 py-0.5 rounded cursor-pointer transition-colors shadow-sm"
+                    className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                     title="Simpan teks catatan penting ini sebagai template default permanen untuk semua trip baru"
                   >
-                    💾 Jadikan Default
+                    Jadikan Default
                   </button>
                   <button
                     type="button"
                     onClick={handleApplyCatatanDefault}
-                    className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-0.5 rounded cursor-pointer transition-colors"
+                    className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-0.5 rounded-lg cursor-pointer transition-colors"
                     title="Kembalikan ke template catatan penting default"
                   >
-                    ↺ Pakai Default
+                    Pakai Default
                   </button>
                 </div>
               </div>
@@ -1165,56 +1165,53 @@ export const TripModal: React.FC<TripModalProps> = ({
                 rows={3}
                 value={catatanPenting}
                 onChange={(e) => setCatatanPenting(e.target.value)}
-                placeholder="SEBELUM MENDAKI, SANGAT DISARANKAN UNTUK RUTIN BEROLAHRAGA..."
-                className="w-full bg-white border border-[#275d1d]/40 rounded-md p-2.5 text-xs text-gray-900 focus:border-[#275d1d] focus:outline-none"
+                placeholder="Sebelum mendaki, sangat disarankan untuk rutin berolahraga..."
+                className="w-full bg-white border border-stone-300 rounded-lg p-2.5 text-xs text-stone-900 focus:border-stone-500 focus:outline-none"
               />
-              <span className="text-[10px] text-gray-500 block mt-1">
-                💡 Teks ini muncul pada Slide 4 (Catatan Penting) dan caption promosi. Klik <strong>Jadikan Default</strong> jika ingin teks ini otomatis muncul di setiap trip baru.
-              </span>
             </div>
           </div>
 
           {/* Section 7: Kontak Booking (Dual Admin) */}
-          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+          <div className="space-y-3 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
+              <h3 className="text-sm font-semibold text-stone-900">
                 7. Kontak Resmi Pendaftaran (2 Admin Wilayah & Instagram)
               </h3>
               <div className="flex items-center gap-1.5 flex-wrap">
                 {savedSection === 'kontak' && (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
-                    ✓ Disimpan sebagai Default!
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                    Disimpan sebagai Default
                   </span>
                 )}
                 {savedSection === 'kontak_applied' && (
-                  <span className="text-[11px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded animate-pulse">
-                    ✓ Default Diterapkan!
+                  <span className="text-[11px] font-semibold text-emerald-800 bg-emerald-100 px-2 py-0.5 rounded">
+                    Default Diterapkan
                   </span>
                 )}
                 <button
                   type="button"
                   onClick={handleSaveKontakDefault}
-                  className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-100 hover:bg-emerald-200 border border-emerald-300 px-2.5 py-1 rounded cursor-pointer transition-colors shadow-sm"
+                  className="inline-flex items-center gap-1 text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2.5 py-1 rounded-lg cursor-pointer transition-colors"
                   title="Simpan kontak 2 admin & Instagram ini sebagai default untuk semua trip baru"
                 >
-                  💾 Jadikan Default
+                  Jadikan Default
                 </button>
                 <button
                   type="button"
                   onClick={handleApplyKontakDefault}
-                  className="text-[11px] font-bold text-[#275d1d] hover:text-[#1a3814] bg-[#275d1d]/10 hover:bg-[#275d1d]/20 px-2 py-1 rounded cursor-pointer transition-colors"
+                  className="text-[11px] font-medium text-stone-700 bg-white hover:bg-stone-100 border border-stone-300 px-2 py-1 rounded-lg cursor-pointer transition-colors"
                   title="Kembalikan ke kontak default"
                 >
-                  ↺ Pakai Default
+                  Pakai Default
                 </button>
-                <span className="text-[11px] font-bold text-[#15803D] bg-green-100 px-2 py-0.5 rounded-full border border-green-300">
-                  ✓ Otomatis Aktif di Pamflet & Caption
+                <span className="text-[11px] font-medium text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                  Aktif di Pamflet & Caption
                 </span>
               </div>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">
+                <label className="block text-xs font-medium text-stone-700 mb-1">
                   Admin Jatim & Jateng:
                 </label>
                 <input
@@ -1222,11 +1219,11 @@ export const TripModal: React.FC<TripModalProps> = ({
                   value={kontakWaJatim}
                   onChange={(e) => setKontakWaJatim(e.target.value)}
                   placeholder="+6282230444428"
-                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
+                  className="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs text-stone-900 font-medium focus:border-stone-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">
+                <label className="block text-xs font-medium text-stone-700 mb-1">
                   Admin Jakarta & Sekitarnya:
                 </label>
                 <input
@@ -1234,11 +1231,11 @@ export const TripModal: React.FC<TripModalProps> = ({
                   value={kontakWaJakarta}
                   onChange={(e) => setKontakWaJakarta(e.target.value)}
                   placeholder="+6289503689266"
-                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
+                  className="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs text-stone-900 font-medium focus:border-stone-500 focus:outline-none"
                 />
               </div>
               <div>
-                <label className="block text-xs font-bold text-gray-800 mb-1">
+                <label className="block text-xs font-medium text-stone-700 mb-1">
                   Instagram Resmi:
                 </label>
                 <input
@@ -1246,21 +1243,21 @@ export const TripModal: React.FC<TripModalProps> = ({
                   value={kontakIg}
                   onChange={(e) => setKontakIg(e.target.value)}
                   placeholder="@citoadventuremadiun"
-                  className="w-full bg-white border border-[#275d1d]/40 rounded-md px-3 py-2 text-xs text-gray-900 font-medium focus:border-[#275d1d] focus:outline-none"
+                  className="w-full bg-white border border-stone-300 rounded-lg px-3 py-2 text-xs text-stone-900 font-medium focus:border-stone-500 focus:outline-none"
                 />
               </div>
             </div>
           </div>
 
-          {/* Section 8: Itinerary / Rundown (Kolom & Tabel Input Builder) - Paling Bawah di Bawah Kontak WA */}
-          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+          {/* Section 8: Itinerary / Rundown */}
+          <div className="space-y-3 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
-                8. Itinerary / Rundown Kegiatan (Kolom Hari, Tanggal, Jam & Keterangan)
+              <h3 className="text-sm font-semibold text-stone-900">
+                8. Itinerary / Rundown Kegiatan
               </h3>
             </div>
-            <p className="text-[11px] text-gray-700">
-              Isi rundown kegiatan secara rapi menggunakan kolom Hari, Tanggal, Jam Mulai, Jam Selesai, dan Keterangan. Format teks terstruktur akan dihasilkan otomatis untuk pamflet dan arsip tanpa mempengaruhi bagian lain.
+            <p className="text-xs text-stone-600">
+              Isi rundown kegiatan secara rapi menggunakan kolom Hari, Tanggal, Jam Mulai, Jam Selesai, dan Keterangan.
             </p>
             <ItineraryEditor
               value={itinerary}
@@ -1272,21 +1269,20 @@ export const TripModal: React.FC<TripModalProps> = ({
             />
           </div>
 
-          {/* Section 9: Status Kesiapan Trip (Draft vs Final) */}
-          <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
+          {/* Section 9: Status Kesiapan Trip */}
+          <div className="space-y-3 bg-stone-50/80 p-4 rounded-xl border border-stone-200">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-full bg-[#275d1d]" />
+              <h3 className="text-sm font-semibold text-stone-900 flex items-center gap-1.5">
                 9. Status Kesiapan Trip (Draft / Final)
               </h3>
               <span
-                className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border shadow-2xs ${
+                className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-md border ${
                   isDraft
-                    ? 'bg-amber-100 text-amber-900 border-amber-400'
-                    : 'bg-emerald-100 text-emerald-900 border-emerald-400'
+                    ? 'bg-amber-50 text-amber-900 border-amber-300'
+                    : 'bg-emerald-50 text-emerald-900 border-emerald-300'
                 }`}
               >
-                {isDraft ? '🟡 Mode: Draft (Belum Final)' : '🟢 Mode: Final (Siap Upload)'}
+                {isDraft ? 'Mode: Draft (Belum Final)' : 'Mode: Final (Siap Upload)'}
               </span>
             </div>
 
@@ -1294,48 +1290,48 @@ export const TripModal: React.FC<TripModalProps> = ({
               {/* Opsi 1: Final */}
               <div
                 onClick={() => setIsDraft(false)}
-                className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer select-none ${
+                className={`p-3.5 rounded-xl border transition-colors cursor-pointer select-none ${
                   !isDraft
-                    ? 'bg-emerald-50/80 border-emerald-600 ring-2 ring-emerald-600/20 shadow-xs'
-                    : 'bg-white border-gray-300 hover:border-gray-400 opacity-70 hover:opacity-100'
+                    ? 'bg-emerald-50/80 border-emerald-500'
+                    : 'bg-white border-stone-200 hover:border-stone-300'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    !isDraft ? 'border-emerald-600 bg-emerald-600' : 'border-gray-400'
+                    !isDraft ? 'border-emerald-600 bg-emerald-600' : 'border-stone-400'
                   }`}>
                     {!isDraft && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-emerald-950 font-['Montserrat']">
-                    🟢 Final (Siap Upload)
+                  <span className="text-xs sm:text-sm font-semibold text-emerald-950">
+                    Final (Siap Upload)
                   </span>
                 </div>
-                <p className="text-[11px] text-gray-600 mt-1.5 leading-relaxed pl-6">
-                  Jadwal, kuota, tarif & itinerary sudah fix. Siap dibuatkan pamflet dan di-broadcast ke medsos.
+                <p className="text-xs text-stone-600 mt-1.5 leading-relaxed pl-6">
+                  Jadwal, kuota, tarif & itinerary sudah fix. Siap dibuatkan pamflet dan di-broadcast.
                 </p>
               </div>
 
-              {/* Opsi 2: Draft (Merah Tegas) */}
+              {/* Opsi 2: Draft */}
               <div
                 onClick={() => setIsDraft(true)}
-                className={`p-3.5 rounded-xl border-2 transition-all cursor-pointer select-none ${
+                className={`p-3.5 rounded-xl border transition-colors cursor-pointer select-none ${
                   isDraft
-                    ? 'bg-red-50/90 border-red-500 ring-2 ring-red-500/20 shadow-xs'
-                    : 'bg-white border-gray-300 hover:border-gray-400 opacity-70 hover:opacity-100'
+                    ? 'bg-rose-50/80 border-rose-500'
+                    : 'bg-white border-stone-200 hover:border-stone-300'
                 }`}
               >
                 <div className="flex items-center gap-2">
                   <div className={`w-4 h-4 rounded-full border flex items-center justify-center ${
-                    isDraft ? 'border-red-500 bg-red-600' : 'border-gray-400'
+                    isDraft ? 'border-rose-600 bg-rose-600' : 'border-stone-400'
                   }`}>
                     {isDraft && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-red-950 font-['Montserrat']">
-                    🔴 Draft (Belum Final / Konsep)
+                  <span className="text-xs sm:text-sm font-semibold text-rose-950">
+                    Draft (Belum Final)
                   </span>
                 </div>
-                <p className="text-[11px] text-gray-600 mt-1.5 leading-relaxed pl-6">
-                  Data masih tentatif atau menunggu konfirmasi. Masuk daftar dengan label <strong>🔴 Draft</strong>.
+                <p className="text-xs text-stone-600 mt-1.5 leading-relaxed pl-6">
+                  Data masih tentatif atau menunggu konfirmasi.
                 </p>
               </div>
             </div>
@@ -1346,7 +1342,7 @@ export const TripModal: React.FC<TripModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900 bg-[#d1d1d1] hover:bg-[#c2c2c2] rounded transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs sm:text-sm font-medium text-stone-700 hover:text-stone-900 bg-stone-200 hover:bg-stone-300 rounded-lg border border-stone-300/80 shadow-xs active:scale-98 transition-colors cursor-pointer"
             >
               Batal
             </button>
@@ -1363,7 +1359,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                     if (form) form.requestSubmit();
                   }, 50);
                 }}
-                className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border border-red-700 rounded shadow-xs transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border border-red-700 rounded-lg shadow-xs transition-all cursor-pointer active:scale-98 flex items-center gap-1.5"
               >
                 <span>🔴</span>
                 <span>Simpan sebagai Draft</span>
@@ -1375,10 +1371,10 @@ export const TripModal: React.FC<TripModalProps> = ({
                 onClick={() => {
                   // Jika pengguna menekan tombol hijau utama ini, kita jadikan Final kecuali jika user sengaja memilih Draft
                 }}
-                className={`px-5 py-2 text-xs sm:text-sm font-semibold text-white rounded shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 ${
+                className={`px-5 py-2 text-xs sm:text-sm font-semibold text-white rounded-lg border shadow-xs transition-all cursor-pointer active:scale-98 flex items-center gap-1.5 ${
                   isDraft
-                    ? 'bg-red-700 hover:bg-red-800'
-                    : 'bg-[#275d1d] hover:bg-[#1f4a17]'
+                    ? 'bg-red-700 hover:bg-red-800 border-red-800'
+                    : 'bg-[#275d1d] hover:bg-[#1f4a17] border-[#1f4a17]'
                 }`}
               >
                 <span>{isDraft ? '🔴' : '🟢'}</span>

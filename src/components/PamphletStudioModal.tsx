@@ -318,11 +318,11 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               <Sparkles className="w-5 h-5 text-amber-300" />
             </span>
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold font-['Montserrat'] truncate">
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight truncate">
                 Studio Pamflet & Carousel Trip
               </h2>
-              <p className="text-[11px] sm:text-xs text-[#d1d1d1] truncate">
-                🏔️ {trip.nama_gunung.toUpperCase()} {trip.ketinggian_mdpl || ''} · 📌 {trip.jalur.toUpperCase()}
+              <p className="text-xs text-stone-200 truncate">
+                {trip.nama_gunung} {trip.ketinggian_mdpl || ''} · {trip.jalur}
               </p>
             </div>
           </div>
@@ -405,7 +405,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                 <ChevronLeft className="w-3.5 h-3.5" /> Slide Sebelumnya
               </button>
 
-              <span className="text-[11px] font-semibold font-['Montserrat']">
+              <span className="text-xs font-medium text-stone-600">
                 {activeSlideIndex + 1} / {SLIDES_LIST.length} ({ratio})
               </span>
 
@@ -473,7 +473,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               {activeSlide === 'random_photo' && (
                 <div className="bg-amber-50/80 border-2 border-amber-400 rounded-xl p-4 shadow-sm space-y-3">
                   <div className="flex items-center justify-between gap-2 border-b border-amber-300 pb-2">
-                    <h3 className="text-xs sm:text-sm font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-2">
+                    <h3 className="text-xs sm:text-sm font-semibold text-stone-900 flex items-center gap-2">
                       <Camera className="w-4 h-4 text-amber-600" />
                       Foto Khusus Slide 6 (Random Foto)
                     </h3>
@@ -532,8 +532,8 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               {/* Box 1: Sistem Edit Background */}
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between gap-2 border-b border-[#275d1d]/20 pb-2">
-                  <h3 className="text-xs sm:text-sm font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-2">
-                    <ImageIcon className="w-4 h-4 text-[#275d1d]" />
+                  <h3 className="text-xs sm:text-sm font-semibold text-stone-900 flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-stone-600" />
                     Pilihan Latar Belakang (Background)
                   </h3>
                   {hasSavedBg && (
@@ -662,8 +662,8 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               {/* Box 2: Ganti & Atur Logo Pamflet */}
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between gap-2 border-b border-[#275d1d]/20 pb-2">
-                  <h3 className="text-xs sm:text-sm font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-2">
-                    <Camera className="w-4 h-4 text-[#275d1d]" />
+                  <h3 className="text-xs sm:text-sm font-semibold text-stone-900 flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-stone-600" />
                     Logo Pamflet & Branding
                   </h3>
                   <span
@@ -724,8 +724,8 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
 
               {/* Box 3: Detail Slide Info */}
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-2">
-                <h4 className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
-                  <Layers className="w-4 h-4 text-[#275d1d]" />
+                <h4 className="text-xs font-semibold text-stone-900 flex items-center gap-1.5">
+                  <Layers className="w-4 h-4 text-stone-600" />
                   {SLIDES_LIST[activeSlideIndex].title}
                 </h4>
                 <p className="text-xs text-gray-700 leading-relaxed">
@@ -760,7 +760,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
 
             {/* Box 3: Export Actions */}
             <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-3 mt-4">
-              <div className="flex items-center justify-between text-xs font-semibold text-[#275d1d] font-['Montserrat']">
+              <div className="flex items-center justify-between text-xs font-semibold text-stone-900">
                 <span>PILIHAN UNDUH GAMBAR</span>
                 <span className="text-[10px] bg-[#275d1d] text-white px-2 py-0.5 rounded">
                   Format PNG 1080p
@@ -773,7 +773,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                   type="button"
                   onClick={handleDownloadActiveSlide}
                   disabled={isExporting !== null}
-                  className="py-2.5 px-3.5 bg-white hover:bg-[#e8e8e8] text-[#275d1d] border-2 border-[#275d1d] rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-sm active:scale-95 disabled:opacity-50"
+                  className="py-2.5 px-3.5 bg-white hover:bg-[#e8e8e8] text-[#275d1d] border border-[#275d1d] rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98 disabled:opacity-50"
                 >
                   <Download className="w-4 h-4 text-[#275d1d]" />
                   <span>
@@ -788,7 +788,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                   type="button"
                   onClick={handleDownloadAllZip}
                   disabled={isExporting !== null}
-                  className="py-2.5 px-3.5 bg-[#275d1d] hover:bg-[#1f4a17] text-white rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95 disabled:opacity-50"
+                  className="py-2.5 px-3.5 bg-[#275d1d] hover:bg-[#1f4a17] text-white border border-[#1f4a17] rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98 disabled:opacity-50"
                 >
                   <Download className="w-4 h-4 text-white" />
                   <span>

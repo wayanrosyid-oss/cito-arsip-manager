@@ -205,11 +205,11 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
               <Share2 className="w-5 h-5 text-amber-300" />
             </span>
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold font-['Montserrat'] tracking-tight truncate">
+              <h2 className="text-base sm:text-lg font-semibold tracking-tight truncate">
                 Generator Caption & Broadcast Promosi
               </h2>
-              <p className="text-[11px] sm:text-xs text-[#d1d1d1] truncate">
-                Promosi Instan 1-Klik: 🏔️ {trip.nama_gunung.toUpperCase()} {trip.ketinggian_mdpl || ''} · 📌 {trip.jalur.toUpperCase()}
+              <p className="text-xs text-stone-200 truncate">
+                Promosi Instan 1-Klik: {trip.nama_gunung} {trip.ketinggian_mdpl || ''} · {trip.jalur}
               </p>
             </div>
           </div>
@@ -274,11 +274,11 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
                 {/* Hook Selection (Instagram) */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
-                      <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+                    <label className="text-xs font-semibold text-stone-900 flex items-center gap-1.5">
+                      <Sparkles className="w-3.5 h-3.5 text-amber-600" />
                       Pilihan Gaya Hook:
                     </label>
-                    <span className="text-[10px] text-gray-500 font-semibold">Klik gaya di bawah:</span>
+                    <span className="text-xs text-stone-500">Pilih gaya:</span>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
@@ -359,28 +359,28 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
                         <button
                           type="button"
                           onClick={() => handleInsertTag('{gunung}', 'hookIntro')}
-                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded text-[10px] font-bold text-[#275d1d] cursor-pointer"
+                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded-lg text-[10px] font-bold text-[#275d1d] cursor-pointer shadow-xs"
                         >
                           + {'{gunung}'}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleInsertTag('{jalur}', 'hookIntro')}
-                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded text-[10px] font-bold text-[#275d1d] cursor-pointer"
+                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded-lg text-[10px] font-bold text-[#275d1d] cursor-pointer shadow-xs"
                         >
                           + {'{jalur}'}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleInsertTag('{ketinggian}', 'hookIntro')}
-                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded text-[10px] font-bold text-[#275d1d] cursor-pointer"
+                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded-lg text-[10px] font-bold text-[#275d1d] cursor-pointer shadow-xs"
                         >
                           + {'{ketinggian}'}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleInsertTag('{tanggal}', 'hookIntro')}
-                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded text-[10px] font-bold text-[#275d1d] cursor-pointer"
+                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded-lg text-[10px] font-bold text-[#275d1d] cursor-pointer shadow-xs"
                         >
                           + {'{tanggal}'}
                         </button>
@@ -401,7 +401,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
 
                 {/* Content Toggles */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
-                  <span className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-stone-900 flex items-center gap-1.5">
                     <Sliders className="w-3.5 h-3.5" />
                     Komponen Informasi:
                   </span>
@@ -480,7 +480,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
               <>
                 {/* Custom WhatsApp Intro */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
-                  <span className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-stone-900 flex items-center gap-1.5">
                     <Edit3 className="w-3.5 h-3.5 text-emerald-600" />
                     Kustom Sapaan & Pesan WhatsApp:
                   </span>
@@ -527,21 +527,21 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
                         <button
                           type="button"
                           onClick={() => handleInsertTag('{gunung}', 'waIntro')}
-                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded text-[10px] font-bold text-[#275d1d] cursor-pointer"
+                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded-lg text-[10px] font-bold text-[#275d1d] cursor-pointer shadow-xs"
                         >
                           + {'{gunung}'}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleInsertTag('{jalur}', 'waIntro')}
-                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded text-[10px] font-bold text-[#275d1d] cursor-pointer"
+                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded-lg text-[10px] font-bold text-[#275d1d] cursor-pointer shadow-xs"
                         >
                           + {'{jalur}'}
                         </button>
                         <button
                           type="button"
                           onClick={() => handleInsertTag('{ketinggian}', 'waIntro')}
-                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded text-[10px] font-bold text-[#275d1d] cursor-pointer"
+                          className="px-2 py-0.5 bg-white border border-gray-300 hover:border-[#275d1d] rounded-lg text-[10px] font-bold text-[#275d1d] cursor-pointer shadow-xs"
                         >
                           + {'{ketinggian}'}
                         </button>
@@ -561,7 +561,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
 
                 {/* Content Toggles for WA */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
-                  <span className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
+                  <span className="text-xs font-semibold text-stone-900 flex items-center gap-1.5">
                     <Sliders className="w-3.5 h-3.5" />
                     Komponen Broadcast:
                   </span>
@@ -685,7 +685,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
               <button
                 type="button"
                 onClick={handleCopy}
-                className="py-2.5 px-4 bg-[#275d1d] hover:bg-[#1f4a17] text-white rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95"
+                className="py-2.5 px-4 bg-[#275d1d] hover:bg-[#1f4a17] text-white border border-[#1f4a17] rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
               >
                 {isCopied ? <Check className="w-4 h-4 text-emerald-300" /> : <Copy className="w-4 h-4" />}
                 <span>{isCopied ? 'Tersalin ke Clipboard!' : 'Salin Teks Caption'}</span>
@@ -694,7 +694,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
               <button
                 type="button"
                 onClick={handleOpenWhatsAppDirect}
-                className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-md active:scale-95"
+                className="py-2.5 px-4 bg-emerald-600 hover:bg-emerald-700 text-white border border-emerald-700 rounded-lg text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs active:scale-98"
                 title="Buka WhatsApp dengan pesan ini"
               >
                 <ExternalLink className="w-4 h-4 text-white" />

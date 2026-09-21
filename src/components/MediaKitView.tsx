@@ -198,10 +198,10 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                 }}
               />
               <div>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-[#e5a93c]/20 text-[#e5a93c] border border-[#e5a93c]/40">
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-semibold bg-[#e5a93c]/20 text-[#e5a93c] border border-[#e5a93c]/40">
                   <Sparkles className="w-3 h-3 text-[#e5a93c]" /> Media Kit Promosi
                 </span>
-                <h1 className="text-xs sm:text-sm font-bold text-white tracking-wide uppercase font-['Montserrat'] leading-tight">
+                <h1 className="text-xs sm:text-sm font-semibold text-white leading-tight">
                   Cito Adventure Madiun
                 </h1>
               </div>
@@ -242,8 +242,8 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                 </span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-['Montserrat'] leading-tight">
-                {trip.nama_gunung.toUpperCase()}
+              <h2 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight leading-tight">
+                {trip.nama_gunung}
               </h2>
 
               <div className="flex items-center gap-4 text-xs sm:text-sm text-slate-300 font-medium flex-wrap">
@@ -263,7 +263,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div className="flex flex-wrap items-center gap-2.5 pt-2 md:pt-0">
               <button
                 onClick={handleCopyCaption}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-[#e5a93c] hover:bg-[#d49930] text-slate-950 shadow-lg shadow-[#e5a93c]/15 transition-all cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-[#e5a93c] hover:bg-[#d49930] text-slate-950 border border-amber-600/30 shadow-xs transition-all cursor-pointer active:scale-98"
               >
                 {copiedCaption ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 <span>{copiedCaption ? '✓ Caption Tersalin!' : 'Salin Caption Promosi'}</span>
@@ -271,7 +271,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
 
               <button
                 onClick={handleCopyItinerary}
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 shadow-md transition-all cursor-pointer active:scale-95"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-xs sm:text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 shadow-xs transition-all cursor-pointer active:scale-98"
               >
                 {copiedItinerary ? <Check className="w-4 h-4 text-emerald-400" /> : <FileText className="w-4 h-4 text-emerald-400" />}
                 <span>{copiedItinerary ? '✓ Itinerary Tersalin!' : 'Salin Itinerary'}</span>
@@ -290,7 +290,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#e5a93c]" />
-                <h3 className="text-lg sm:text-xl font-bold text-white font-['Montserrat'] tracking-tight">
+                <h3 className="text-lg sm:text-xl font-semibold text-white tracking-tight">
                   Foto Pamflet Promosi HD
                 </h3>
               </div>
@@ -371,7 +371,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                     <button
                       onClick={() => handleDownloadSlide(slide.id)}
                       disabled={isDownloading}
-                      className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold bg-[#275d1d] hover:bg-[#1f4a17] text-white transition-all cursor-pointer disabled:opacity-50 shadow-sm active:scale-95"
+                      className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold bg-[#275d1d] hover:bg-[#1f4a17] text-white border border-[#1f4a17] transition-all cursor-pointer disabled:opacity-50 shadow-xs active:scale-98"
                     >
                       {isDownloading ? (
                         <>
@@ -410,7 +410,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <button
               onClick={handleDownloadZip}
               disabled={isDownloadingZip}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-bold bg-[#e5a93c] hover:bg-[#d49930] text-slate-950 transition-all cursor-pointer disabled:opacity-50 shrink-0 shadow-md active:scale-95"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg text-xs font-semibold bg-[#e5a93c] hover:bg-[#d49930] text-slate-950 border border-amber-600/30 transition-all cursor-pointer disabled:opacity-50 shrink-0 shadow-xs active:scale-98"
             >
               {isDownloadingZip ? (
                 <>
@@ -433,7 +433,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                <h3 className="text-lg sm:text-xl font-bold text-white font-['Montserrat'] tracking-tight">
+                <h3 className="text-lg sm:text-xl font-semibold text-white tracking-tight">
                   Teks Caption Promosi (Siap Copas)
                 </h3>
               </div>
@@ -444,10 +444,10 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
 
             <button
               onClick={handleCopyCaption}
-              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-md ${
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-xs border ${
                 copiedCaption
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-[#e5a93c] hover:bg-[#d49930] text-slate-950 active:scale-95'
+                  ? 'bg-emerald-600 border-emerald-700 text-white'
+                  : 'bg-[#e5a93c] hover:bg-[#d49930] border-amber-600/30 text-slate-950 active:scale-98'
               }`}
             >
               {copiedCaption ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -480,7 +480,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
-                <h3 className="text-lg sm:text-xl font-bold text-white font-['Montserrat'] tracking-tight">
+                <h3 className="text-lg sm:text-xl font-semibold text-white tracking-tight">
                   Itinerary Rundown Perjalanan
                 </h3>
               </div>
@@ -491,10 +491,10 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
 
             <button
               onClick={handleCopyItinerary}
-              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-md ${
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-xs border ${
                 copiedItinerary
-                  ? 'bg-emerald-600 text-white'
-                  : 'bg-emerald-700 hover:bg-emerald-600 text-white active:scale-95'
+                  ? 'bg-emerald-600 border-emerald-700 text-white'
+                  : 'bg-emerald-700 hover:bg-emerald-600 border-emerald-800 text-white active:scale-98'
               }`}
             >
               {copiedItinerary ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}

@@ -1,6 +1,18 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Plus, Archive, Github, DownloadCloud, Camera, RotateCcw, Cloud, CloudCheck, RefreshCw, Link2, Bell, Users, Key, Lock } from 'lucide-react';
-import { PWAInstallButton } from './PWAInstallButton';
+import {
+  Plus,
+  Github,
+  DownloadCloud,
+  Camera,
+  RefreshCw,
+  Link2,
+  Bell,
+  Users,
+  Key,
+  Lock,
+  MoreHorizontal,
+  Smartphone,
+} from 'lucide-react';
 import { downloadProjectZip } from '../utils/projectZip';
 import { getCustomLogo, setCustomLogo, clearCustomLogo, OFFICIAL_LOGO_URL } from '../utils/storage';
 import { optimizeLogoImage } from '../utils/imageOptimizer';
@@ -40,7 +52,33 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [logoSrc, setLogoSrc] = useState<string>(getCustomLogo() || OFFICIAL_LOGO_URL);
   const [isCustom, setIsCustom] = useState<boolean>(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    return () => window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+  }, []);
+
+  const handleInstallPWA = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setIsInstallable(false);
+    }
+    setDeferredPrompt(null);
+  };
 
   useEffect(() => {
     const updateLogo = () => {
@@ -59,6 +97,19 @@ export const Navbar: React.FC<NavbarProps> = ({
     return () => window.removeEventListener('cito_logo_updated', updateLogo);
   }, []);
 
+  // Close dropdown menu on outside click
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    };
+    if (isMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isMenuOpen]);
+
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -70,10 +121,8 @@ export const Navbar: React.FC<NavbarProps> = ({
 
     try {
       const optimized = await optimizeLogoImage(file);
-      // 1. Update memory, IndexedDB, and Cloud Firestore
       setCustomLogo(optimized);
 
-      // 2. Persist directly to server disk (public/logo.png, etc.) so it never reverts on restart
       await fetch('/api/save-permanent-logo', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -97,9 +146,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="bg-[#1c4318] border-b border-[#142f11] text-white sticky top-0 z-40 shadow-xs">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
-        {/* Left: Brand with interactive Cito Adventure logo upload */}
+    <header className="bg-[#183e15] border-b border-[#122f10] text-white sticky top-0 z-40">
+      <div className="max-w-6xl mx-auto px-4 py-2.5 flex items-center justify-between gap-4">
+        {/* Left: Brand Identity */}
         <div className="flex items-center gap-3">
           <input
             type="file"
@@ -112,24 +161,22 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div
             onClick={() => fileInputRef.current?.click()}
             className="relative group cursor-pointer"
-            title="Klik untuk ganti logo Cito Adventure"
+            title="Klik untuk ganti logo resmi Cito Adventure"
           >
             <img
               src={logoSrc}
               alt="Logo Cito Adventure Madiun"
-              className="w-11 h-11 sm:w-12 sm:h-12 object-contain shrink-0 transition-transform group-hover:scale-105"
+              className="w-10 h-10 object-contain shrink-0 transition-transform group-hover:scale-105"
             />
-            {/* Hover Camera Overlay */}
             <div className="absolute inset-0 bg-black/60 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera className="w-4 h-4 text-white" />
+              <Camera className="w-3.5 h-3.5 text-white" />
             </div>
 
-            {/* Custom Logo Badge & Reset */}
             {isCustom && (
               <button
                 type="button"
                 onClick={handleResetLogo}
-                className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs cursor-pointer"
+                className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center text-[10px] shadow-xs cursor-pointer"
                 title="Reset logo ke bawaan"
               >
                 ×
@@ -138,163 +185,210 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
 
           <div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-white/80 uppercase font-['Montserrat']">
-                Cito Adventure Madiun
-              </span>
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="text-[9.5px] px-1.5 py-0.5 rounded bg-white/15 hover:bg-white/25 text-white/90 font-medium cursor-pointer transition-colors"
-                title="Klik untuk unggah logo resmi"
-              >
-                {isCustom ? 'Logo Kustom' : 'Ganti Logo'}
-              </button>
-            </div>
-            <h1 className="text-base sm:text-lg font-bold font-['Montserrat'] tracking-tight text-white leading-tight">
+            <span className="text-[11px] text-white/70 block leading-tight font-medium">
+              Cito Adventure Madiun
+            </span>
+            <h1 className="text-base font-semibold text-white tracking-tight leading-snug">
               Cito Trip Manager
             </h1>
           </div>
         </div>
 
-        {/* Right: Actions */}
-        <div className="flex items-center gap-2 sm:gap-2.5 flex-wrap">
-          {/* Cloud Sync Status Indicator */}
+        {/* Right: Focused Primary Actions & Menu */}
+        <div className="flex items-center gap-2">
+          {/* Cloud Sync Status */}
           <button
             type="button"
             onClick={onOpenCloudSync}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer shadow-xs ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer ${
               cloudStatus === 'synced'
-                ? 'bg-white/15 hover:bg-white/25 text-emerald-200 border-emerald-400/30'
+                ? 'bg-white/10 hover:bg-white/15 text-white border-white/15'
                 : cloudStatus === 'syncing'
-                ? 'bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border-amber-300/40'
-                : 'bg-stone-700/40 hover:bg-stone-700/50 text-stone-200 border-stone-400/30'
+                ? 'bg-amber-500/20 text-amber-200 border-amber-400/30'
+                : 'bg-stone-800/40 text-stone-300 border-stone-600/30'
             }`}
-            title="Klik untuk Sinkronisasi HP & Laptop / Scan QR Code"
+            title="Status Sinkronisasi Cloud"
           >
             {cloudStatus === 'synced' && (
               <>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>Cloud Aktif</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="hidden sm:inline">Tersinkron</span>
               </>
             )}
             {cloudStatus === 'syncing' && (
               <>
                 <RefreshCw className="w-3 h-3 text-amber-300 animate-spin" />
-                <span>Sinkron...</span>
+                <span className="hidden sm:inline">Sinkron...</span>
               </>
             )}
             {cloudStatus === 'offline' && (
               <>
-                <span className="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
-                <span>Offline</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-stone-400" />
+                <span className="hidden sm:inline">Offline</span>
               </>
             )}
           </button>
 
-          <PWAInstallButton />
-
-          {/* 1. Notifikasi Masukan dari Tim */}
+          {/* Draf Tim Notification Pill */}
           {draftCount > 0 && (
             <button
               type="button"
               onClick={onScrollToDrafts}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-stone-950 shadow-xs cursor-pointer transition-colors"
-              title={`${draftCount} Draf jadwal baru dari tim lapangan menunggu persetujuan`}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-amber-400 hover:bg-amber-300 text-stone-950 transition-colors cursor-pointer"
+              title={`${draftCount} draf trip dari tim menunggu verifikasi`}
             >
-              <Bell className="w-3.5 h-3.5 fill-stone-950" />
+              <Bell className="w-3.5 h-3.5 fill-current" />
               <span>{draftCount} Draf Tim</span>
             </button>
           )}
 
-          {/* 2. Notifikasi Draft Saya Sendiri */}
+          {/* Admin Draft Notification Pill */}
           {adminDraftCount > 0 && (
             <button
               type="button"
               onClick={onScrollToAdminDrafts}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-700 hover:bg-rose-800 text-white shadow-xs cursor-pointer transition-colors"
-              title={`${adminDraftCount} Trip buatan saya masih berstatus Draft`}
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium bg-rose-600 hover:bg-rose-700 text-white transition-colors cursor-pointer"
+              title={`${adminDraftCount} trip berstatus draf`}
             >
               <span className="w-1.5 h-1.5 rounded-full bg-white" />
-              <span>{adminDraftCount} Draft Saya</span>
+              <span>{adminDraftCount} Draf</span>
             </button>
           )}
 
-          {onCopyTeamLink && (
+          {/* More Options Dropdown */}
+          <div className="relative" ref={menuRef}>
             <button
               type="button"
-              onClick={onCopyTeamLink}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all cursor-pointer shadow-xs"
-              title="Salin Link Khusus untuk Tim Penginput Jadwal (?mode=tim)"
+              onClick={() => setIsMenuOpen((prev) => !prev)}
+              className="inline-flex items-center justify-center w-8 h-8 rounded-lg bg-white/10 hover:bg-white/15 text-white border border-white/15 transition-colors cursor-pointer"
+              title="Menu Opsi Tambahan"
+              aria-expanded={isMenuOpen}
             >
-              <Link2 className="w-3.5 h-3.5 text-amber-300" />
-              <span>Link Tim</span>
+              <MoreHorizontal className="w-4 h-4 text-white" />
             </button>
-          )}
 
-          {onCopyAdminKeyLink && (
-            <button
-              type="button"
-              onClick={onCopyAdminKeyLink}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all cursor-pointer shadow-xs"
-              title="Salin Link Kunci Rahasia Pemilik Mas Yuno (?admin=yuno)"
-            >
-              <Key className="w-3.5 h-3.5 text-emerald-300" />
-              <span className="hidden sm:inline">Kunci Admin</span>
-            </button>
-          )}
+            {isMenuOpen && (
+              <div className="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-stone-200 py-1.5 z-50 text-stone-800 text-xs font-medium divide-y divide-stone-100">
+                <div className="py-1">
+                  {onOpenTeamData && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onOpenTeamData();
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-stone-700"
+                    >
+                      <Users className="w-4 h-4 text-stone-500" />
+                      <span>Data Anggota Tim</span>
+                    </button>
+                  )}
 
-          {onLockToTeamMode && (
-            <button
-              type="button"
-              onClick={onLockToTeamMode}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-black/20 hover:bg-black/30 text-white/90 border border-white/20 transition-all cursor-pointer"
-              title="Kunci perangkat ini kembali ke Mode Tim Lapangan"
-            >
-              <Lock className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden xl:inline">Kunci Tim</span>
-            </button>
-          )}
+                  {onCopyTeamLink && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onCopyTeamLink();
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-stone-700"
+                    >
+                      <Link2 className="w-4 h-4 text-stone-500" />
+                      <span>Salin Link Tim Lapangan</span>
+                    </button>
+                  )}
 
-          {onOpenTeamData && (
-            <button
-              id="team-data-btn"
-              type="button"
-              onClick={onOpenTeamData}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all shadow-xs cursor-pointer"
-              title="Kelola Nomor Admin & Data Anggota Tim"
-            >
-              <Users className="w-3.5 h-3.5 text-white" />
-              <span>Data Tim</span>
-            </button>
-          )}
+                  {onCopyAdminKeyLink && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onCopyAdminKeyLink();
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-stone-700"
+                    >
+                      <Key className="w-4 h-4 text-stone-500" />
+                      <span>Salin Kunci Akses Admin</span>
+                    </button>
+                  )}
 
-          <button
-            id="download-zip-btn"
-            onClick={downloadProjectZip}
-            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-colors cursor-pointer"
-            title="Download seluruh source code aplikasi dalam format .ZIP"
-          >
-            <DownloadCloud className="w-3.5 h-3.5 text-white" />
-            <span>ZIP</span>
-          </button>
+                  {onLockToTeamMode && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onLockToTeamMode();
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-stone-700"
+                    >
+                      <Lock className="w-4 h-4 text-stone-500" />
+                      <span>Kunci ke Mode Tim</span>
+                    </button>
+                  )}
+                </div>
 
-          <button
-            id="github-guide-btn"
-            onClick={onOpenGithubGuide}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-colors cursor-pointer"
-            title="Panduan push ke Repository GitHub"
-          >
-            <Github className="w-3.5 h-3.5 text-white" />
-            <span className="hidden sm:inline">GitHub</span>
-          </button>
+                <div className="py-1">
+                  {isInstallable && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        handleInstallPWA();
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-emerald-700 font-semibold"
+                    >
+                      <Smartphone className="w-4 h-4 text-emerald-600" />
+                      <span>Install Aplikasi (PWA)</span>
+                    </button>
+                  )}
 
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      fileInputRef.current?.click();
+                    }}
+                    className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-stone-700"
+                  >
+                    <Camera className="w-4 h-4 text-stone-500" />
+                    <span>Ganti Logo Resmi</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      downloadProjectZip();
+                    }}
+                    className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-stone-700"
+                  >
+                    <DownloadCloud className="w-4 h-4 text-stone-500" />
+                    <span>Download Backup ZIP</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      onOpenGithubGuide();
+                    }}
+                    className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-stone-700"
+                  >
+                    <Github className="w-4 h-4 text-stone-500" />
+                    <span>Panduan GitHub</span>
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Primary Action Button: Tambah Trip */}
           <button
             id="add-trip-btn"
             onClick={onOpenAddModal}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-bold bg-white hover:bg-stone-100 text-[#1c4318] transition-all shadow-xs cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-[#183e15] hover:bg-stone-100 transition-colors shadow-xs cursor-pointer active:scale-98"
           >
-            <Plus className="w-4 h-4 text-[#1c4318]" />
+            <Plus className="w-4 h-4 text-[#183e15]" />
             <span>Tambah Trip</span>
           </button>
         </div>
@@ -302,3 +396,4 @@ export const Navbar: React.FC<NavbarProps> = ({
     </header>
   );
 };
+

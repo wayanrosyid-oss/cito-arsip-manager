@@ -97,8 +97,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="bg-[#1c4318] border-b border-[#142f11] text-white sticky top-0 z-40 shadow-xs">
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between gap-3 flex-wrap">
+    <header className="bg-[#275d1d] border-b-2 border-[#1e4916] text-white sticky top-0 z-40 shadow-md">
+      <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4 flex items-center justify-between gap-3 flex-wrap">
         {/* Left: Brand with interactive Cito Adventure logo upload */}
         <div className="flex items-center gap-3">
           <input
@@ -117,11 +117,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <img
               src={logoSrc}
               alt="Logo Cito Adventure Madiun"
-              className="w-11 h-11 sm:w-12 sm:h-12 object-contain shrink-0 transition-transform group-hover:scale-105"
+              className="w-12 h-12 sm:w-13 sm:h-13 object-contain drop-shadow-md shrink-0 transition-transform group-hover:scale-105"
             />
             {/* Hover Camera Overlay */}
-            <div className="absolute inset-0 bg-black/60 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Camera className="w-4 h-4 text-white" />
+            <div className="absolute inset-0 bg-black/55 rounded-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Camera className="w-5 h-5 text-white drop-shadow" />
             </div>
 
             {/* Custom Logo Badge & Reset */}
@@ -129,7 +129,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 type="button"
                 onClick={handleResetLogo}
-                className="absolute -top-1 -right-1 w-4 h-4 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center text-[9px] shadow-xs cursor-pointer"
+                className="absolute -top-1 -right-1 w-4 h-4 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center text-[9px] shadow-sm cursor-pointer"
                 title="Reset logo ke bawaan"
               >
                 ×
@@ -139,19 +139,19 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] sm:text-xs font-semibold tracking-wider text-white/80 uppercase font-['Montserrat']">
+              <span className="text-[10px] sm:text-xs font-bold tracking-wider text-white/90 uppercase font-['Montserrat']">
                 Cito Adventure Madiun
               </span>
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className="text-[9.5px] px-1.5 py-0.5 rounded bg-white/15 hover:bg-white/25 text-white/90 font-medium cursor-pointer transition-colors"
+                className="text-[9.5px] px-1.5 py-0.5 rounded bg-white/20 hover:bg-white/30 text-white font-medium cursor-pointer transition-colors"
                 title="Klik untuk unggah logo resmi"
               >
-                {isCustom ? 'Logo Kustom' : 'Ganti Logo'}
+                {isCustom ? 'Logo Kustom Aktif' : 'Ganti Logo'}
               </button>
             </div>
-            <h1 className="text-base sm:text-lg font-bold font-['Montserrat'] tracking-tight text-white leading-tight">
+            <h1 className="text-lg sm:text-xl font-extrabold font-['Montserrat'] tracking-tight text-white leading-tight">
               Cito Trip Manager
             </h1>
           </div>
@@ -163,60 +163,61 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             type="button"
             onClick={onOpenCloudSync}
-            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold border transition-all cursor-pointer shadow-xs ${
+            className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold border transition-all cursor-pointer shadow-sm hover:scale-102 active:scale-98 ${
               cloudStatus === 'synced'
-                ? 'bg-white/15 hover:bg-white/25 text-emerald-200 border-emerald-400/30'
+                ? 'bg-white/20 hover:bg-white/30 text-emerald-100 border-white/40'
                 : cloudStatus === 'syncing'
-                ? 'bg-amber-400/20 hover:bg-amber-400/30 text-amber-200 border-amber-300/40'
-                : 'bg-stone-700/40 hover:bg-stone-700/50 text-stone-200 border-stone-400/30'
+                ? 'bg-amber-400/25 hover:bg-amber-400/35 text-amber-200 border-amber-300/40'
+                : 'bg-gray-600/40 hover:bg-gray-600/50 text-gray-200 border-gray-400/30'
             }`}
             title="Klik untuk Sinkronisasi HP & Laptop / Scan QR Code"
           >
             {cloudStatus === 'synced' && (
               <>
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                <span>Cloud Aktif</span>
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                <span>Cloud Sinkron</span>
               </>
             )}
             {cloudStatus === 'syncing' && (
               <>
                 <RefreshCw className="w-3 h-3 text-amber-300 animate-spin" />
-                <span>Sinkron...</span>
+                <span>Menyimpan...</span>
               </>
             )}
             {cloudStatus === 'offline' && (
               <>
-                <span className="w-1.5 h-1.5 rounded-full bg-stone-400"></span>
-                <span>Offline</span>
+                <span className="w-2 h-2 rounded-full bg-gray-400"></span>
+                <span>Offline Cache</span>
               </>
             )}
           </button>
 
           <PWAInstallButton />
 
-          {/* 1. Notifikasi Masukan dari Tim */}
+          {/* 1. Notifikasi Masukan dari Tim (Amber / Emas Streamer) */}
           {draftCount > 0 && (
             <button
               type="button"
               onClick={onScrollToDrafts}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-stone-950 shadow-xs cursor-pointer transition-colors"
+              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-extrabold bg-amber-400 hover:bg-amber-300 text-amber-950 shadow-md animate-bounce cursor-pointer transition-transform active:scale-95"
               title={`${draftCount} Draf jadwal baru dari tim lapangan menunggu persetujuan`}
             >
-              <Bell className="w-3.5 h-3.5 fill-stone-950" />
-              <span>{draftCount} Draf Tim</span>
+              <Bell className="w-3.5 h-3.5 fill-amber-950" />
+              <span>👥 {draftCount} Draf Tim</span>
+              <span className="w-2 h-2 rounded-full bg-red-600 animate-ping absolute -top-0.5 -right-0.5" />
             </button>
           )}
 
-          {/* 2. Notifikasi Draft Saya Sendiri */}
+          {/* 2. Notifikasi Draft Saya Sendiri (Merah Tegas) */}
           {adminDraftCount > 0 && (
             <button
               type="button"
               onClick={onScrollToAdminDrafts}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-rose-700 hover:bg-rose-800 text-white shadow-xs cursor-pointer transition-colors"
+              className="relative inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-black bg-red-600 hover:bg-red-700 text-white shadow-md cursor-pointer transition-transform active:scale-95 border border-red-400"
               title={`${adminDraftCount} Trip buatan saya masih berstatus Draft`}
             >
-              <span className="w-1.5 h-1.5 rounded-full bg-white" />
-              <span>{adminDraftCount} Draft Saya</span>
+              <span className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <span>🔴 {adminDraftCount} Draft Saya</span>
             </button>
           )}
 
@@ -224,11 +225,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onCopyTeamLink}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-amber-400 hover:bg-amber-300 text-amber-950 shadow-sm border border-amber-500/40 transition-all cursor-pointer active:scale-95"
               title="Salin Link Khusus untuk Tim Penginput Jadwal (?mode=tim)"
             >
-              <Link2 className="w-3.5 h-3.5 text-amber-300" />
-              <span>Link Tim</span>
+              <Link2 className="w-3.5 h-3.5 text-amber-950" />
+              <span>Link Form Tim</span>
             </button>
           )}
 
@@ -236,11 +237,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onCopyAdminKeyLink}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all cursor-pointer shadow-xs"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold bg-emerald-500 hover:bg-emerald-400 text-white shadow-sm border border-emerald-300/40 transition-all cursor-pointer active:scale-95"
               title="Salin Link Kunci Rahasia Pemilik Mas Yuno (?admin=yuno)"
             >
-              <Key className="w-3.5 h-3.5 text-emerald-300" />
-              <span className="hidden sm:inline">Kunci Admin</span>
+              <Key className="w-3.5 h-3.5 text-white" />
+              <span>Kunci Akses Mas Yuno</span>
             </button>
           )}
 
@@ -248,11 +249,11 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onLockToTeamMode}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-black/20 hover:bg-black/30 text-white/90 border border-white/20 transition-all cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-bold bg-black/20 hover:bg-black/30 text-white/90 border border-white/20 transition-all cursor-pointer"
               title="Kunci perangkat ini kembali ke Mode Tim Lapangan"
             >
               <Lock className="w-3.5 h-3.5 text-amber-300" />
-              <span className="hidden xl:inline">Kunci Tim</span>
+              <span className="hidden xl:inline">Kunci Mode Tim</span>
             </button>
           )}
 
@@ -261,7 +262,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               id="team-data-btn"
               type="button"
               onClick={onOpenTeamData}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-all shadow-xs cursor-pointer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-white/20 hover:bg-white/30 text-white border border-white/35 transition-all shadow-2xs cursor-pointer active:scale-95"
               title="Kelola Nomor Admin & Data Anggota Tim"
             >
               <Users className="w-3.5 h-3.5 text-white" />
@@ -272,29 +273,29 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="download-zip-btn"
             onClick={downloadProjectZip}
-            className="hidden md:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-colors cursor-pointer"
+            className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/30 transition-colors cursor-pointer"
             title="Download seluruh source code aplikasi dalam format .ZIP"
           >
             <DownloadCloud className="w-3.5 h-3.5 text-white" />
-            <span>ZIP</span>
+            <span>Unduh File ZIP</span>
           </button>
 
           <button
             id="github-guide-btn"
             onClick={onOpenGithubGuide}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold bg-white/15 hover:bg-white/25 text-white border border-white/20 transition-colors cursor-pointer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-bold bg-white/15 hover:bg-white/25 text-white border border-white/30 transition-colors cursor-pointer"
             title="Panduan push ke Repository GitHub"
           >
             <Github className="w-3.5 h-3.5 text-white" />
-            <span className="hidden sm:inline">GitHub</span>
+            <span className="hidden sm:inline">Repo GitHub</span>
           </button>
 
           <button
             id="add-trip-btn"
             onClick={onOpenAddModal}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-xs sm:text-sm font-bold bg-white hover:bg-stone-100 text-[#1c4318] transition-all shadow-xs cursor-pointer active:scale-95"
+            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded text-xs sm:text-sm font-extrabold bg-white hover:bg-[#f0f0f0] text-[#275d1d] transition-all shadow-md cursor-pointer active:scale-95"
           >
-            <Plus className="w-4 h-4 text-[#1c4318]" />
+            <Plus className="w-4 h-4 text-[#275d1d]" />
             <span>Tambah Trip</span>
           </button>
         </div>

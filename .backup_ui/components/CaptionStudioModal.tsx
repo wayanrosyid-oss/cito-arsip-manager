@@ -205,7 +205,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
               <Share2 className="w-5 h-5 text-amber-300" />
             </span>
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold font-['Montserrat'] tracking-tight truncate">
+              <h2 className="text-base sm:text-lg font-extrabold font-['Montserrat'] tracking-tight truncate">
                 Generator Caption & Broadcast Promosi
               </h2>
               <p className="text-[11px] sm:text-xs text-[#d1d1d1] truncate">
@@ -228,7 +228,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('instagram')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
               activeTab === 'instagram'
                 ? 'bg-[#275d1d] text-white'
                 : 'bg-[#e8e8e8] text-[#275d1d] hover:bg-[#dedede]'
@@ -241,7 +241,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('whatsapp')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
               activeTab === 'whatsapp'
                 ? 'bg-[#275d1d] text-white'
                 : 'bg-[#e8e8e8] text-[#275d1d] hover:bg-[#dedede]'
@@ -254,7 +254,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
           <button
             type="button"
             onClick={() => handleTabChange('story')}
-            className={`px-3.5 py-2 rounded-lg text-xs font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
+            className={`px-3.5 py-2 rounded-lg text-xs font-extrabold transition-all flex items-center gap-2 cursor-pointer shadow-xs ${
               activeTab === 'story'
                 ? 'bg-[#275d1d] text-white'
                 : 'bg-[#e8e8e8] text-[#275d1d] hover:bg-[#dedede]'
@@ -274,7 +274,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
                 {/* Hook Selection (Instagram) */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
                   <div className="flex items-center justify-between gap-1">
-                    <label className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
+                    <label className="text-xs font-extrabold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
                       <Sparkles className="w-3.5 h-3.5 text-amber-500" />
                       Pilihan Gaya Hook:
                     </label>
@@ -301,7 +301,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
                   {/* Dedicated Customizer: Own Hook Words & Intro Paragraph */}
                   <div className="pt-2 border-t border-gray-100 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-semibold text-[#275d1d] flex items-center gap-1">
+                      <span className="text-[11px] font-extrabold text-[#275d1d] flex items-center gap-1">
                         <Edit3 className="w-3.5 h-3.5 text-amber-600" />
                         Tulis Kata-Kata Sendiri (Gaya Khas Anda):
                       </span>
@@ -401,7 +401,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
 
                 {/* Content Toggles */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
-                  <span className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
+                  <span className="text-xs font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-1.5">
                     <Sliders className="w-3.5 h-3.5" />
                     Komponen Informasi:
                   </span>
@@ -480,7 +480,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
               <>
                 {/* Custom WhatsApp Intro */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
-                  <span className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
+                  <span className="text-xs font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-1.5">
                     <Edit3 className="w-3.5 h-3.5 text-emerald-600" />
                     Kustom Sapaan & Pesan WhatsApp:
                   </span>
@@ -561,7 +561,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
 
                 {/* Content Toggles for WA */}
                 <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-3">
-                  <span className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
+                  <span className="text-xs font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-1.5">
                     <Sliders className="w-3.5 h-3.5" />
                     Komponen Broadcast:
                   </span>
@@ -625,7 +625,7 @@ export const CaptionStudioModal: React.FC<CaptionStudioModalProps> = ({
 
             {activeTab === 'story' && (
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-xs space-y-2 text-xs text-gray-700">
-                <span className="font-semibold text-[#275d1d] block">
+                <span className="font-extrabold text-[#275d1d] block">
                   💡 Format Story & Status Singkat
                 </span>
                 <p>

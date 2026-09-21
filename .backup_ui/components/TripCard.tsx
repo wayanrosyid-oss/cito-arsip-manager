@@ -48,14 +48,14 @@ export const TripCard: React.FC<TripCardProps> = ({
   return (
     <div
       onClick={handleClick}
-      className={`group relative rounded-xl p-3.5 sm:p-4 cursor-pointer ${
+      className={`group relative rounded-2xl p-3.5 sm:p-4 transition-all duration-200 cursor-pointer ${
         isSelectMode
           ? isSelectedForDelete
-            ? 'bg-rose-50/90 border border-rose-300 shadow-[0_2px_10px_rgba(244,63,94,0.12)]'
-            : 'bg-white border border-dashed border-stone-300/80 hover:border-rose-300 field-card-interactive'
+            ? 'bg-red-50/90 border-2 border-red-500 shadow-md ring-2 ring-red-400/50'
+            : 'bg-white/90 border-2 border-dashed border-slate-300 hover:border-red-400 hover:bg-white shadow-2xs'
           : isSelected
-          ? 'field-card-active'
-          : 'field-card-interactive'
+          ? 'bg-white border-2 border-[#275d1d] shadow-md ring-1 ring-[#275d1d]/30 scale-[1.01]'
+          : 'bg-white/95 border border-slate-300 hover:border-slate-400 hover:bg-white shadow-2xs hover:shadow-xs opacity-70 hover:opacity-100'
       }`}
     >
       {/* Row 1: Checkbox (if in select mode) + Mountain Name & Height + Dari Tim Badge + Draft/Final Badge + Chevron/Status */}
@@ -66,23 +66,23 @@ export const TripCard: React.FC<TripCardProps> = ({
             <div
               className={`w-5 h-5 rounded-md flex items-center justify-center transition-all shrink-0 ${
                 isSelectedForDelete
-                  ? 'bg-rose-600 text-white shadow-xs'
-                  : 'bg-white border border-stone-300 group-hover:border-rose-400'
+                  ? 'bg-red-600 text-white border-2 border-red-700 shadow-xs'
+                  : 'bg-white border-2 border-slate-400 group-hover:border-red-500'
               }`}
             >
               {isSelectedForDelete ? (
-                <span className="text-xs font-semibold leading-none">✓</span>
+                <span className="text-xs font-black leading-none">✓</span>
               ) : null}
             </div>
           )}
 
           <h3
-            className={`text-sm sm:text-base font-semibold font-['Montserrat'] tracking-tight truncate transition-colors leading-snug ${
+            className={`text-sm sm:text-base font-['Montserrat'] truncate transition-colors ${
               isSelectedForDelete
-                ? 'text-rose-950'
+                ? 'text-red-950 font-extrabold tracking-tight'
                 : isSelected
-                ? 'text-[#1c4318]'
-                : 'text-stone-900 group-hover:text-[#1c4318]'
+                ? 'text-[#1f4a17] font-extrabold tracking-tight'
+                : 'text-slate-500 font-semibold group-hover:text-slate-700'
             }`}
           >
             {formatTitle()}
@@ -90,33 +90,33 @@ export const TripCard: React.FC<TripCardProps> = ({
 
           {/* Badge Sumber Pembuat: Dari Tim vs Dari Admin */}
           {trip.from_team ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-amber-50 text-amber-900 border border-amber-200/50 shrink-0">
-              👥 Tim
+            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-amber-500 text-white shadow-2xs shrink-0">
+              👥 Dari Tim
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-md bg-[#f4f5f1] text-stone-700 border border-stone-200/40 shrink-0">
-              👑 Admin
+            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-[#275d1d] text-white shadow-2xs shrink-0">
+              👑 Dari Admin
             </span>
           )}
 
-          {/* Badge Status: Draft vs Final */}
+          {/* Badge Status: Draft (Merah Tegas) vs Final (Hijau) */}
           {trip.is_draft ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-rose-50 text-rose-800 border border-rose-200/50 shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-rose-600 animate-pulse" />
-              Draft
+            <span className="inline-flex items-center gap-1 text-[10px] font-black px-2 py-0.5 rounded-full bg-red-100 text-red-900 border border-red-500 shadow-2xs shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-red-600 animate-pulse" />
+              🔴 Draft
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold px-2 py-0.5 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-200/50 shrink-0">
+            <span className="inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 border border-emerald-400 shadow-2xs shrink-0">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
-              Final
+              🟢 Final
             </span>
           )}
         </div>
         <ChevronRight
           className={`w-5 h-5 transition-all shrink-0 ${
             isSelected
-              ? 'text-[#1c4318] translate-x-0.5'
-              : 'text-stone-300 group-hover:text-stone-600 group-hover:translate-x-0.5'
+              ? 'text-[#275d1d] translate-x-1 font-bold'
+              : 'text-slate-300 group-hover:text-slate-500 group-hover:translate-x-0.5'
           }`}
         />
       </div>
@@ -124,10 +124,10 @@ export const TripCard: React.FC<TripCardProps> = ({
       {/* Row 2: Jalur Pill Badge & Tanggal Trip */}
       <div className="mt-2.5 flex items-center gap-2.5 flex-wrap">
         <span
-          className={`inline-flex items-center text-xs font-medium px-2.5 py-0.5 rounded-md transition-colors shrink-0 ${
+          className={`inline-flex items-center text-xs font-semibold px-3 py-1 rounded-full transition-colors shrink-0 ${
             isSelected
-              ? 'bg-[#1c4318] text-white shadow-xs'
-              : 'bg-[#f4f5f1] text-stone-700 border border-stone-200/40 group-hover:bg-[#e9ebe5]'
+              ? 'bg-[#1f4a17] text-white shadow-xs'
+              : 'bg-slate-300/80 text-slate-600 group-hover:bg-slate-300 group-hover:text-slate-700'
           }`}
         >
           {jalurText}
@@ -135,8 +135,8 @@ export const TripCard: React.FC<TripCardProps> = ({
 
         {formattedDate && (
           <span
-            className={`text-xs sm:text-[13px] font-normal transition-colors ${
-              isSelected ? 'text-[#1c4318] font-medium' : 'text-stone-600 group-hover:text-stone-800'
+            className={`text-xs sm:text-[13px] font-medium font-['Montserrat'] transition-colors ${
+              isSelected ? 'text-[#1f4a17] font-bold' : 'text-slate-600 group-hover:text-slate-800'
             }`}
           >
             {formattedDate}

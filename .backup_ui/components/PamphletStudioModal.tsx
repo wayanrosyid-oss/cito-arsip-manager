@@ -318,7 +318,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               <Sparkles className="w-5 h-5 text-amber-300" />
             </span>
             <div className="min-w-0">
-              <h2 className="text-base sm:text-lg font-bold font-['Montserrat'] truncate">
+              <h2 className="text-base sm:text-lg font-extrabold font-['Space_Grotesk'] truncate">
                 Studio Pamflet & Carousel Trip
               </h2>
               <p className="text-[11px] sm:text-xs text-[#d1d1d1] truncate">
@@ -379,7 +379,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                 }`}
               >
                 <span
-                  className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-semibold ${
+                  className={`w-5 h-5 rounded-full text-[10px] flex items-center justify-center font-extrabold ${
                     isActive ? 'bg-white text-[#275d1d]' : 'bg-[#275d1d] text-white'
                   }`}
                 >
@@ -405,7 +405,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                 <ChevronLeft className="w-3.5 h-3.5" /> Slide Sebelumnya
               </button>
 
-              <span className="text-[11px] font-semibold font-['Montserrat']">
+              <span className="text-[11px] font-extrabold font-['Space_Grotesk']">
                 {activeSlideIndex + 1} / {SLIDES_LIST.length} ({ratio})
               </span>
 
@@ -455,7 +455,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               )}
 
               {bgUrl === 'transparent' && (
-                <div className="absolute top-2 right-2 bg-amber-400 text-black px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shadow">
+                <div className="absolute top-2 right-2 bg-amber-400 text-black px-2 py-0.5 rounded text-[10px] font-black uppercase tracking-wider shadow">
                   ✨ Mode Transparan
                 </div>
               )}
@@ -473,7 +473,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               {activeSlide === 'random_photo' && (
                 <div className="bg-amber-50/80 border-2 border-amber-400 rounded-xl p-4 shadow-sm space-y-3">
                   <div className="flex items-center justify-between gap-2 border-b border-amber-300 pb-2">
-                    <h3 className="text-xs sm:text-sm font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-2">
+                    <h3 className="text-xs sm:text-sm font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-2">
                       <Camera className="w-4 h-4 text-amber-600" />
                       Foto Khusus Slide 6 (Random Foto)
                     </h3>
@@ -503,7 +503,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                         <button
                           type="button"
                           onClick={() => slide6FileInputRef.current?.click()}
-                          className="flex-1 py-1.5 px-2.5 bg-amber-500 hover:bg-amber-600 text-black font-semibold rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                          className="flex-1 py-1.5 px-2.5 bg-amber-500 hover:bg-amber-600 text-black font-extrabold rounded-lg text-xs transition-all flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
                         >
                           <Upload className="w-3.5 h-3.5" />
                           <span>Unggah Foto Slide 6</span>
@@ -532,7 +532,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               {/* Box 1: Sistem Edit Background */}
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between gap-2 border-b border-[#275d1d]/20 pb-2">
-                  <h3 className="text-xs sm:text-sm font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-2">
+                  <h3 className="text-xs sm:text-sm font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-2">
                     <ImageIcon className="w-4 h-4 text-[#275d1d]" />
                     Pilihan Latar Belakang (Background)
                   </h3>
@@ -662,7 +662,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
               {/* Box 2: Ganti & Atur Logo Pamflet */}
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-3">
                 <div className="flex items-center justify-between gap-2 border-b border-[#275d1d]/20 pb-2">
-                  <h3 className="text-xs sm:text-sm font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-2">
+                  <h3 className="text-xs sm:text-sm font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-2">
                     <Camera className="w-4 h-4 text-[#275d1d]" />
                     Logo Pamflet & Branding
                   </h3>
@@ -724,7 +724,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
 
               {/* Box 3: Detail Slide Info */}
               <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-2">
-                <h4 className="text-xs font-semibold font-['Montserrat'] text-[#275d1d] flex items-center gap-1.5">
+                <h4 className="text-xs font-extrabold font-['Space_Grotesk'] text-[#275d1d] flex items-center gap-1.5">
                   <Layers className="w-4 h-4 text-[#275d1d]" />
                   {SLIDES_LIST[activeSlideIndex].title}
                 </h4>
@@ -760,7 +760,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
 
             {/* Box 3: Export Actions */}
             <div className="bg-white border-2 border-[#275d1d] rounded-xl p-4 shadow-sm space-y-3 mt-4">
-              <div className="flex items-center justify-between text-xs font-semibold text-[#275d1d] font-['Montserrat']">
+              <div className="flex items-center justify-between text-xs font-extrabold text-[#275d1d] font-['Space_Grotesk']">
                 <span>PILIHAN UNDUH GAMBAR</span>
                 <span className="text-[10px] bg-[#275d1d] text-white px-2 py-0.5 rounded">
                   Format PNG 1080p
@@ -807,7 +807,7 @@ export const PamphletStudioModal: React.FC<PamphletStudioModalProps> = ({
                 <button
                   type="button"
                   onClick={() => setIsCaptionModalOpen(true)}
-                  className="py-1.5 px-3 bg-[#e8f3e5] hover:bg-[#d5ecd0] text-[#275d1d] border border-[#275d1d] rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
+                  className="py-1.5 px-3 bg-[#e8f3e5] hover:bg-[#d5ecd0] text-[#275d1d] border border-[#275d1d] rounded-lg text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer shadow-xs active:scale-95"
                 >
                   <Share2 className="w-3.5 h-3.5 text-[#275d1d]" />
                   <span>Buka Generator Caption & WA</span>

@@ -17,7 +17,7 @@ export const PWAInstallButton: React.FC = () => {
       <button
         id="pwa-install-btn"
         onClick={install}
-        className="flex items-center gap-2 rounded bg-white px-3.5 py-1.5 text-xs md:text-sm font-semibold text-[#275d1d] shadow-xs hover:bg-[#f0f0f0] transition-all cursor-pointer"
+        className="flex items-center gap-2 rounded bg-white px-3.5 py-1.5 text-xs md:text-sm font-extrabold text-[#275d1d] shadow hover:bg-[#f0f0f0] transition-all cursor-pointer"
         title="Install Aplikasi Cito Adventure ke HP / Desktop"
       >
         <Download className="w-4 h-4 text-[#275d1d]" />
@@ -33,7 +33,7 @@ export const PWAInstallButton: React.FC = () => {
         <button
           id="pwa-install-ios-btn"
           onClick={() => setShowIOSGuide(true)}
-          className="flex items-center gap-2 rounded border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-semibold text-white hover:bg-white/25 transition-all cursor-pointer"
+          className="flex items-center gap-2 rounded border border-white/40 bg-white/15 px-3 py-1.5 text-xs font-bold text-white hover:bg-white/25 transition-all cursor-pointer"
         >
           <Smartphone className="w-4 h-4 text-white" />
           <span>Install di iPhone</span>
@@ -43,7 +43,7 @@ export const PWAInstallButton: React.FC = () => {
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4 backdrop-blur-sm">
             <div className="w-full max-w-sm rounded-xl bg-white border-2 border-[#275d1d] p-6 shadow-2xl text-[#1a2e16]">
               <div className="flex items-center justify-between mb-3 border-b pb-2 border-[#275d1d]/20">
-                <h3 className="text-base font-bold font-['Montserrat'] tracking-tight text-[#275d1d]">Install di iPhone / iPad</h3>
+                <h3 className="text-base font-extrabold font-['Montserrat'] tracking-tight text-[#275d1d]">Install di iPhone / iPad</h3>
                 <button
                   onClick={() => setShowIOSGuide(false)}
                   className="text-gray-500 hover:text-black p-1"
@@ -58,7 +58,7 @@ export const PWAInstallButton: React.FC = () => {
               </p>
               <button
                 onClick={() => setShowIOSGuide(false)}
-                className="mt-5 w-full rounded bg-[#275d1d] py-2 text-xs font-semibold text-white hover:bg-[#1f4a17] transition-colors cursor-pointer"
+                className="mt-5 w-full rounded bg-[#275d1d] py-2 text-xs font-bold text-white hover:bg-[#1f4a17] transition-colors"
               >
                 Mengerti
               </button>

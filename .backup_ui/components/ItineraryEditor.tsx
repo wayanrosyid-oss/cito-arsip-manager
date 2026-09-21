@@ -319,7 +319,7 @@ export const ItineraryEditor: React.FC<ItineraryEditorProps> = ({
                         value={day.hariLabel}
                         onChange={(e) => handleDayFieldChange(day.id, 'hariLabel', e.target.value)}
                         placeholder="Hari 0 (H-1) / Hari 1"
-                        className="w-36 sm:w-40 bg-white border border-[#275d1d]/50 rounded px-2.5 py-1 text-xs font-semibold text-[#275d1d] focus:border-[#275d1d] focus:ring-1 focus:ring-[#275d1d] focus:outline-none"
+                        className="w-36 sm:w-40 bg-white border border-[#275d1d]/50 rounded px-2.5 py-1 text-xs font-extrabold text-[#275d1d] focus:border-[#275d1d] focus:ring-1 focus:ring-[#275d1d] focus:outline-none"
                       />
                     </div>
 

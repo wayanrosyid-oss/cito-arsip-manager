@@ -201,7 +201,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold tracking-wider uppercase bg-[#e5a93c]/20 text-[#e5a93c] border border-[#e5a93c]/40">
                   <Sparkles className="w-3 h-3 text-[#e5a93c]" /> Media Kit Promosi
                 </span>
-                <h1 className="text-xs sm:text-sm font-bold text-white tracking-wide uppercase font-['Montserrat'] leading-tight">
+                <h1 className="text-xs sm:text-sm font-extrabold text-white tracking-wide uppercase font-['Montserrat'] leading-tight">
                   Cito Adventure Madiun
                 </h1>
               </div>
@@ -242,7 +242,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                 </span>
               </div>
 
-              <h2 className="text-2xl sm:text-3xl font-bold text-white tracking-tight font-['Montserrat'] leading-tight">
+              <h2 className="text-2xl sm:text-4xl font-black text-white tracking-tight font-['Montserrat'] leading-tight">
                 {trip.nama_gunung.toUpperCase()}
               </h2>
 
@@ -290,7 +290,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#e5a93c]" />
-                <h3 className="text-lg sm:text-xl font-bold text-white font-['Montserrat'] tracking-tight">
+                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">
                   Foto Pamflet Promosi HD
                 </h3>
               </div>
@@ -352,7 +352,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                     )}
 
                     {/* Slide Number Badge */}
-                    <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-slate-900/80 backdrop-blur-xs text-[10px] font-semibold text-[#e5a93c] border border-slate-700/60 shadow-xs">
+                    <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-slate-900/80 backdrop-blur-xs text-[10px] font-extrabold text-[#e5a93c] border border-slate-700/60 shadow-xs">
                       Slide {index + 1} / 5
                     </div>
                   </div>
@@ -371,7 +371,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
                     <button
                       onClick={() => handleDownloadSlide(slide.id)}
                       disabled={isDownloading}
-                      className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-semibold bg-[#275d1d] hover:bg-[#1f4a17] text-white transition-all cursor-pointer disabled:opacity-50 shadow-sm active:scale-95"
+                      className="w-full inline-flex items-center justify-center gap-2 py-2 px-3 rounded-lg text-xs font-extrabold bg-[#275d1d] hover:bg-[#1f4a17] text-white transition-all cursor-pointer disabled:opacity-50 shadow-sm active:scale-95"
                     >
                       {isDownloading ? (
                         <>
@@ -433,7 +433,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-                <h3 className="text-lg sm:text-xl font-bold text-white font-['Montserrat'] tracking-tight">
+                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">
                   Teks Caption Promosi (Siap Copas)
                 </h3>
               </div>
@@ -444,7 +444,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
 
             <button
               onClick={handleCopyCaption}
-              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-md ${
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-md ${
                 copiedCaption
                   ? 'bg-emerald-600 text-white'
                   : 'bg-[#e5a93c] hover:bg-[#d49930] text-slate-950 active:scale-95'
@@ -480,7 +480,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
             <div>
               <div className="flex items-center gap-2">
                 <span className="w-2.5 h-2.5 rounded-full bg-cyan-400" />
-                <h3 className="text-lg sm:text-xl font-bold text-white font-['Montserrat'] tracking-tight">
+                <h3 className="text-lg sm:text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">
                   Itinerary Rundown Perjalanan
                 </h3>
               </div>
@@ -491,7 +491,7 @@ export const MediaKitView: React.FC<MediaKitViewProps> = ({
 
             <button
               onClick={handleCopyItinerary}
-              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer shadow-md ${
+              className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-md ${
                 copiedItinerary
                   ? 'bg-emerald-600 text-white'
                   : 'bg-emerald-700 hover:bg-emerald-600 text-white active:scale-95'

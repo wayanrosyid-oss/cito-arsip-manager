@@ -26,7 +26,7 @@ export const Toast: React.FC<ToastProps> = ({ message }) => {
       ) : (
         <CheckCircle className="w-5 h-5 text-white shrink-0" />
       )}
-      <span className="text-xs sm:text-sm font-semibold tracking-wide leading-normal">{message}</span>
+      <span className="text-xs sm:text-sm font-extrabold tracking-wide leading-tight">{message}</span>
     </div>
   );
 };

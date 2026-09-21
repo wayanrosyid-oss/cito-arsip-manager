@@ -493,7 +493,7 @@ export const TripModal: React.FC<TripModalProps> = ({
             <span className="text-[10px] sm:text-xs font-bold tracking-wider text-[#d1d1d1] uppercase font-['Montserrat']">
               Formulir Trip Cito Adventure
             </span>
-            <h2 className="text-lg sm:text-xl font-bold font-['Montserrat'] tracking-tight text-white leading-tight">
+            <h2 className="text-lg sm:text-xl font-extrabold font-['Montserrat'] tracking-tight text-white">
               {tripToEdit ? 'Edit Data Trip' : 'Tambah Open Trip Baru'}
             </h2>
           </div>
@@ -509,7 +509,7 @@ export const TripModal: React.FC<TripModalProps> = ({
         <form onSubmit={handleSubmit} className="p-5 sm:p-6 space-y-5 max-h-[80vh] overflow-y-auto">
           {/* Section 1: Gunung & Jalur */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
-            <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-2">
+            <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-2">
               <MapPin className="w-3.5 h-3.5" />
               1. Identitas Gunung & Jalur Pendakian
             </h3>
@@ -642,7 +642,7 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 2: Tanggal & Durasi (Mendukung Multi Tanggal) */}
           <div className="space-y-3.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-2">
+              <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-2">
                 <Calendar className="w-3.5 h-3.5" />
                 2. Tanggal Pelaksanaan & Durasi Otomatis
               </h3>
@@ -659,7 +659,7 @@ export const TripModal: React.FC<TripModalProps> = ({
             {/* Jadwal 1 */}
             <div className="bg-white p-3.5 rounded-lg border border-[#275d1d]/30 space-y-3 shadow-2xs">
               <div className="flex items-center justify-between">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#275d1d] text-white">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-[#275d1d] text-white">
                   📅 Jadwal 1
                 </span>
               </div>
@@ -704,7 +704,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                   value={durasi}
                   onChange={(e) => setDurasi(e.target.value)}
                   placeholder="Contoh: 3 Hari 2 Malam"
-                  className="w-full bg-white border-2 border-[#275d1d] rounded-md px-3 py-2 text-xs sm:text-sm text-[#275d1d] font-semibold focus:border-[#275d1d] focus:outline-none"
+                  className="w-full bg-white border-2 border-[#275d1d] rounded-md px-3 py-2 text-xs sm:text-sm text-[#275d1d] font-extrabold focus:border-[#275d1d] focus:outline-none"
                   required
                 />
               </div>
@@ -717,7 +717,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                 className="bg-white p-3.5 rounded-lg border-2 border-dashed border-[#275d1d]/50 space-y-3 shadow-2xs relative transition-all"
               >
                 <div className="flex items-center justify-between gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-semibold bg-[#e8efe6] text-[#275d1d] border border-[#275d1d]/40">
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[11px] font-extrabold bg-[#e8efe6] text-[#275d1d] border border-[#275d1d]/40">
                     📅 Jadwal {idx + 2}
                   </span>
                   <button
@@ -783,7 +783,7 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 3: Kuota Peserta & Notifikasi (SKEMA BARU) */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
+              <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 3. Kuota Peserta (Skema Baru)
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
@@ -865,7 +865,7 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 4: Tarif Meeting Point (MEPO) */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
+              <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 4. Tarif per Meeting Point (MEPO)
               </h3>
               <div className="flex items-center gap-2 flex-wrap">
@@ -956,7 +956,7 @@ export const TripModal: React.FC<TripModalProps> = ({
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
             <div className="space-y-1.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
               <div className="flex items-center justify-between flex-wrap gap-1.5">
-                <label className="block text-xs font-semibold text-[#275d1d] uppercase font-['Montserrat']">
+                <label className="block text-xs font-extrabold text-[#275d1d] uppercase font-['Montserrat']">
                   5. Fasilitas Include:
                 </label>
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -998,7 +998,7 @@ export const TripModal: React.FC<TripModalProps> = ({
             </div>
             <div className="space-y-1.5 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
               <div className="flex items-center justify-between flex-wrap gap-1.5">
-                <label className="block text-xs font-semibold text-gray-800 uppercase font-['Montserrat']">
+                <label className="block text-xs font-extrabold text-gray-800 uppercase font-['Montserrat']">
                   Fasilitas Exclude:
                 </label>
                 <div className="flex items-center gap-1.5 flex-wrap">
@@ -1087,7 +1087,7 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 6: S&K & Catatan Penting */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
             <div className="flex items-center justify-between flex-wrap gap-1.5">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
+              <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 6. Syarat Ketentuan & Catatan Penting
               </h3>
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -1177,7 +1177,7 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 7: Kontak Booking (Dual Admin) */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
+              <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 7. Kontak Resmi Pendaftaran (2 Admin Wilayah & Instagram)
               </h3>
               <div className="flex items-center gap-1.5 flex-wrap">
@@ -1255,7 +1255,7 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 8: Itinerary / Rundown (Kolom & Tabel Input Builder) - Paling Bawah di Bawah Kontak WA */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
+              <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat']">
                 8. Itinerary / Rundown Kegiatan (Kolom Hari, Tanggal, Jam & Keterangan)
               </h3>
             </div>
@@ -1275,12 +1275,12 @@ export const TripModal: React.FC<TripModalProps> = ({
           {/* Section 9: Status Kesiapan Trip (Draft vs Final) */}
           <div className="space-y-3 bg-[#f5f5f5] p-4 rounded-lg border border-[#275d1d]/30">
             <div className="flex items-center justify-between flex-wrap gap-2">
-              <h3 className="text-xs font-semibold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-1.5">
+              <h3 className="text-xs font-extrabold text-[#275d1d] tracking-wider uppercase font-['Montserrat'] flex items-center gap-1.5">
                 <span className="w-2 h-2 rounded-full bg-[#275d1d]" />
                 9. Status Kesiapan Trip (Draft / Final)
               </h3>
               <span
-                className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full border shadow-2xs ${
+                className={`text-[11px] font-extrabold px-2.5 py-0.5 rounded-full border shadow-2xs ${
                   isDraft
                     ? 'bg-amber-100 text-amber-900 border-amber-400'
                     : 'bg-emerald-100 text-emerald-900 border-emerald-400'
@@ -1306,7 +1306,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                   }`}>
                     {!isDraft && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-emerald-950 font-['Montserrat']">
+                  <span className="text-xs sm:text-sm font-extrabold text-emerald-950 font-['Montserrat']">
                     🟢 Final (Siap Upload)
                   </span>
                 </div>
@@ -1330,7 +1330,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                   }`}>
                     {isDraft && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-red-950 font-['Montserrat']">
+                  <span className="text-xs sm:text-sm font-extrabold text-red-950 font-['Montserrat']">
                     🔴 Draft (Belum Final / Konsep)
                   </span>
                 </div>
@@ -1346,7 +1346,7 @@ export const TripModal: React.FC<TripModalProps> = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-xs sm:text-sm font-medium text-gray-700 hover:text-gray-900 bg-[#d1d1d1] hover:bg-[#c2c2c2] rounded transition-colors cursor-pointer"
+              className="px-4 py-2 text-xs sm:text-sm font-bold text-gray-700 hover:text-gray-900 bg-[#d1d1d1] hover:bg-[#c2c2c2] rounded transition-colors cursor-pointer"
             >
               Batal
             </button>
@@ -1363,7 +1363,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                     if (form) form.requestSubmit();
                   }, 50);
                 }}
-                className="px-3.5 py-2 text-xs sm:text-sm font-semibold text-white bg-red-600 hover:bg-red-700 border border-red-700 rounded shadow-xs transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
+                className="px-3.5 py-2 text-xs sm:text-sm font-extrabold text-white bg-red-600 hover:bg-red-700 border border-red-700 rounded shadow-xs transition-all cursor-pointer active:scale-95 flex items-center gap-1.5"
               >
                 <span>🔴</span>
                 <span>Simpan sebagai Draft</span>
@@ -1375,7 +1375,7 @@ export const TripModal: React.FC<TripModalProps> = ({
                 onClick={() => {
                   // Jika pengguna menekan tombol hijau utama ini, kita jadikan Final kecuali jika user sengaja memilih Draft
                 }}
-                className={`px-5 py-2 text-xs sm:text-sm font-semibold text-white rounded shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 ${
+                className={`px-5 py-2 text-xs sm:text-sm font-extrabold text-white rounded shadow-md transition-all cursor-pointer active:scale-95 flex items-center gap-1.5 ${
                   isDraft
                     ? 'bg-red-700 hover:bg-red-800'
                     : 'bg-[#275d1d] hover:bg-[#1f4a17]'

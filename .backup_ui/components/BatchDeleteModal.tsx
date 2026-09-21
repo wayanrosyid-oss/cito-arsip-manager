@@ -28,7 +28,7 @@ export const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
       <div className="bg-white border-2 border-red-600 text-gray-900 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="bg-red-600 px-5 py-4 flex items-center justify-between text-white">
-          <div className="flex items-center gap-2.5 font-bold text-base font-['Montserrat'] tracking-tight">
+          <div className="flex items-center gap-2.5 font-extrabold text-base font-['Montserrat'] tracking-tight">
             <div className="p-1.5 bg-white/20 rounded-lg">
               <Trash2 className="w-5 h-5 text-white" />
             </div>
@@ -98,7 +98,7 @@ export const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
                     </p>
                   </div>
                   <span
-                    className={`text-[10px] font-semibold px-2 py-0.5 rounded-full shrink-0 ${
+                    className={`text-[10px] font-extrabold px-2 py-0.5 rounded-full shrink-0 ${
                       t.is_draft
                         ? 'bg-red-100 text-red-800 border border-red-300'
                         : 'bg-emerald-100 text-emerald-800 border border-emerald-300'
@@ -124,7 +124,7 @@ export const BatchDeleteModal: React.FC<BatchDeleteModalProps> = ({
           <button
             onClick={onConfirm}
             disabled={isDeleting}
-            className="px-4 py-2 rounded-xl text-xs font-semibold bg-red-600 hover:bg-red-700 text-white transition-all flex items-center gap-2 cursor-pointer shadow-sm hover:shadow disabled:opacity-50"
+            className="px-4 py-2 rounded-xl text-xs font-extrabold bg-red-600 hover:bg-red-700 text-white transition-all flex items-center gap-2 cursor-pointer shadow-sm hover:shadow disabled:opacity-50"
           >
             <Trash2 className="w-4 h-4" />
             <span>{isDeleting ? 'Sedang Menghapus...' : `Ya, Hapus ${count} Trip`}</span>

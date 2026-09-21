@@ -4,7 +4,6 @@
  */
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { AnimatePresence } from 'motion/react';
 import { Navbar } from './components/Navbar';
 import { TripCard } from './components/TripCard';
 import { TripDetail } from './components/TripDetail';
@@ -19,7 +18,6 @@ import { Toast } from './components/Toast';
 import { TeamInputView } from './components/TeamInputView';
 import { TeamDataModal } from './components/TeamDataModal';
 import { MediaKitView } from './components/MediaKitView';
-import { ExpeditionTruckLoader } from './components/ExpeditionTruckLoader';
 import { findTripBySlugOrId, getTripSlug, getTripMediaKitUrl } from './utils/slug';
 import { Trip, TripStatus } from './types';
 import {
@@ -85,16 +83,8 @@ export default function App() {
     }
     return 'admin';
   });
-  const [isInitialAppLoading, setIsInitialAppLoading] = useState(true);
   const [isDraftBannerDismissed, setIsDraftBannerDismissed] = useState(false);
   const knownDraftIdsRef = useRef<Set<string>>(new Set());
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsInitialAppLoading(false);
-    }, 850);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Modals state
   const [isTripModalOpen, setIsTripModalOpen] = useState(false);
@@ -592,7 +582,7 @@ export default function App() {
           <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-3xl">
             🏔️
           </div>
-          <h2 className="text-xl font-bold text-white font-['Montserrat'] tracking-tight">Trip Tidak Ditemukan</h2>
+          <h2 className="text-xl font-extrabold text-white font-['Montserrat'] tracking-tight">Trip Tidak Ditemukan</h2>
           <p className="text-xs sm:text-sm text-slate-400 max-w-sm leading-relaxed">
             Media kit untuk rute <span className="text-[#e5a93c] font-bold font-mono">"{activeMediaKitTripId}"</span> tidak ditemukan atau telah diperbarui oleh Mas Yuno.
           </p>
@@ -605,18 +595,6 @@ export default function App() {
         </div>
       );
     }
-  }
-
-  if (isInitialAppLoading) {
-    return (
-      <div className="fixed inset-0 z-50 bg-[#f4f6f3] flex flex-col items-center justify-center p-6 text-center animate-in fade-in duration-300">
-        <ExpeditionTruckLoader
-          label="Memuat Jadwal Ekspedisi..."
-          sublabel="Armada Cito Adventure sedang menyiapkan data trip"
-          size="md"
-        />
-      </div>
-    );
   }
 
   if (viewMode === 'tim') {
@@ -636,7 +614,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f2f4ef] text-stone-900 flex flex-col font-['Plus_Jakarta_Sans'] selection:bg-[#1c4318] selection:text-white">
+    <div className="min-h-screen bg-[#d1d1d1] text-[#1a2e16] flex flex-col font-['Plus_Jakarta_Sans'] selection:bg-[#275d1d] selection:text-white">
       {/* Top App Navbar */}
       <Navbar
         onOpenAddModal={handleOpenAddModal}
@@ -673,19 +651,19 @@ export default function App() {
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-5 md:p-6 flex flex-col">
         {/* Titik 2: Banner Notifikasi Cepat di Bagian Paling Atas Layar (Header Dashboard) Khusus Draf Tim */}
         {teamDraftTrips.length > 0 && !isDraftBannerDismissed && (
-          <div className="mb-4 bg-amber-50 border border-amber-300 rounded-xl p-3 sm:p-4 shadow-xs flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-300">
+          <div className="mb-4 bg-amber-50 border-2 border-amber-400 rounded-2xl p-3 sm:p-4 shadow-sm flex items-center justify-between gap-3 flex-wrap animate-in slide-in-from-top-2 duration-300">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-xs">
                 <Bell className="w-5 h-5 animate-bounce" />
               </div>
               <div>
-                <div className="text-xs sm:text-sm font-semibold text-amber-950 flex items-center gap-2 flex-wrap">
+                <div className="text-xs sm:text-sm font-extrabold text-amber-950 flex items-center gap-2 flex-wrap">
                   <span>📥 Ada {teamDraftTrips.length} Jadwal Baru Masuk dari Tim!</span>
-                  <span className="text-[11px] font-semibold text-amber-900 bg-amber-200/80 px-2 py-0.5 rounded-md">
+                  <span className="text-[11px] font-bold text-amber-900 bg-amber-200 px-2.5 py-0.5 rounded-full">
                     {teamDraftTrips[0].nama_gunung} ({teamDraftTrips[0].jalur})
                   </span>
                 </div>
-                <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                <p className="text-[11px] text-amber-800 mt-0.5">
                   Disusun oleh <strong>{teamDraftTrips[0].draf_oleh || 'Tim CITO'}</strong>. Periksa rincian data lalu klik Setujui untuk membuat pamflet & caption.
                 </p>
               </div>
@@ -697,7 +675,7 @@ export default function App() {
                   setSelectedTripId(teamDraftTrips[0].id);
                   setMobileTab('detail');
                 }}
-                className="px-3.5 py-2 bg-[#1c4318] hover:bg-[#142f11] text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer"
+                className="px-3.5 py-2 bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer"
               >
                 Lihat & Review
               </button>
@@ -712,7 +690,7 @@ export default function App() {
                   handleSaveTrip(approved);
                   showToast(`Trip ${teamDraftTrips[0].nama_gunung} resmi disetujui & dipublikasikan!`);
                 }}
-                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-semibold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
+                className="px-3.5 py-2 bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold rounded-lg shadow-xs transition-all cursor-pointer flex items-center gap-1.5"
               >
                 <CheckCircle className="w-3.5 h-3.5" />
                 <span>Setujui</span>
@@ -729,7 +707,7 @@ export default function App() {
         )}
 
         {/* Mobile Navigation Pills */}
-        <div className="flex md:hidden items-center justify-between gap-2 mb-4 bg-white p-1 rounded-xl border border-stone-200 shadow-xs">
+        <div className="flex md:hidden items-center justify-between gap-2 mb-4 bg-white p-1 rounded-lg border-2 border-[#275d1d]/30 shadow-xs">
           <button
             onClick={() => {
               setMobileTab('list');
@@ -739,10 +717,10 @@ export default function App() {
                 window.history.replaceState({}, '', url.toString());
               }
             }}
-            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex-1 py-1.5 rounded text-xs font-bold transition-all ${
               mobileTab === 'list'
-                ? 'bg-[#1c4318] text-white shadow-xs'
-                : 'text-stone-600 hover:bg-stone-100'
+                ? 'bg-[#275d1d] text-white shadow'
+                : 'text-[#275d1d] hover:bg-[#e4e4e4]'
             }`}
           >
             Daftar Trip ({filteredTrips.length})
@@ -754,10 +732,10 @@ export default function App() {
               }
             }}
             disabled={!activeTrip}
-            className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all ${
+            className={`flex-1 py-1.5 rounded text-xs font-bold transition-all ${
               mobileTab === 'detail'
-                ? 'bg-[#1c4318] text-white shadow-xs'
-                : 'text-stone-600 hover:bg-stone-100 disabled:opacity-40'
+                ? 'bg-[#275d1d] text-white shadow'
+                : 'text-[#275d1d] hover:bg-[#e4e4e4] disabled:opacity-40'
             }`}
           >
             Detail & Export
@@ -772,26 +750,26 @@ export default function App() {
               mobileTab === 'list' ? 'block' : 'hidden md:block'
             }`}
           >
-            {/* Search & Header Card */}
-            <div className="field-card rounded-2xl p-4 space-y-3">
+            {/* Search & Header Card matching Image 2 */}
+            <div className="bg-white border-2 border-[#275d1d] rounded-2xl p-4 shadow-sm space-y-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold font-['Montserrat'] tracking-tight text-stone-900">
+                <h2 className="text-base font-extrabold font-['Montserrat'] tracking-tight text-[#275d1d]">
                   Daftar Trip
                 </h2>
-                <span className="text-[11px] font-semibold text-stone-600 bg-[#f4f5f1] px-2 py-0.5 rounded-md border border-stone-200/40">
+                <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200">
                   {filteredTrips.length} dari {trips.length}
                 </span>
               </div>
 
-              {/* Opsi Tombol Status Khusus Mode Admin */}
-              <div className="flex items-center gap-1 p-1 bg-[#f4f5f1] rounded-xl border border-stone-200/40 overflow-x-auto no-scrollbar">
+              {/* Opsi Tombol Status Khusus Mode Admin (Semua, Dari Admin, Dari Tim, Draft Merah, Final) */}
+              <div className="flex items-center gap-1.5 p-1 bg-[#f4f4f4] rounded-xl border border-[#275d1d]/20 overflow-x-auto no-scrollbar">
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('semua')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all shrink-0 cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 cursor-pointer ${
                     tripStatusFilter === 'semua'
-                      ? 'bg-white text-stone-900 shadow-[0_1px_3px_rgba(28,38,24,0.06)] border border-stone-200/50'
-                      : 'text-stone-600 hover:text-stone-900'
+                      ? 'bg-[#275d1d] text-white shadow-xs'
+                      : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/70'
                   }`}
                 >
                   Semua ({trips.length})
@@ -800,15 +778,21 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('admin')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'admin'
-                      ? 'bg-white text-stone-900 shadow-[0_1px_3px_rgba(28,38,24,0.06)] border border-stone-200/50'
-                      : 'text-stone-600 hover:text-stone-900'
+                      ? 'bg-[#275d1d] text-white shadow-xs'
+                      : 'text-[#275d1d] hover:text-[#1f4a17] hover:bg-slate-200/70'
                   }`}
                 >
-                  <span>Admin</span>
+                  <span>👑 Admin</span>
                   {adminTrips.length > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-stone-200/70 text-stone-800">
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                        tripStatusFilter === 'admin'
+                          ? 'bg-white/25 text-white'
+                          : 'bg-[#275d1d] text-white'
+                      }`}
+                    >
                       {adminTrips.length}
                     </span>
                   )}
@@ -817,15 +801,21 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('tim')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'tim'
-                      ? 'bg-white text-amber-900 shadow-[0_1px_3px_rgba(28,38,24,0.06)] border border-amber-200/60'
-                      : 'text-stone-600 hover:text-stone-900'
+                      ? 'bg-amber-600 text-white shadow-xs'
+                      : 'text-amber-800 hover:text-amber-950 hover:bg-amber-100/70'
                   }`}
                 >
-                  <span>Tim</span>
+                  <span>👥 Tim</span>
                   {teamTrips.length > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-amber-100 text-amber-900">
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                        tripStatusFilter === 'tim'
+                          ? 'bg-white/25 text-white'
+                          : 'bg-amber-500 text-white'
+                      }`}
+                    >
                       {teamTrips.length}
                     </span>
                   )}
@@ -834,15 +824,21 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('draft')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-black transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'draft'
-                      ? 'bg-white text-rose-800 shadow-[0_1px_3px_rgba(28,38,24,0.06)] border border-rose-200/60'
-                      : 'text-stone-600 hover:text-rose-700'
+                      ? 'bg-red-600 text-white shadow-xs'
+                      : 'text-red-700 hover:text-red-900 hover:bg-red-100/70'
                   }`}
                 >
-                  <span>Draft</span>
+                  <span>🔴 Draft</span>
                   {draftTrips.length > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-rose-100 text-rose-800">
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-black ${
+                        tripStatusFilter === 'draft'
+                          ? 'bg-white/30 text-white'
+                          : 'bg-red-500 text-white'
+                      }`}
+                    >
                       {draftTrips.length}
                     </span>
                   )}
@@ -851,15 +847,21 @@ export default function App() {
                 <button
                   type="button"
                   onClick={() => setTripStatusFilter('final')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
+                  className={`px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all shrink-0 flex items-center gap-1 cursor-pointer ${
                     tripStatusFilter === 'final'
-                      ? 'bg-white text-emerald-800 shadow-[0_1px_3px_rgba(28,38,24,0.06)] border border-emerald-200/60'
-                      : 'text-stone-600 hover:text-emerald-800'
+                      ? 'bg-emerald-700 text-white shadow-xs'
+                      : 'text-emerald-800 hover:text-emerald-950 hover:bg-slate-200/70'
                   }`}
                 >
-                  <span>Final</span>
+                  <span>🟢 Final</span>
                   {finalTrips.length > 0 && (
-                    <span className="text-[10px] px-1.5 py-0.2 rounded-full font-bold bg-emerald-100 text-emerald-900">
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-extrabold ${
+                        tripStatusFilter === 'final'
+                          ? 'bg-white/25 text-white'
+                          : 'bg-emerald-100 text-emerald-900'
+                      }`}
+                    >
                       {finalTrips.length}
                     </span>
                   )}
@@ -868,13 +870,13 @@ export default function App() {
 
               {/* Search Bar */}
               <div className="relative">
-                <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <Search className="w-4 h-4 text-[#275d1d] absolute left-3 top-1/2 -translate-y-1/2" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Cari gunung / jalur..."
-                  className="w-full bg-[#f8f9f5] border border-stone-200/50 rounded-xl pl-9 pr-3 py-2 text-xs sm:text-sm text-stone-900 placeholder:text-stone-400 focus:outline-none focus:bg-white focus:border-[#1c4318]/40 focus:ring-1 focus:ring-[#1c4318]/20 transition-all shadow-[inset_0_1px_2px_rgba(0,0,0,0.02)]"
+                  className="w-full bg-[#f4f4f4] border border-[#275d1d]/30 rounded-lg pl-9 pr-3 py-2 text-xs sm:text-sm text-[#1a2e16] placeholder-gray-500 focus:outline-none focus:border-[#275d1d]"
                 />
               </div>
 
@@ -884,17 +886,17 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => setIsSelectMode(true)}
-                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-[#f8f9f5] hover:bg-rose-50/60 text-stone-600 hover:text-rose-700 border border-stone-200/50 hover:border-rose-200/60 text-xs font-semibold transition-all cursor-pointer shadow-[0_1px_2px_rgba(0,0,0,0.02)] group"
+                    className="w-full flex items-center justify-center gap-2 py-2 px-3 rounded-xl bg-red-50/90 hover:bg-red-100 text-red-700 hover:text-red-900 border border-red-200 text-xs font-bold transition-all cursor-pointer shadow-2xs group"
                   >
-                    <Trash2 className="w-3.5 h-3.5 text-stone-400 group-hover:text-rose-600 transition-colors" />
-                    <span>Pilih & Hapus Beberapa Trip...</span>
+                    <Trash2 className="w-3.5 h-3.5 text-red-600 group-hover:scale-110 transition-transform" />
+                    <span>Pilih & Hapus Trip...</span>
                   </button>
                 ) : (
-                  <div className="bg-rose-50/70 border border-rose-200/60 rounded-xl p-2.5 space-y-2.5 shadow-xs">
+                  <div className="bg-red-50/90 border border-red-200 rounded-xl p-2.5 space-y-2.5 shadow-xs">
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
-                        <span className="w-2 h-2 rounded-full bg-rose-600 animate-pulse" />
-                        <span className="text-xs font-bold text-rose-950">
+                        <span className="w-2 h-2 rounded-full bg-red-600 animate-pulse" />
+                        <span className="text-xs font-black text-red-950">
                           {selectedTripIds.size} trip dipilih
                         </span>
                       </div>
@@ -906,7 +908,7 @@ export default function App() {
                             setIsSelectMode(false);
                             setSelectedTripIds(new Set());
                           }}
-                          className="px-2.5 py-1 rounded-md text-xs font-medium text-stone-600 hover:bg-stone-200/80 transition-colors cursor-pointer"
+                          className="px-2.5 py-1 rounded-lg text-xs font-bold text-slate-600 hover:bg-slate-200/80 transition-colors cursor-pointer"
                         >
                           Batal
                         </button>
@@ -914,7 +916,7 @@ export default function App() {
                           type="button"
                           disabled={selectedTripIds.size === 0}
                           onClick={() => setIsBatchDeleteModalOpen(true)}
-                          className="px-3 py-1 bg-rose-700 hover:bg-rose-800 disabled:opacity-40 text-white rounded-md text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all disabled:cursor-not-allowed"
+                          className="px-3 py-1 bg-red-600 hover:bg-red-700 disabled:opacity-40 text-white rounded-lg text-xs font-black flex items-center gap-1.5 cursor-pointer shadow-xs transition-all disabled:cursor-not-allowed"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
                           <span>Hapus ({selectedTripIds.size})</span>
@@ -927,7 +929,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={handleSelectAllFiltered}
-                        className="px-2 py-0.5 rounded-md bg-white border border-rose-200 font-medium text-stone-700 hover:bg-rose-100/70 cursor-pointer shadow-xs transition-colors"
+                        className="px-2 py-0.5 rounded-md bg-white border border-red-200 font-bold text-slate-700 hover:bg-red-100 hover:text-red-900 cursor-pointer shadow-2xs transition-colors"
                       >
                         {selectedTripIds.size === filteredTrips.length && filteredTrips.length > 0
                           ? 'Batal Pilih'
@@ -938,7 +940,7 @@ export default function App() {
                         <button
                           type="button"
                           onClick={() => handleSelectPreset('default')}
-                          className="px-2 py-0.5 rounded-md bg-white border border-stone-300 font-medium text-stone-700 hover:bg-stone-100 cursor-pointer shadow-xs transition-colors"
+                          className="px-2 py-0.5 rounded-md bg-white border border-amber-300 font-bold text-amber-800 hover:bg-amber-100 cursor-pointer shadow-2xs transition-colors"
                         >
                           Pilih Contoh Bawaan
                         </button>
@@ -947,7 +949,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => handleSelectPreset('draft')}
-                        className="px-2 py-0.5 rounded-md bg-white border border-rose-200 font-medium text-rose-800 hover:bg-rose-100 cursor-pointer shadow-xs transition-colors"
+                        className="px-2 py-0.5 rounded-md bg-white border border-red-300 font-bold text-red-700 hover:bg-red-100 cursor-pointer shadow-2xs transition-colors"
                       >
                         Pilih Draf
                       </button>
@@ -955,7 +957,7 @@ export default function App() {
                       <button
                         type="button"
                         onClick={() => handleSelectPreset('final')}
-                        className="px-2 py-0.5 rounded-md bg-white border border-emerald-300 font-medium text-emerald-800 hover:bg-emerald-100 cursor-pointer shadow-xs transition-colors"
+                        className="px-2 py-0.5 rounded-md bg-white border border-emerald-300 font-bold text-emerald-800 hover:bg-emerald-100 cursor-pointer shadow-2xs transition-colors"
                       >
                         Pilih Final
                       </button>
@@ -982,9 +984,9 @@ export default function App() {
                   />
                 ))
               ) : (
-                <div className="field-card rounded-2xl p-8 text-center space-y-3 border-dashed border-stone-300/70">
-                  <Mountain className="w-10 h-10 text-stone-400 mx-auto" />
-                  <p className="text-xs text-stone-600 font-medium">
+                <div className="bg-white border-2 border-dashed border-[#275d1d]/40 rounded-xl p-8 text-center space-y-3">
+                  <Mountain className="w-10 h-10 text-[#275d1d]/60 mx-auto" />
+                  <p className="text-xs text-gray-700 font-medium">
                     {trips.length === 0
                       ? 'Belum ada arsip trip. Anda bisa membuat trip baru atau memuat contoh.'
                       : 'Tidak ada trip yang sesuai pencarian.'}
@@ -992,7 +994,7 @@ export default function App() {
                   <div className="flex flex-col sm:flex-row items-center justify-center gap-2">
                     <button
                       onClick={handleOpenAddModal}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#1c4318] text-white text-xs font-semibold hover:bg-[#142f11] transition-all cursor-pointer shadow-xs"
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-[#275d1d] text-white text-xs font-bold hover:bg-[#1f4a17] transition-all cursor-pointer shadow"
                     >
                       <Plus className="w-3.5 h-3.5" />
                       <span>Buat Trip Baru</span>
@@ -1000,9 +1002,9 @@ export default function App() {
                     {trips.length === 0 && (
                       <button
                         onClick={handleRestoreDefaultTrips}
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-[#f4f5f1] hover:bg-[#e8eae3] text-stone-700 text-xs font-semibold border border-stone-200/50 transition-all cursor-pointer shadow-xs"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold border border-gray-300 transition-all cursor-pointer"
                       >
-                        <RotateCcw className="w-3.5 h-3.5 text-stone-500" />
+                        <RotateCcw className="w-3.5 h-3.5 text-[#275d1d]" />
                         <span>Muat Contoh Trip</span>
                       </button>
                     )}
@@ -1029,7 +1031,7 @@ export default function App() {
                     window.history.replaceState({}, '', url.toString());
                   }
                 }}
-                className="inline-flex items-center gap-1.5 text-xs font-semibold text-[#1c4318] hover:underline cursor-pointer"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-[#275d1d] hover:underline cursor-pointer"
               >
                 <ArrowLeft className="w-4 h-4" />
                 <span>Kembali ke Daftar Trip</span>
@@ -1037,26 +1039,23 @@ export default function App() {
             </div>
 
             {activeTrip ? (
-              <AnimatePresence mode="wait">
-                <TripDetail
-                  key={activeTrip.id}
-                  trip={activeTrip}
-                  onEdit={handleOpenEditModal}
-                  onDelete={handleRequestDelete}
-                  onOpenItinerary={handleOpenItineraryModal}
-                  onShowToast={showToast}
-                  onSaveTrip={handleSaveTrip}
-                  onOpenMediaKit={handleOpenMediaKit}
-                  onCopyMediaKitLink={handleCopyMediaKitLink}
-                />
-              </AnimatePresence>
+              <TripDetail
+                trip={activeTrip}
+                onEdit={handleOpenEditModal}
+                onDelete={handleRequestDelete}
+                onOpenItinerary={handleOpenItineraryModal}
+                onShowToast={showToast}
+                onSaveTrip={handleSaveTrip}
+                onOpenMediaKit={handleOpenMediaKit}
+                onCopyMediaKitLink={handleCopyMediaKitLink}
+              />
             ) : (
-              <div className="field-card rounded-2xl p-12 text-center space-y-4">
-                <Mountain className="w-14 h-14 text-stone-300 mx-auto" />
-                <h3 className="text-lg font-bold font-['Montserrat'] tracking-tight text-stone-900">
+              <div className="bg-white border-2 border-[#275d1d] rounded-xl p-12 text-center space-y-4 shadow-md">
+                <Mountain className="w-14 h-14 text-[#275d1d]/50 mx-auto" />
+                <h3 className="text-lg font-extrabold font-['Montserrat'] tracking-tight text-[#275d1d]">
                   {trips.length === 0 ? 'Belum Ada Jadwal Trip' : 'Pilih atau Tambahkan Trip'}
                 </h3>
-                <p className="text-xs text-stone-600 max-w-sm mx-auto leading-relaxed">
+                <p className="text-xs text-gray-700 max-w-sm mx-auto leading-relaxed">
                   {trips.length === 0
                     ? 'Mulai buat arsip open trip atau private trip Anda untuk menghasilkan pamflet poster, itinerary, dan caption Instagram secara instan.'
                     : 'Pilih salah satu jadwal open trip di sebelah kiri untuk melihat detail, menyalin caption Instagram, atau mengekspor poster pamflet & itinerary.'}
@@ -1064,7 +1063,7 @@ export default function App() {
                 <div className="flex items-center justify-center gap-2 flex-wrap">
                   <button
                     onClick={handleOpenAddModal}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-[#1c4318] hover:bg-[#142f11] text-white text-xs font-semibold transition-all shadow-xs cursor-pointer"
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded bg-[#275d1d] hover:bg-[#1f4a17] text-white text-xs font-bold transition-all shadow cursor-pointer"
                   >
                     <Plus className="w-4 h-4" />
                     <span>Tambah Open Trip Pertama</span>
@@ -1072,9 +1071,9 @@ export default function App() {
                   {trips.length === 0 && (
                     <button
                       onClick={handleRestoreDefaultTrips}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold border border-stone-300 transition-all cursor-pointer"
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-800 text-xs font-bold border border-gray-300 transition-all cursor-pointer"
                     >
-                      <RotateCcw className="w-4 h-4 text-stone-600" />
+                      <RotateCcw className="w-4 h-4 text-[#275d1d]" />
                       <span>Muat Kembali Contoh Trip</span>
                     </button>
                   )}

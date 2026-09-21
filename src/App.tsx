@@ -126,9 +126,27 @@ export default function App() {
   const [mobileTab, setMobileTab] = useState<'list' | 'detail'>(() => {
     if (typeof window === 'undefined') return 'list';
     const params = new URLSearchParams(window.location.search);
-    if (params.get('tab') === 'detail' || params.get('trip')) return 'detail';
+    const urlTab = params.get('tab');
+    if (urlTab === 'list' || urlTab === 'detail') {
+      return urlTab;
+    }
+    // Jika tidak ada parameter tab di URL, gunakan posisi terakhir yang tersimpan di localStorage
+    try {
+      const savedTab = localStorage.getItem('cito_mobile_tab');
+      if (savedTab === 'list' || savedTab === 'detail') {
+        return savedTab;
+      }
+    } catch {}
+    // Default posisi awal: Daftar Trip
     return 'list';
   });
+
+  // Pastikan posisi tab mobile selalu tersimpan otomatis di localStorage saat berubah
+  useEffect(() => {
+    try {
+      localStorage.setItem('cito_mobile_tab', mobileTab);
+    } catch {}
+  }, [mobileTab]);
 
   // Sinkronisasi selectedTripId & mobileTab ke URL query params & localStorage agar tahan refresh di HP & PC
   const handleSelectTrip = useCallback((tripId: string, tab?: 'list' | 'detail') => {
@@ -139,6 +157,9 @@ export default function App() {
 
     const newTab = tab || 'detail';
     setMobileTab(newTab);
+    try {
+      localStorage.setItem('cito_mobile_tab', newTab);
+    } catch {}
 
     // Update URL tanpa reload halaman
     if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
@@ -636,7 +657,7 @@ export default function App() {
   }
 
   return (
-    <div className="min-h-screen bg-[#f2f4ef] text-stone-900 flex flex-col font-['Plus_Jakarta_Sans'] selection:bg-[#1c4318] selection:text-white">
+    <div className="min-h-screen bg-[#f2f4ef] text-stone-900 flex flex-col font-['Plus_Jakarta_Sans'] selection:bg-[#1c4318] selection:text-white overflow-x-hidden">
       {/* Top App Navbar */}
       <Navbar
         onOpenAddModal={handleOpenAddModal}

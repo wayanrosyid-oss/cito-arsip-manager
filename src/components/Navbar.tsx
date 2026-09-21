@@ -188,19 +188,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             <span className="text-[10px] sm:text-[11px] text-white/70 block leading-tight font-medium truncate">
               Cito Adventure Madiun
             </span>
-            <h1 className="text-sm sm:text-base font-semibold text-white tracking-tight leading-tight whitespace-nowrap">
-              Cito Trip Manager
-            </h1>
+            <div className="flex items-center gap-1.5">
+              <h1 className="text-xs sm:text-base font-semibold text-white tracking-tight leading-tight whitespace-nowrap">
+                Cito Trip Manager
+              </h1>
+              {/* Subtle mobile cloud status indicator */}
+              <button
+                type="button"
+                onClick={onOpenCloudSync}
+                className="sm:hidden inline-flex items-center cursor-pointer"
+                title={cloudStatus === 'synced' ? 'Cloud: Tersinkron' : cloudStatus === 'syncing' ? 'Cloud: Menyinkronkan...' : 'Cloud: Offline'}
+              >
+                {cloudStatus === 'synced' && <span className="w-2 h-2 rounded-full bg-emerald-400" />}
+                {cloudStatus === 'syncing' && <RefreshCw className="w-2.5 h-2.5 text-amber-300 animate-spin" />}
+                {cloudStatus === 'offline' && <span className="w-2 h-2 rounded-full bg-stone-400" />}
+              </button>
+            </div>
           </div>
         </div>
 
         {/* Right: Focused Primary Actions & Menu */}
         <div className="flex items-center gap-1.5 sm:gap-2 shrink-0">
-          {/* Cloud Sync Status */}
+          {/* Cloud Sync Status (Desktop / Tablet) */}
           <button
             type="button"
             onClick={onOpenCloudSync}
-            className={`inline-flex items-center justify-center gap-1.5 h-8 w-8 sm:w-auto px-0 sm:px-2.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer shrink-0 ${
+            className={`hidden sm:inline-flex items-center justify-center gap-1.5 h-8 px-2.5 rounded-lg text-xs font-medium border transition-colors cursor-pointer shrink-0 ${
               cloudStatus === 'synced'
                 ? 'bg-white/10 hover:bg-white/15 text-white border-white/15'
                 : cloudStatus === 'syncing'
@@ -212,19 +225,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             {cloudStatus === 'synced' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">Tersinkron</span>
+                <span className="whitespace-nowrap">Tersinkron</span>
               </>
             )}
             {cloudStatus === 'syncing' && (
               <>
                 <RefreshCw className="w-3.5 h-3.5 text-amber-300 animate-spin shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">Sinkron...</span>
+                <span className="whitespace-nowrap">Sinkron...</span>
               </>
             )}
             {cloudStatus === 'offline' && (
               <>
                 <span className="w-2 h-2 rounded-full bg-stone-400 shrink-0" />
-                <span className="hidden sm:inline whitespace-nowrap">Offline</span>
+                <span className="whitespace-nowrap">Offline</span>
               </>
             )}
           </button>
@@ -234,11 +247,14 @@ export const Navbar: React.FC<NavbarProps> = ({
             <button
               type="button"
               onClick={onScrollToDrafts}
-              className="inline-flex items-center gap-1 h-8 px-2 sm:px-2.5 rounded-lg text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-stone-950 transition-colors cursor-pointer shrink-0 whitespace-nowrap shadow-xs"
+              className="inline-flex items-center justify-center h-8 w-8 sm:w-auto px-0 sm:px-2.5 rounded-lg text-xs font-semibold bg-amber-400 hover:bg-amber-300 text-stone-950 transition-colors cursor-pointer shrink-0 whitespace-nowrap shadow-xs relative"
               title={`${draftCount} draf trip dari tim menunggu verifikasi`}
             >
-              <Bell className="w-3.5 h-3.5 fill-current shrink-0" />
-              <span>{draftCount} Draf</span>
+              <Bell className="w-3.5 h-3.5 sm:w-4 sm:h-4 fill-current shrink-0" />
+              <span className="hidden sm:inline ml-1">{draftCount} Draf Tim</span>
+              <span className="sm:hidden absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center leading-none shadow-xs">
+                {draftCount}
+              </span>
             </button>
           )}
 
@@ -270,6 +286,20 @@ export const Navbar: React.FC<NavbarProps> = ({
             {isMenuOpen && (
               <div className="absolute right-0 mt-1.5 w-56 bg-white rounded-xl shadow-lg border border-stone-200 py-1.5 z-50 text-stone-800 text-xs font-medium divide-y divide-stone-100">
                 <div className="py-1">
+                  {onOpenCloudSync && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        onOpenCloudSync();
+                      }}
+                      className="w-full px-3 py-2 text-left hover:bg-stone-50 flex items-center gap-2.5 text-stone-700"
+                    >
+                      <RefreshCw className="w-4 h-4 text-stone-500" />
+                      <span>Status Sinkronisasi Cloud</span>
+                    </button>
+                  )}
+
                   {onOpenTeamData && (
                     <button
                       type="button"
@@ -386,11 +416,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             id="add-trip-btn"
             onClick={onOpenAddModal}
-            className="inline-flex items-center gap-1 h-8 px-2.5 sm:px-3.5 rounded-lg text-xs sm:text-sm font-semibold bg-white text-[#183e15] hover:bg-stone-100 transition-colors shadow-xs cursor-pointer active:scale-98 shrink-0 whitespace-nowrap"
+            className="inline-flex items-center gap-1.5 h-8 px-2.5 sm:px-3.5 rounded-lg text-xs sm:text-sm font-bold bg-white text-[#183e15] hover:bg-stone-100 transition-colors shadow-xs cursor-pointer active:scale-98 shrink-0 whitespace-nowrap"
           >
             <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#183e15] shrink-0" />
-            <span className="hidden sm:inline">Tambah Trip</span>
-            <span className="sm:hidden">Tambah</span>
+            <span>Tambah Trip</span>
           </button>
         </div>
       </div>
